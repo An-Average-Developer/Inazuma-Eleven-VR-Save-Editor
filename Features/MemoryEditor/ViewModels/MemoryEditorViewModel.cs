@@ -56,16 +56,16 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
                 new MemoryValue
                 {
                     Name = "Stars",
-                    Description = "In-game currency for purchases",
-                    BaseAddress = 0x01AC2778,
-                    Offsets = new int[] { 0x1150, 0x2068, 0x8, 0x9B0, 0x10, 0x100, 0x13C },
+                    Description = "Stars for the Gachapon",
+                    BaseAddress = 0x020B0750,
+                    Offsets = new int[] { 0x6018, 0x1028, 0x20F0, 0x8, 0x10, 0x110, 0x128 },
                     CurrentValue = 0,
                     NewValue = 0
                 },
                 new MemoryValue
                 {
-                    Name = "Ina Flowers",
-                    Description = "Ina Flowers Object (not spirit)",
+                    Name = "Inazuma Flowers",
+                    Description = "Inazuma Flowers (object)",
                     BaseAddress = 0x020B0750,
                     Offsets = new int[] { 0x6018, 0x1028, 0x20F0, 0x8, 0x10, 0x1F0, 0x2B8 },
                     CurrentValue = 0,
@@ -73,10 +73,10 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
                 },
                 new MemoryValue
                 {
-                    Name = "God Hand Flowers",
-                    Description = "God Hand Flowers currency",
-                    BaseAddress = 0x0213B778,
-                    Offsets = new int[] { 0x88, 0x2A00, 0x3658, 0x10, 0x1178, 0x2000, 0x5A4 },
+                    Name = "God Hand",
+                    Description = "God Hand Flowers (object)",
+                    BaseAddress = 0x020B0750,
+                    Offsets = new int[] { 0x6018, 0x18, 0x10, 0x1018, 0x20F0, 0x1C0, 0x2E0 },
                     CurrentValue = 0,
                     NewValue = 0
                 }
@@ -102,13 +102,13 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
 
         public MemoryValue StarsValue => MemoryValues.FirstOrDefault(v => v.Name == "Stars")!;
 
-        public MemoryValue InaFlowersValue => MemoryValues.FirstOrDefault(v => v.Name == "Ina Flowers")!;
+        public MemoryValue InaFlowersValue => MemoryValues.FirstOrDefault(v => v.Name == "Inazuma Flowers")!;
 
-        public MemoryValue GodHandFlowersValue => MemoryValues.FirstOrDefault(v => v.Name == "God Hand Flowers")!;
+        public MemoryValue GodHandFlowersValue => MemoryValues.FirstOrDefault(v => v.Name == "God Hand")!;
 
-        public MemoryValue[] StarsCollection => new[] { StarsValue };
+        public MemoryValue[] StarsCollection => new[] { StarsValue }.Where(v => v != null).ToArray();
 
-        public MemoryValue[] InaFlowersCollection => new[] { InaFlowersValue, GodHandFlowersValue };
+        public MemoryValue[] InaFlowersCollection => new[] { InaFlowersValue, GodHandFlowersValue }.Where(v => v != null).ToArray();
 
         public MemoryValue? SelectedValue
         {

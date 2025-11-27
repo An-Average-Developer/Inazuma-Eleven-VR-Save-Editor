@@ -155,12 +155,6 @@
                        Margin="0"
                        TabStripPlacement="Left">
 
-                <!-- Create Backup Tab -->
-
-                <!-- Restore Backup Tab -->
-
-                <!-- Manage Backups Tab -->
-
                 <!-- Memory Editor Tab -->
                 <TabItem>
                     <TabItem.Header>
@@ -193,7 +187,7 @@
                                              Style="{StaticResource MaterialDesignHeadline6TextBlock}"
                                              Margin="0,0,0,15"/>
 
-                                    <TextBlock Text="Select a tool to use. Make sure the game is running before using these tools."
+                                    <TextBlock Text="Select a tool to use. Make sure the game is closed before using these tools."
                                              Style="{StaticResource MaterialDesignBody2TextBlock}"
                                              Opacity="0.7"
                                              TextWrapping="Wrap"
@@ -220,13 +214,13 @@
                                                                Margin="0,0,0,4"
                                                                Foreground="{DynamicResource SecondaryHueMidBrush}"/>
 
-                                        <TextBlock Text="Stars Editor"
+                                        <TextBlock Text="Stars"
                                                  FontSize="15"
                                                  FontWeight="SemiBold"
                                                  HorizontalAlignment="Center"
                                                  Margin="0,0,0,2"/>
 
-                                        <TextBlock Text="Edit stars &amp; freeze"
+                                        <TextBlock Text="Edit gachapon stars"
                                                  FontSize="11"
                                                  Opacity="0.6"
                                                  TextWrapping="Wrap"
@@ -271,13 +265,13 @@
                                                                Margin="0,0,0,4"
                                                                Foreground="{DynamicResource SecondaryHueMidBrush}"/>
 
-                                        <TextBlock Text="Ina Flowers"
+                                        <TextBlock Text="Kizuna Flowers"
                                                  FontSize="15"
                                                  FontWeight="SemiBold"
                                                  HorizontalAlignment="Center"
                                                  Margin="0,0,0,2"/>
 
-                                        <TextBlock Text="Edit Ina Flowers"
+                                        <TextBlock Text="Edit Kizuna Flowers"
                                                  FontSize="11"
                                                  Opacity="0.6"
                                                  TextWrapping="Wrap"
@@ -336,7 +330,7 @@
                                              Style="{StaticResource MaterialDesignHeadline6TextBlock}"
                                              Margin="0,0,0,15"/>
 
-                                    <TextBlock Text="Edit star values and freeze stars in real-time. Make sure the game is running before attaching."
+                                    <TextBlock Text="Edit star values and freeze stars in real-time. Make sure the game is closed before using these tools."
                                              Style="{StaticResource MaterialDesignBody2TextBlock}"
                                              Opacity="0.7"
                                              TextWrapping="Wrap"
@@ -661,11 +655,11 @@
                                         </StackPanel>
                                     </Button>
 
-                                    <TextBlock Text="Ina Flowers Editor"
+                                    <TextBlock Text="Inazuma Flowers"
                                              Style="{StaticResource MaterialDesignHeadline6TextBlock}"
                                              Margin="0,0,0,15"/>
 
-                                    <TextBlock Text="Edit Ina Flowers values in real-time. Make sure the game is running before attaching."
+                                    <TextBlock Text="Edit Ina Flowers values in real-time. Make sure the game is closed before using these tools."
                                              Style="{StaticResource MaterialDesignBody2TextBlock}"
                                              Opacity="0.7"
                                              TextWrapping="Wrap"
