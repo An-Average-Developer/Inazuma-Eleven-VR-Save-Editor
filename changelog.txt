@@ -1,2 +1,2 @@
-1.1.5
-- Fixed mod folder not found
+1.0.0
+- First Version of Inazuma-Eleven-VR-Save-Editor
