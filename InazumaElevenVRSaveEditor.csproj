@@ -8,7 +8,7 @@
     <UseWPF>true</UseWPF>
     <AssemblyName>InazumaElevenVRSaveEditor</AssemblyName>
     <RootNamespace>InazumaElevenVRSaveEditor</RootNamespace>
-    <Version>1.0.0</Version>
+    <Version>1.0.1</Version>
     <Authors>An Average Developer</Authors>
     <Product>Inazuma Eleven VR Save Editor</Product>
     <Description>A simple save editor for Inazuma Eleven VR</Description>
@@ -25,6 +25,10 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="MaterialDesignThemes" Version="5.1.0" />
     <PackageReference Include="MaterialDesignColors" Version="3.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\EACLauncher.zip" />
   </ItemGroup>
 
 </Project>

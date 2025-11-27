@@ -7,6 +7,8 @@
         Height="1000"
         Width="1000"
         WindowStartupLocation="CenterScreen"
+        WindowStyle="None"
+        ResizeMode="CanResize"
         Background="{DynamicResource MaterialDesignPaper}"
         FontFamily="{DynamicResource MaterialDesignFont}">
 
@@ -92,7 +94,8 @@
             <Grid Grid.Row="0">
                 <materialDesign:ColorZone Mode="PrimaryMid"
                                          Padding="16"
-                                         materialDesign:ElevationAssist.Elevation="Dp4">
+                                         materialDesign:ElevationAssist.Elevation="Dp4"
+                                         MouseLeftButtonDown="Header_MouseLeftButtonDown">
                     <DockPanel>
                         <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
                             <materialDesign:PackIcon Kind="ContentSave"
@@ -131,6 +134,16 @@
                             Height="50"
                             Background="{DynamicResource SecondaryHueMidBrush}">
                         <materialDesign:PackIcon x:Name="ThemeIcon" Kind="WeatherSunny" Width="26" Height="26"/>
+                    </Button>
+                    <Button x:Name="CloseButton"
+                            Style="{StaticResource MaterialDesignFloatingActionButton}"
+                            ToolTip="Close Application"
+                            Click="CloseButton_Click"
+                            Margin="5,0"
+                            Width="50"
+                            Height="50"
+                            Background="#D32F2F">
+                        <materialDesign:PackIcon Kind="Close" Width="26" Height="26"/>
                     </Button>
                 </StackPanel>
             </Grid>

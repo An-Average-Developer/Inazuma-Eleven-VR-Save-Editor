@@ -20,6 +20,14 @@ namespace InazumaElevenVRSaveEditor
         {
             InitializeComponent();
             DataContext = new MainViewModel();
+
+            // Ensure EAC Launcher is restored when window closes
+            this.Closing += MainWindow_Closing;
+        }
+
+        private void MainWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
+        {
+            App.EACLauncherService?.RestoreEACLauncher();
         }
 
         private void CheckForUpdatesBanner_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
@@ -54,6 +62,19 @@ namespace InazumaElevenVRSaveEditor
             {
                 ViewModel.MemoryEditor.SelectInaFlowersEditorCommand.Execute(null);
             }
+        }
+
+        private void Header_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == System.Windows.Input.MouseButton.Left)
+            {
+                this.DragMove();
+            }
+        }
+
+        private void CloseButton_Click(object sender, RoutedEventArgs e)
+        {
+            this.Close();
         }
 
         private void ThemeToggleButton_Click(object sender, RoutedEventArgs e)
