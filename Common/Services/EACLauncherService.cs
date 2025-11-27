@@ -20,37 +20,30 @@ namespace InazumaElevenVRSaveEditor.Common.Services
         {
             try
             {
-                // Find Steam game folder
                 _gameFolderPath = FindSteamGameFolder();
                 if (string.IsNullOrEmpty(_gameFolderPath) || !Directory.Exists(_gameFolderPath))
                 {
                     return false;
                 }
 
-                // Find EACLauncher.exe in game folder
                 _eacLauncherPath = Path.Combine(_gameFolderPath, "EACLauncher.exe");
                 if (!File.Exists(_eacLauncherPath))
                 {
                     return false;
                 }
 
-                // Create temp folder
                 _tempFolderPath = Path.Combine(Path.GetTempPath(), $"InazumaElevenVR_{Guid.NewGuid()}");
                 Directory.CreateDirectory(_tempFolderPath);
 
-                // Extract embedded zip to temp folder
                 string zipPath = Path.Combine(_tempFolderPath, "EACLauncher.zip");
                 ExtractEmbeddedResource("InazumaElevenVRSaveEditor.Resources.EACLauncher.zip", zipPath);
 
-                // Extract zip contents to temp folder
                 string extractFolder = Path.Combine(_tempFolderPath, "extracted");
                 Directory.CreateDirectory(extractFolder);
                 ZipFile.ExtractToDirectory(zipPath, extractFolder);
 
-                // Backup original EACLauncher
                 _eacLauncherBackupPath = _eacLauncherPath + ".bak";
 
-                // If backup already exists, delete it
                 if (File.Exists(_eacLauncherBackupPath))
                 {
                     File.Delete(_eacLauncherBackupPath);
@@ -58,11 +51,9 @@ namespace InazumaElevenVRSaveEditor.Common.Services
 
                 File.Move(_eacLauncherPath, _eacLauncherBackupPath);
 
-                // Copy patched EACLauncher from extracted folder
                 string patchedLauncher = Path.Combine(extractFolder, "EACLauncher.exe");
                 if (!File.Exists(patchedLauncher))
                 {
-                    // Restore backup if patch file not found
                     File.Move(_eacLauncherBackupPath, _eacLauncherPath);
                     return false;
                 }
@@ -74,7 +65,6 @@ namespace InazumaElevenVRSaveEditor.Common.Services
             }
             catch (Exception)
             {
-                // If anything fails, try to restore backup
                 RestoreEACLauncher();
                 return false;
             }
@@ -87,13 +77,11 @@ namespace InazumaElevenVRSaveEditor.Common.Services
 
             try
             {
-                // Delete patched file
                 if (!string.IsNullOrEmpty(_eacLauncherPath) && File.Exists(_eacLauncherPath))
                 {
                     File.Delete(_eacLauncherPath);
                 }
 
-                // Restore backup
                 if (!string.IsNullOrEmpty(_eacLauncherBackupPath) &&
                     !string.IsNullOrEmpty(_eacLauncherPath) &&
                     File.Exists(_eacLauncherBackupPath))
@@ -101,7 +89,6 @@ namespace InazumaElevenVRSaveEditor.Common.Services
                     File.Move(_eacLauncherBackupPath, _eacLauncherPath);
                 }
 
-                // Clean up temp folder
                 if (!string.IsNullOrEmpty(_tempFolderPath) && Directory.Exists(_tempFolderPath))
                 {
                     Directory.Delete(_tempFolderPath, true);
@@ -111,7 +98,6 @@ namespace InazumaElevenVRSaveEditor.Common.Services
             }
             catch (Exception)
             {
-                // Silent fail on cleanup
             }
         }
 
@@ -119,16 +105,13 @@ namespace InazumaElevenVRSaveEditor.Common.Services
         {
             try
             {
-                // Try to find Steam installation path from registry
                 string? steamPath = null;
 
-                // Check 64-bit registry
                 using (var key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\WOW6432Node\Valve\Steam"))
                 {
                     steamPath = key?.GetValue("InstallPath") as string;
                 }
 
-                // Check 32-bit registry if not found
                 if (string.IsNullOrEmpty(steamPath))
                 {
                     using (var key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Valve\Steam"))
@@ -140,14 +123,12 @@ namespace InazumaElevenVRSaveEditor.Common.Services
                 if (string.IsNullOrEmpty(steamPath))
                     return null;
 
-                // Check default library folder
                 string defaultLibrary = Path.Combine(steamPath, "steamapps", "common", GAME_NAME);
                 if (Directory.Exists(defaultLibrary))
                 {
                     return defaultLibrary;
                 }
 
-                // Check libraryfolders.vdf for additional library locations
                 string libraryFoldersPath = Path.Combine(steamPath, "steamapps", "libraryfolders.vdf");
                 if (File.Exists(libraryFoldersPath))
                 {
@@ -156,7 +137,6 @@ namespace InazumaElevenVRSaveEditor.Common.Services
                     {
                         if (line.Contains("\"path\""))
                         {
-                            // Extract path from "path"		"C:\\SteamLibrary"
                             string[] parts = line.Split(new[] { '"' }, StringSplitOptions.RemoveEmptyEntries);
                             if (parts.Length >= 2)
                             {

@@ -21,7 +21,6 @@ namespace InazumaElevenVRSaveEditor
             InitializeComponent();
             DataContext = new MainViewModel();
 
-            // Ensure EAC Launcher is restored when window closes
             this.Closing += MainWindow_Closing;
         }
 

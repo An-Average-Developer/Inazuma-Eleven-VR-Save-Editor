@@ -17,7 +17,6 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- Header -->
         <materialDesign:ColorZone Grid.Row="0"
                                  Mode="PrimaryMid"
                                  Padding="16"
@@ -34,7 +33,6 @@
             </StackPanel>
         </materialDesign:ColorZone>
 
-        <!-- Content -->
         <materialDesign:Card Grid.Row="1" Margin="20">
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                 <TextBlock Text="FOR THE CHANGES TO TAKE EFFECT,"
@@ -51,7 +49,6 @@
             </StackPanel>
         </materialDesign:Card>
 
-        <!-- Button -->
         <materialDesign:Card Grid.Row="2" Margin="20,0,20,20">
             <Button Content="OK"
                   Click="OkButton_Click"

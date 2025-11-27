@@ -17,7 +17,6 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- Header -->
         <materialDesign:ColorZone Grid.Row="0"
                                  Mode="PrimaryMid"
                                  Padding="16"
@@ -38,7 +37,6 @@
             </StackPanel>
         </materialDesign:ColorZone>
 
-        <!-- Content -->
         <materialDesign:Card Grid.Row="1" Margin="20">
             <Grid>
                 <Grid.RowDefinitions>
@@ -46,14 +44,12 @@
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <!-- Instructions -->
                 <StackPanel Grid.Row="0" Margin="16,16,16,10">
                     <TextBlock Text="This mod has multiple files available for download. Select which files you want to install:"
                              TextWrapping="Wrap"
                              Opacity="0.7"
                              Margin="0,0,0,10"/>
 
-                    <!-- Select/Deselect All Buttons -->
                     <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
                         <Button Content="Select All"
                               Command="{Binding SelectAllCommand}"
@@ -69,7 +65,6 @@
                     </StackPanel>
                 </StackPanel>
 
-                <!-- Files List -->
                 <Border Grid.Row="1"
                        BorderBrush="{DynamicResource MaterialDesignDivider}"
                        BorderThickness="0,1,0,0"
@@ -89,13 +84,11 @@
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
 
-                                            <!-- Checkbox -->
                                             <CheckBox Grid.Column="0"
                                                     IsChecked="{Binding IsSelected}"
                                                     VerticalAlignment="Center"
                                                     Margin="0,0,15,0"/>
 
-                                            <!-- File Info -->
                                             <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                                 <TextBlock Text="{Binding FileName}"
                                                          FontWeight="Medium"
@@ -107,7 +100,6 @@
                                                          Margin="0,2,0,0"/>
                                             </StackPanel>
 
-                                            <!-- File Icon -->
                                             <materialDesign:PackIcon Grid.Column="2"
                                                                    Kind="File"
                                                                    Width="24"
@@ -124,7 +116,6 @@
             </Grid>
         </materialDesign:Card>
 
-        <!-- Buttons -->
         <materialDesign:Card Grid.Row="2" Margin="20,0,20,20">
             <StackPanel Orientation="Horizontal"
                       HorizontalAlignment="Right">

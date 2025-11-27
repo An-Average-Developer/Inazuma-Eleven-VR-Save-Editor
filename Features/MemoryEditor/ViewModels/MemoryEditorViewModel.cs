@@ -27,8 +27,8 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
         private bool _isStarsFrozen = false;
 
         private const long STAR_FREEZE_ADDRESS = 0xD8E8A3;
-        private static readonly byte[] FREEZE_BYTES = new byte[] { 0x90, 0x90, 0x90 }; // NOP NOP NOP
-        private static readonly byte[] ORIGINAL_BYTES = new byte[] { 0x89, 0x68, 0x10 }; // mov [rax+10],ebp
+        private static readonly byte[] FREEZE_BYTES = new byte[] { 0x90, 0x90, 0x90 };
+        private static readonly byte[] ORIGINAL_BYTES = new byte[] { 0x89, 0x68, 0x10 };
 
         public MemoryEditorViewModel()
         {
@@ -431,7 +431,6 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
                 bool success;
                 if (!IsStarsFrozen)
                 {
-                    // Freeze stars by writing NOPs
                     success = _memoryService.WriteBytes(STAR_FREEZE_ADDRESS, FREEZE_BYTES);
                     if (success)
                     {
@@ -450,7 +449,6 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
                 }
                 else
                 {
-                    // Unfreeze by restoring original bytes
                     success = _memoryService.WriteBytes(STAR_FREEZE_ADDRESS, ORIGINAL_BYTES);
                     if (success)
                     {

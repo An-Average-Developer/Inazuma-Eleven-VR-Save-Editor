@@ -7,23 +7,19 @@
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <!-- Material Design -->
                 <materialDesign:BundledTheme BaseTheme="Dark" PrimaryColor="Blue" SecondaryColor="Yellow" />
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesign3.Defaults.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
-            <!-- Converters -->
             <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
             <converters:InverseBoolConverter x:Key="InverseBooleanToVisibilityConverter"/>
             <converters:NotNullConverter x:Key="NullToVisibilityConverter"/>
             <converters:IsNullConverter x:Key="InverseNullToVisibilityConverter"/>
             <converters:EqualToVisibilityConverter x:Key="EqualToVisibilityConverter"/>
 
-            <!-- Custom Colors for Theme -->
             <SolidColorBrush x:Key="ThemeBlueBrush" Color="#2196F3"/>
             <SolidColorBrush x:Key="ThemeYellowBrush" Color="#FFEB3B"/>
 
-            <!-- Button Hover Effect -->
             <Style TargetType="Button" BasedOn="{StaticResource MaterialDesignRaisedButton}">
                 <Style.Triggers>
                     <Trigger Property="IsMouseOver" Value="True">
@@ -49,12 +45,10 @@
                 </Style.Triggers>
             </Style>
 
-            <!-- Custom Outlined Button Style for better dark mode -->
             <Style TargetType="Button" x:Key="CustomOutlinedButton" BasedOn="{StaticResource MaterialDesignOutlinedButton}">
                 <Setter Property="BorderBrush" Value="{DynamicResource MaterialDesignDivider}"/>
             </Style>
 
-            <!-- ListBox Item Animation -->
             <Style TargetType="ListBoxItem" BasedOn="{StaticResource MaterialDesignListBoxItem}">
                 <Setter Property="RenderTransform">
                     <Setter.Value>
@@ -103,7 +97,6 @@
                 </Style.Triggers>
             </Style>
 
-            <!-- Card Style with Yellow Background -->
             <Style TargetType="materialDesign:Card" BasedOn="{StaticResource {x:Type materialDesign:Card}}">
                 <Setter Property="Background" Value="#FFF59D"/>
             </Style>

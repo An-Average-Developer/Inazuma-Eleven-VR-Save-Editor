@@ -17,7 +17,7 @@ namespace InazumaElevenVRSaveEditor.Features.ModManager.Models
         private string _modPageUrl = string.Empty;
         private bool _hasUpdate;
         private string _latestVersion = string.Empty;
-        private int _priority = -1; // -1 means no priority set
+        private int _priority = -1;
 
         public string Name
         {
@@ -186,7 +186,7 @@ namespace InazumaElevenVRSaveEditor.Features.ModManager.Models
             get
             {
                 if (string.IsNullOrEmpty(Version))
-                    return "-"; // No version info available
+                    return "-";
                 return HasUpdate ? "Update Available" : "Up to Date";
             }
         }
@@ -196,7 +196,7 @@ namespace InazumaElevenVRSaveEditor.Features.ModManager.Models
             get
             {
                 if (string.IsNullOrEmpty(Version))
-                    return "#808080"; // Gray for no version info
+                    return "#808080";
                 return HasUpdate ? "#FF6B00" : "#4CAF50";
             }
         }

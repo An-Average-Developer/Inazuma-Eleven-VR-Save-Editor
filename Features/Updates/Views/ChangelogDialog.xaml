@@ -17,7 +17,6 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- Header -->
         <materialDesign:ColorZone Grid.Row="0"
                                  Mode="PrimaryMid"
                                  Padding="16"
@@ -38,7 +37,6 @@
             </StackPanel>
         </materialDesign:ColorZone>
 
-        <!-- Changelog Content -->
         <materialDesign:Card Grid.Row="1" Margin="20">
             <Grid>
                 <Grid.RowDefinitions>
@@ -66,7 +64,6 @@
             </Grid>
         </materialDesign:Card>
 
-        <!-- Buttons -->
         <materialDesign:Card Grid.Row="2" Margin="20,0,20,20">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -75,7 +72,6 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <!-- File info on the left -->
                 <StackPanel Grid.Column="0" VerticalAlignment="Center" Orientation="Horizontal">
                     <materialDesign:PackIcon Kind="Information"
                                            Width="16"
@@ -89,7 +85,6 @@
                              Opacity="0.7"/>
                 </StackPanel>
 
-                <!-- Action buttons on the right -->
                 <Button Grid.Column="1"
                       Content="Not Now"
                       Command="{Binding CancelCommand}"

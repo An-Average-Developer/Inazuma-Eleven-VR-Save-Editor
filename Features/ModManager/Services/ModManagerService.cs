@@ -13,9 +13,6 @@ using InazumaElevenVRSaveEditor.Features.ModManager.Models;
 
 namespace InazumaElevenVRSaveEditor.Features.ModManager.Services
 {
-
-
-
     internal class ModInfoJson
     {
         [JsonPropertyName("version")]
@@ -24,9 +21,6 @@ namespace InazumaElevenVRSaveEditor.Features.ModManager.Services
         [JsonPropertyName("mod_page")]
         public string? ModPage { get; set; }
     }
-
-
-
 
     internal class GameBananaModInfo
     {
@@ -42,9 +36,6 @@ namespace InazumaElevenVRSaveEditor.Features.ModManager.Services
         [JsonPropertyName("_aFiles")]
         public GameBananaFile[]? Files { get; set; }
     }
-
-
-
 
     public class GameBananaFile
     {
@@ -82,9 +73,6 @@ namespace InazumaElevenVRSaveEditor.Features.ModManager.Services
 
         public string ModsDirectory => _modsDirectory;
 
-
-
-
         public List<ModInfo> ScanForMods()
         {
             var mods = new List<ModInfo>();
@@ -96,16 +84,13 @@ namespace InazumaElevenVRSaveEditor.Features.ModManager.Services
 
             try
             {
-
                 var modFolders = Directory.GetDirectories(_modsDirectory);
 
                 foreach (var folder in modFolders)
                 {
                     var folderName = Path.GetFileName(folder);
 
-
                     var (priority, cleanName) = ExtractPriorityFromFolderName(folderName);
-
 
                     var allFilesInFolder = Directory.GetFiles(folder, "*.*", SearchOption.AllDirectories)
                         .Where(f => !f.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
@@ -114,10 +99,8 @@ namespace InazumaElevenVRSaveEditor.Features.ModManager.Services
                     if (allFilesInFolder.Count == 0)
                         continue;
 
-
                     var offFiles = allFilesInFolder.Where(f => f.EndsWith(".off", StringComparison.OrdinalIgnoreCase)).ToList();
                     var activeFiles = allFilesInFolder.Where(f => !f.EndsWith(".off", StringComparison.OrdinalIgnoreCase)).ToList();
-
 
                     long totalSize = 0;
                     foreach (var file in allFilesInFolder)
@@ -126,9 +109,7 @@ namespace InazumaElevenVRSaveEditor.Features.ModManager.Services
                         totalSize += fileInfo.Length;
                     }
 
-
                     bool isEnabled = offFiles.Count == 0 && activeFiles.Count > 0;
-
 
                     string version = string.Empty;
                     string modPageUrl = string.Empty;
@@ -178,9 +159,6 @@ namespace InazumaElevenVRSaveEditor.Features.ModManager.Services
                        .ToList();
         }
 
-
-
-
         public void EnableMod(ModInfo mod)
         {
             if (mod.IsEnabled)
@@ -191,28 +169,22 @@ namespace InazumaElevenVRSaveEditor.Features.ModManager.Services
                 throw new DirectoryNotFoundException($"Mod folder not found: {mod.FolderPath}");
             }
 
-
             var offFiles = Directory.GetFiles(mod.FolderPath, "*.off", SearchOption.AllDirectories)
                 .Where(f => !f.EndsWith(".json.off", StringComparison.OrdinalIgnoreCase))
                 .ToList();
 
             foreach (var file in offFiles)
             {
-
                 var newPath = file.Substring(0, file.Length - 4);
                 File.Move(file, newPath);
             }
 
             mod.IsEnabled = true;
 
-
             mod.Files = Directory.GetFiles(mod.FolderPath, "*.*", SearchOption.AllDirectories)
                 .Where(f => !f.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
                 .ToList();
         }
-
-
-
 
         public void DisableMod(ModInfo mod)
         {
@@ -223,7 +195,6 @@ namespace InazumaElevenVRSaveEditor.Features.ModManager.Services
             {
                 throw new DirectoryNotFoundException($"Mod folder not found: {mod.FolderPath}");
             }
-
 
             var allFiles = Directory.GetFiles(mod.FolderPath, "*.*", SearchOption.AllDirectories)
                 .Where(f => !f.EndsWith(".json", StringComparison.OrdinalIgnoreCase) &&
@@ -238,14 +209,10 @@ namespace InazumaElevenVRSaveEditor.Features.ModManager.Services
 
             mod.IsEnabled = false;
 
-
             mod.Files = Directory.GetFiles(mod.FolderPath, "*.*", SearchOption.AllDirectories)
                 .Where(f => !f.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
                 .ToList();
         }
-
-
-
 
         public void ToggleMod(ModInfo mod)
         {
@@ -259,9 +226,6 @@ namespace InazumaElevenVRSaveEditor.Features.ModManager.Services
             }
         }
 
-
-
-
         public void OpenModsFolder()
         {
             if (Directory.Exists(_modsDirectory))
@@ -274,17 +238,10 @@ namespace InazumaElevenVRSaveEditor.Features.ModManager.Services
             }
         }
 
-
-
-
         public bool ModsDirectoryExists()
         {
             return Directory.Exists(_modsDirectory);
         }
-
-
-
-
 
         public async Task CheckForUpdateAsync(ModInfo mod)
         {
@@ -295,7 +252,6 @@ namespace InazumaElevenVRSaveEditor.Features.ModManager.Services
 
             try
             {
-
                 var (itemType, itemId) = ExtractGameBananaItemDetails(mod.ModPageUrl);
                 if (string.IsNullOrEmpty(itemType) || string.IsNullOrEmpty(itemId))
                 {
@@ -303,19 +259,15 @@ namespace InazumaElevenVRSaveEditor.Features.ModManager.Services
                     return;
                 }
 
-
                 var apiItemType = itemType.TrimEnd('s');
                 if (!string.IsNullOrEmpty(apiItemType))
                 {
                     apiItemType = char.ToUpper(apiItemType[0]) + apiItemType.Substring(1);
                 }
 
-
-
                 var apiUrl = $"https://gamebanana.com/apiv11/{apiItemType}/{itemId}?_csvProperties=_sVersion";
 
                 var response = await _httpClient.GetAsync(apiUrl);
-
 
                 if (response.StatusCode == System.Net.HttpStatusCode.Forbidden)
                 {
@@ -337,7 +289,6 @@ namespace InazumaElevenVRSaveEditor.Features.ModManager.Services
                     var latestVersion = modInfo.Version;
                     mod.LatestVersion = latestVersion;
 
-
                     if (!string.IsNullOrEmpty(mod.Version) && !string.IsNullOrEmpty(latestVersion))
                     {
                         mod.HasUpdate = IsNewerVersion(mod.Version, latestVersion);
@@ -350,9 +301,6 @@ namespace InazumaElevenVRSaveEditor.Features.ModManager.Services
             }
         }
 
-
-
-
         public async Task CheckForUpdatesAsync(List<ModInfo> mods)
         {
             var tasks = new List<Task>();
@@ -363,25 +311,16 @@ namespace InazumaElevenVRSaveEditor.Features.ModManager.Services
             await Task.WhenAll(tasks);
         }
 
-
-
-
-
-
-
         private (string? itemType, string? itemId) ExtractGameBananaItemDetails(string url)
         {
             try
             {
-
-
                 if (!url.Contains("gamebanana.com/"))
                     return (null, null);
 
                 var parts = url.Split('/');
                 for (int i = 0; i < parts.Length; i++)
                 {
-
                     if (i + 1 < parts.Length && parts[i] == "gamebanana.com")
                     {
                         var itemType = parts[i + 1];
@@ -397,13 +336,6 @@ namespace InazumaElevenVRSaveEditor.Features.ModManager.Services
             return (null, null);
         }
 
-
-
-
-
-
-
-
         private bool IsNewerVersion(string local, string remote)
         {
             local = local ?? "0";
@@ -412,11 +344,9 @@ namespace InazumaElevenVRSaveEditor.Features.ModManager.Services
             var localNums = VersionToNumbers(local);
             var remoteNums = VersionToNumbers(remote);
 
-
             int maxLength = Math.Max(localNums.Count, remoteNums.Count);
             while (localNums.Count < maxLength) localNums.Add(0);
             while (remoteNums.Count < maxLength) remoteNums.Add(0);
-
 
             for (int i = 0; i < maxLength; i++)
             {
@@ -429,17 +359,9 @@ namespace InazumaElevenVRSaveEditor.Features.ModManager.Services
             return false;
         }
 
-
-
-
-
-
-
         private List<int> VersionToNumbers(string version)
         {
-
             var cleaned = Regex.Replace(version, @"[^0-9.]", "");
-
 
             var parts = cleaned.Split('.')
                 .Where(x => !string.IsNullOrEmpty(x) && int.TryParse(x, out _))
@@ -449,25 +371,16 @@ namespace InazumaElevenVRSaveEditor.Features.ModManager.Services
             return parts.Any() ? parts : new List<int> { 0 };
         }
 
-
-
-
-
-
-
         private void CopyDirectoryContents(string sourcePath, string destinationPath, bool excludeInfoJson = false)
         {
-
             if (!Directory.Exists(destinationPath))
             {
                 Directory.CreateDirectory(destinationPath);
             }
 
-
             foreach (var file in Directory.GetFiles(sourcePath))
             {
                 var fileName = Path.GetFileName(file);
-
 
                 if (excludeInfoJson && fileName.Equals("info.json", StringComparison.OrdinalIgnoreCase))
                 {
@@ -487,7 +400,6 @@ namespace InazumaElevenVRSaveEditor.Features.ModManager.Services
                 }
             }
 
-
             foreach (var directory in Directory.GetDirectories(sourcePath))
             {
                 var dirName = Path.GetFileName(directory);
@@ -496,9 +408,6 @@ namespace InazumaElevenVRSaveEditor.Features.ModManager.Services
             }
         }
 
-
-
-
         public async Task<GameBananaFile[]?> GetAvailableFilesAsync(ModInfo mod)
         {
             if (string.IsNullOrEmpty(mod.ModPageUrl))
@@ -506,13 +415,11 @@ namespace InazumaElevenVRSaveEditor.Features.ModManager.Services
                 return null;
             }
 
-
             var (itemType, itemId) = ExtractGameBananaItemDetails(mod.ModPageUrl);
             if (string.IsNullOrEmpty(itemType) || string.IsNullOrEmpty(itemId))
             {
                 return null;
             }
-
 
             var apiItemType = itemType.TrimEnd('s');
             if (!string.IsNullOrEmpty(apiItemType))
@@ -532,16 +439,12 @@ namespace InazumaElevenVRSaveEditor.Features.ModManager.Services
             return modInfo?.Files;
         }
 
-
-
-
         public async Task DownloadAndUpdateModAsync(ModInfo mod, GameBananaFile[] selectedFiles, string latestVersion, IProgress<(double percentage, string status)>? progress = null)
         {
             if (selectedFiles == null || selectedFiles.Length == 0)
             {
                 throw new InvalidOperationException("No files selected for download");
             }
-
 
             bool wasEnabled = mod.IsEnabled;
             if (wasEnabled)
@@ -556,7 +459,6 @@ namespace InazumaElevenVRSaveEditor.Features.ModManager.Services
 
             try
             {
-
                 int fileIndex = 0;
                 foreach (var fileToDownload in selectedFiles)
                 {
@@ -605,7 +507,6 @@ namespace InazumaElevenVRSaveEditor.Features.ModManager.Services
 
                 progress?.Report((70, "Download complete, extracting files..."));
 
-
                 foreach (var downloadedFile in downloadedFiles)
                 {
                     if (downloadedFile.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
@@ -614,31 +515,25 @@ namespace InazumaElevenVRSaveEditor.Features.ModManager.Services
                     }
                     else
                     {
-
                         var fileName = Path.GetFileName(downloadedFile);
                         File.Copy(downloadedFile, Path.Combine(tempExtractPath, fileName), true);
                     }
                 }
 
-
                 string sourcePath = tempExtractPath;
-
 
                 var topLevelItems = Directory.GetFileSystemEntries(tempExtractPath);
                 if (topLevelItems.Length == 1 && Directory.Exists(topLevelItems[0]))
                 {
-
                     sourcePath = topLevelItems[0];
                     Debug.WriteLine($"Found nested folder in zip: {Path.GetFileName(sourcePath)}");
                 }
 
                 progress?.Report((85, "Removing old files..."));
 
-
                 var filesToDelete = Directory.GetFiles(mod.FolderPath, "*.*", SearchOption.AllDirectories)
                     .Where(f => !f.EndsWith("info.json", StringComparison.OrdinalIgnoreCase))
                     .ToList();
-
 
                 var dirsToDelete = Directory.GetDirectories(mod.FolderPath, "*", SearchOption.AllDirectories)
                     .OrderByDescending(d => d.Length)
@@ -673,11 +568,9 @@ namespace InazumaElevenVRSaveEditor.Features.ModManager.Services
 
                 progress?.Report((90, "Installing new files..."));
 
-
                 CopyDirectoryContents(sourcePath, mod.FolderPath, excludeInfoJson: true);
 
                 progress?.Report((95, "Updating mod information..."));
-
 
                 var infoJsonPath = Path.Combine(mod.FolderPath, "info.json");
                 if (File.Exists(infoJsonPath))
@@ -692,7 +585,6 @@ namespace InazumaElevenVRSaveEditor.Features.ModManager.Services
                     }
                 }
 
-
                 if (wasEnabled)
                 {
                     progress?.Report((97, "Re-enabling mod..."));
@@ -700,7 +592,6 @@ namespace InazumaElevenVRSaveEditor.Features.ModManager.Services
                 }
                 else
                 {
-
                     progress?.Report((97, "Applying disabled state..."));
                     DisableMod(mod);
                 }
@@ -709,7 +600,6 @@ namespace InazumaElevenVRSaveEditor.Features.ModManager.Services
             }
             finally
             {
-
                 foreach (var downloadedFile in downloadedFiles)
                 {
                     if (File.Exists(downloadedFile))
@@ -739,13 +629,8 @@ namespace InazumaElevenVRSaveEditor.Features.ModManager.Services
             }
         }
 
-
-
-
-
         private (int priority, string cleanName) ExtractPriorityFromFolderName(string folderName)
         {
-
             var match = Regex.Match(folderName, @"^(\d+)\s*-\s*(.+)$");
             if (match.Success)
             {
@@ -758,9 +643,6 @@ namespace InazumaElevenVRSaveEditor.Features.ModManager.Services
             return (-1, folderName);
         }
 
-
-
-
         public void EnablePriorityMode(List<ModInfo> mods)
         {
             for (int i = 0; i < mods.Count; i++)
@@ -768,14 +650,10 @@ namespace InazumaElevenVRSaveEditor.Features.ModManager.Services
                 var mod = mods[i];
                 if (mod.Priority < 0)
                 {
-
                     UpdateModPriority(mod, i, mods);
                 }
             }
         }
-
-
-
 
         public void DisablePriorityMode(List<ModInfo> mods)
         {
@@ -783,7 +661,6 @@ namespace InazumaElevenVRSaveEditor.Features.ModManager.Services
             {
                 if (mod.Priority >= 0)
                 {
-
                     var currentFolderName = Path.GetFileName(mod.FolderPath);
                     var (_, cleanName) = ExtractPriorityFromFolderName(currentFolderName);
 
@@ -799,25 +676,18 @@ namespace InazumaElevenVRSaveEditor.Features.ModManager.Services
             }
         }
 
-
-
-
         public void UpdateModPriority(ModInfo mod, int newPriority, List<ModInfo> allMods)
         {
             var currentFolderName = Path.GetFileName(mod.FolderPath);
             var (_, cleanName) = ExtractPriorityFromFolderName(currentFolderName);
 
-
             var newFolderName = $"{newPriority + 1:D2} - {cleanName}";
             var newFolderPath = Path.Combine(_modsDirectory, newFolderName);
 
-
             if (mod.FolderPath != newFolderPath && Directory.Exists(mod.FolderPath))
             {
-
                 if (Directory.Exists(newFolderPath))
                 {
-
                     var tempFolderPath = Path.Combine(_modsDirectory, $"_temp_{Guid.NewGuid()}");
                     Directory.Move(mod.FolderPath, tempFolderPath);
                     mod.FolderPath = tempFolderPath;
@@ -830,12 +700,8 @@ namespace InazumaElevenVRSaveEditor.Features.ModManager.Services
             mod.Priority = newPriority;
         }
 
-
-
-
         public void ReorderMods(List<ModInfo> mods)
         {
-
             for (int i = 0; i < mods.Count; i++)
             {
                 if (mods[i].Priority >= 0)
@@ -844,9 +710,6 @@ namespace InazumaElevenVRSaveEditor.Features.ModManager.Services
                 }
             }
         }
-
-
-
 
         public bool IsPriorityModeEnabled(List<ModInfo> mods)
         {
