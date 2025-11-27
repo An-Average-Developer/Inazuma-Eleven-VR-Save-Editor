@@ -1,2 +1,2 @@
-1.0.0
-- First Version of Inazuma-Eleven-VR-Save-Editor
+1.0.1
+- Added custom EACLauncher to work better
