@@ -9,8 +9,9 @@
 ### 🎯 Cheat Menu (Memory Editor)
 - **Stars Editor** — Edit gachapon stars in real-time
 - **Freeze stars** for unlimited currency
-
 - **Kizuna Flowers Editor** — Edit flower currencies
+- **Add Spirits** — You can add spirits (New spirits every update)
+- **Add Beans** — You can add a lot of beans at the moment
 
 ### 🔧 Auto-Updates
 - Automatic update checking from GitHub
@@ -63,6 +64,6 @@
 
 ## 📝 Version
 
-Current Version: **1.0.1**
+Current Version: **1.0.2**
 
 Check for updates in the **Updates** tab!
