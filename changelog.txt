@@ -1,2 +1,4 @@
-1.0.1
-- Added custom EACLauncher to work better
+1.0.2
+- Improved UI 
+- Added a system to add Spirits
+- Added a system to add Beans
