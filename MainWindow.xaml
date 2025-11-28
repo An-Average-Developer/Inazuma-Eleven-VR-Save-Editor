@@ -35,6 +35,54 @@
                            From="0" To="1" Duration="0:0:0.4"/>
         </Storyboard>
 
+        <!-- Spirit Hover Animation -->
+        <Storyboard x:Key="SpiritHoverEnter">
+            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                           To="1.05" Duration="0:0:0.2">
+                <DoubleAnimation.EasingFunction>
+                    <CubicEase EasingMode="EaseOut"/>
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                           To="1.05" Duration="0:0:0.2">
+                <DoubleAnimation.EasingFunction>
+                    <CubicEase EasingMode="EaseOut"/>
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+        </Storyboard>
+
+        <!-- Spirit Hover Leave Animation -->
+        <Storyboard x:Key="SpiritHoverLeave">
+            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                           To="1" Duration="0:0:0.2">
+                <DoubleAnimation.EasingFunction>
+                    <CubicEase EasingMode="EaseOut"/>
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                           To="1" Duration="0:0:0.2">
+                <DoubleAnimation.EasingFunction>
+                    <CubicEase EasingMode="EaseOut"/>
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+        </Storyboard>
+
+        <!-- Spirit Click Animation -->
+        <Storyboard x:Key="SpiritClickAnimation">
+            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)">
+                <EasingDoubleKeyFrame KeyTime="0:0:0" Value="1.05"/>
+                <EasingDoubleKeyFrame KeyTime="0:0:0.1" Value="0.9"/>
+                <EasingDoubleKeyFrame KeyTime="0:0:0.25" Value="1.1"/>
+                <EasingDoubleKeyFrame KeyTime="0:0:0.35" Value="1.05"/>
+            </DoubleAnimationUsingKeyFrames>
+            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)">
+                <EasingDoubleKeyFrame KeyTime="0:0:0" Value="1.05"/>
+                <EasingDoubleKeyFrame KeyTime="0:0:0.1" Value="0.9"/>
+                <EasingDoubleKeyFrame KeyTime="0:0:0.25" Value="1.1"/>
+                <EasingDoubleKeyFrame KeyTime="0:0:0.35" Value="1.05"/>
+            </DoubleAnimationUsingKeyFrames>
+        </Storyboard>
+
         <!-- Card Style -->
         <Style x:Key="CardStyle" TargetType="materialDesign:Card">
             <Setter Property="Margin" Value="10"/>
@@ -104,7 +152,7 @@
                                                    VerticalAlignment="Center"
                                                    Margin="0,0,10,0"/>
                             <StackPanel VerticalAlignment="Center">
-                                <TextBlock Text="Inazuma Eleven VR"
+                                <TextBlock Text="INAZUMA ELVEN VR - SAVE EDITOR"
                                          Style="{StaticResource MaterialDesignHeadline5TextBlock}"/>
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="Save Editor &amp; Cheat Menu"
@@ -201,36 +249,38 @@
                                 <!-- Star Editor Card -->
                                 <materialDesign:Card Style="{StaticResource CardStyle}"
                                                    Margin="0"
-                                                   Padding="12,8,12,8"
+                                                   Padding="16,12,16,12"
+                                                   Width="180"
+                                                   MinHeight="170"
                                                    HorizontalAlignment="Left"
                                                    VerticalAlignment="Top"
                                                    Cursor="Hand"
                                                    MouseLeftButtonUp="TicketEditorCard_Click">
                                     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                                        <materialDesign:PackIcon Kind="Star"
-                                                               Width="32"
-                                                               Height="32"
-                                                               HorizontalAlignment="Center"
-                                                               Margin="0,0,0,4"
-                                                               Foreground="{DynamicResource SecondaryHueMidBrush}"/>
+                                        <Image Source="/Resources/Cards/Stars.png"
+                                               Width="48"
+                                               Height="48"
+                                               HorizontalAlignment="Center"
+                                               Margin="0,0,0,8"
+                                               RenderOptions.BitmapScalingMode="HighQuality"/>
 
                                         <TextBlock Text="Stars"
                                                  FontSize="15"
                                                  FontWeight="SemiBold"
                                                  HorizontalAlignment="Center"
-                                                 Margin="0,0,0,2"/>
+                                                 Margin="0,0,0,4"/>
 
                                         <TextBlock Text="Edit gachapon stars"
                                                  FontSize="11"
                                                  Opacity="0.6"
                                                  TextWrapping="Wrap"
                                                  TextAlignment="Center"
-                                                 Margin="4,0,4,4"/>
+                                                 Margin="8,0,8,8"/>
 
                                         <Button Command="{Binding MemoryEditor.SelectTicketEditorCommand}"
                                               Style="{StaticResource MaterialDesignRaisedButton}"
-                                              Height="26"
-                                              Padding="10,0"
+                                              Height="28"
+                                              Padding="12,0"
                                               Margin="0,0,0,0"
                                               Background="{DynamicResource SecondaryHueMidBrush}"
                                               Foreground="Black">
@@ -252,36 +302,144 @@
                                 <!-- Ina Flowers Editor Card -->
                                 <materialDesign:Card Style="{StaticResource CardStyle}"
                                                    Margin="10,0,0,0"
-                                                   Padding="12,8,12,8"
+                                                   Padding="16,12,16,12"
+                                                   Width="180"
+                                                   MinHeight="170"
                                                    HorizontalAlignment="Left"
                                                    VerticalAlignment="Top"
                                                    Cursor="Hand"
                                                    MouseLeftButtonUp="InaFlowersEditorCard_Click">
                                     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                                        <materialDesign:PackIcon Kind="Flower"
-                                                               Width="32"
-                                                               Height="32"
-                                                               HorizontalAlignment="Center"
-                                                               Margin="0,0,0,4"
-                                                               Foreground="{DynamicResource SecondaryHueMidBrush}"/>
+                                        <Image Source="/Resources/Cards/Inazuma Flower.png"
+                                               Width="48"
+                                               Height="48"
+                                               HorizontalAlignment="Center"
+                                               Margin="0,0,0,8"
+                                               RenderOptions.BitmapScalingMode="HighQuality"/>
 
                                         <TextBlock Text="Kizuna Flowers"
                                                  FontSize="15"
                                                  FontWeight="SemiBold"
                                                  HorizontalAlignment="Center"
-                                                 Margin="0,0,0,2"/>
+                                                 Margin="0,0,0,4"/>
 
                                         <TextBlock Text="Edit Kizuna Flowers"
                                                  FontSize="11"
                                                  Opacity="0.6"
                                                  TextWrapping="Wrap"
                                                  TextAlignment="Center"
-                                                 Margin="4,0,4,4"/>
+                                                 Margin="8,0,8,8"/>
 
                                         <Button Command="{Binding MemoryEditor.SelectInaFlowersEditorCommand}"
                                               Style="{StaticResource MaterialDesignRaisedButton}"
-                                              Height="26"
-                                              Padding="10,0"
+                                              Height="28"
+                                              Padding="12,0"
+                                              Margin="0,0,0,0"
+                                              Background="{DynamicResource SecondaryHueMidBrush}"
+                                              Foreground="Black">
+                                            <StackPanel Orientation="Horizontal">
+                                                <materialDesign:PackIcon Kind="ChevronRight"
+                                                                       Width="14"
+                                                                       Height="14"
+                                                                       VerticalAlignment="Center"
+                                                                       Margin="0,0,4,0"/>
+                                                <TextBlock Text="Open"
+                                                         FontSize="11"
+                                                         VerticalAlignment="Center"
+                                                         FontWeight="Medium"/>
+                                            </StackPanel>
+                                        </Button>
+                                    </StackPanel>
+                                </materialDesign:Card>
+
+                                <!-- Spirits Editor Card -->
+                                <materialDesign:Card Style="{StaticResource CardStyle}"
+                                                   Margin="10,0,0,0"
+                                                   Padding="16,12,16,12"
+                                                   Width="180"
+                                                   MinHeight="170"
+                                                   HorizontalAlignment="Left"
+                                                   VerticalAlignment="Top"
+                                                   Cursor="Hand"
+                                                   MouseLeftButtonUp="SpiritsEditorCard_Click">
+                                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <Image Source="/Resources/Cards/Spirits.png"
+                                               Width="48"
+                                               Height="48"
+                                               HorizontalAlignment="Center"
+                                               Margin="0,0,0,8"
+                                               RenderOptions.BitmapScalingMode="HighQuality"/>
+
+                                        <TextBlock Text="Spirits"
+                                                 FontSize="15"
+                                                 FontWeight="SemiBold"
+                                                 HorizontalAlignment="Center"
+                                                 Margin="0,0,0,4"/>
+
+                                        <TextBlock Text="Edit Spirits"
+                                                 FontSize="11"
+                                                 Opacity="0.6"
+                                                 TextWrapping="Wrap"
+                                                 TextAlignment="Center"
+                                                 Margin="8,0,8,8"/>
+
+                                        <Button Command="{Binding MemoryEditor.SelectSpiritsEditorCommand}"
+                                              Style="{StaticResource MaterialDesignRaisedButton}"
+                                              Height="28"
+                                              Padding="12,0"
+                                              Margin="0,0,0,0"
+                                              Background="{DynamicResource SecondaryHueMidBrush}"
+                                              Foreground="Black">
+                                            <StackPanel Orientation="Horizontal">
+                                                <materialDesign:PackIcon Kind="ChevronRight"
+                                                                       Width="14"
+                                                                       Height="14"
+                                                                       VerticalAlignment="Center"
+                                                                       Margin="0,0,4,0"/>
+                                                <TextBlock Text="Open"
+                                                         FontSize="11"
+                                                         VerticalAlignment="Center"
+                                                         FontWeight="Medium"/>
+                                            </StackPanel>
+                                        </Button>
+                                    </StackPanel>
+                                </materialDesign:Card>
+
+                                <!-- Beans Editor Card -->
+                                <materialDesign:Card Style="{StaticResource CardStyle}"
+                                                   Margin="10,0,0,0"
+                                                   Padding="16,12,16,12"
+                                                   Width="180"
+                                                   MinHeight="170"
+                                                   HorizontalAlignment="Left"
+                                                   VerticalAlignment="Top"
+                                                   Cursor="Hand"
+                                                   MouseLeftButtonUp="BeansEditorCard_Click">
+                                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <Image Source="/Resources/Cards/Kicking Power.png"
+                                               Width="48"
+                                               Height="48"
+                                               HorizontalAlignment="Center"
+                                               Margin="0,0,0,8"
+                                               RenderOptions.BitmapScalingMode="HighQuality"/>
+
+                                        <TextBlock Text="Beans"
+                                                 FontSize="15"
+                                                 FontWeight="SemiBold"
+                                                 HorizontalAlignment="Center"
+                                                 Margin="0,0,0,4"/>
+
+                                        <TextBlock Text="Edit Beans"
+                                                 FontSize="11"
+                                                 Opacity="0.6"
+                                                 TextWrapping="Wrap"
+                                                 TextAlignment="Center"
+                                                 Margin="8,0,8,8"/>
+
+                                        <Button Command="{Binding MemoryEditor.SelectBeansEditorCommand}"
+                                              Style="{StaticResource MaterialDesignRaisedButton}"
+                                              Height="28"
+                                              Padding="12,0"
                                               Margin="0,0,0,0"
                                               Background="{DynamicResource SecondaryHueMidBrush}"
                                               Foreground="Black">
@@ -350,13 +508,13 @@
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
 
-                                        <materialDesign:PackIcon Grid.Column="0"
-                                                               Kind="Star"
-                                                               Width="32"
-                                                               Height="32"
-                                                               VerticalAlignment="Center"
-                                                               Margin="0,0,15,0"
-                                                               Foreground="{DynamicResource PrimaryHueMidBrush}"/>
+                                        <Image Grid.Column="0"
+                                               Source="/Resources/Cards/Stars.png"
+                                               Width="32"
+                                               Height="32"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,15,0"
+                                               RenderOptions.BitmapScalingMode="HighQuality"/>
 
                                         <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                             <TextBlock Text="Current Status"
@@ -488,35 +646,38 @@
                                            Style="{StaticResource MaterialDesignListBox}">
                                         <ListBox.ItemTemplate>
                                             <DataTemplate>
-                                                <Grid Margin="5">
-                                                    <Grid.RowDefinitions>
-                                                        <RowDefinition Height="Auto"/>
-                                                        <RowDefinition Height="Auto"/>
-                                                    </Grid.RowDefinitions>
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="*"/>
-                                                        <ColumnDefinition Width="Auto"/>
-                                                    </Grid.ColumnDefinitions>
+                                                <StackPanel Orientation="Horizontal"
+                                                           Height="60"
+                                                           Margin="5">
+                                                    <!-- Star Image -->
+                                                    <Image Source="/Resources/Cards/Stars.png"
+                                                           Width="60"
+                                                           Height="60"
+                                                           Stretch="Uniform"
+                                                           VerticalAlignment="Center"
+                                                           RenderOptions.BitmapScalingMode="HighQuality"/>
 
-                                                    <TextBlock Grid.Row="0" Grid.Column="0"
-                                                             Text="{Binding Name}"
-                                                             FontWeight="Medium"
-                                                             FontSize="14"/>
-
-                                                    <TextBlock Grid.Row="0" Grid.Column="1"
-                                                             Text="{Binding CurrentValue}"
-                                                             FontWeight="Bold"
-                                                             FontSize="16"
-                                                             Foreground="{DynamicResource PrimaryHueMidBrush}"/>
-
-                                                    <TextBlock Grid.Row="1" Grid.Column="0"
-                                                             Grid.ColumnSpan="2"
-                                                             Text="{Binding Description}"
-                                                             Opacity="0.7"
-                                                             FontSize="11"
-                                                             TextWrapping="Wrap"
-                                                             Margin="0,5,0,0"/>
-                                                </Grid>
+                                                    <!-- Quantity Badge -->
+                                                    <Border Background="#E91E63"
+                                                           CornerRadius="12"
+                                                           Padding="8,4"
+                                                           VerticalAlignment="Center"
+                                                           Margin="10,0,0,0">
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <materialDesign:PackIcon Kind="Counter"
+                                                                                   Width="16"
+                                                                                   Height="16"
+                                                                                   Foreground="White"
+                                                                                   VerticalAlignment="Center"
+                                                                                   Margin="0,0,4,0"/>
+                                                            <TextBlock Text="{Binding CurrentValue}"
+                                                                     FontSize="16"
+                                                                     FontWeight="Bold"
+                                                                     Foreground="White"
+                                                                     VerticalAlignment="Center"/>
+                                                        </StackPanel>
+                                                    </Border>
+                                                </StackPanel>
                                             </DataTemplate>
                                         </ListBox.ItemTemplate>
                                     </ListBox>
@@ -524,7 +685,7 @@
                                     <Button Grid.Row="2"
                                           Command="{Binding MemoryEditor.RefreshValuesCommand}"
                                           Style="{StaticResource MaterialDesignOutlinedButton}"
-                                          Margin="0,0,5,0"
+                                          Margin="0,15,5,0"
                                           Height="40">
                                         <StackPanel Orientation="Horizontal">
                                             <materialDesign:PackIcon Kind="Refresh"
@@ -539,71 +700,52 @@
                             <!-- Right Panel - Editor -->
                             <materialDesign:Card Grid.Column="1" Style="{StaticResource CardStyle}" Margin="10,-10,0,0">
                                 <Grid>
-                                    <StackPanel Visibility="{Binding MemoryEditor.SelectedValue, Converter={StaticResource NullToVisibilityConverter}}">
-                                        <!-- Description -->
-                                        <TextBlock Text="Description:"
-                                                 Style="{StaticResource MaterialDesignBody2TextBlock}"
-                                                 Opacity="0.7"
-                                                 Margin="0,0,0,5"/>
-                                        <TextBlock Text="{Binding MemoryEditor.SelectedValue.Description}"
-                                                 Style="{StaticResource MaterialDesignBody1TextBlock}"
-                                                 TextWrapping="Wrap"
-                                                 Margin="0,0,0,20"/>
+                                    <Border Background="White"
+                                           CornerRadius="8"
+                                           Padding="20"
+                                           Visibility="{Binding MemoryEditor.SelectedValue, Converter={StaticResource NullToVisibilityConverter}}"
+                                           VerticalAlignment="Center">
+                                        <StackPanel>
+                                            <!-- New Value Label -->
+                                            <Border Background="White"
+                                                   CornerRadius="8"
+                                                   Padding="8,4"
+                                                   HorizontalAlignment="Left"
+                                                   Margin="0,0,0,10">
+                                                <TextBlock Text="New Value"
+                                                         FontSize="14"
+                                                         FontWeight="SemiBold"
+                                                         Foreground="Gray"/>
+                                            </Border>
 
-                                        <!-- Current Value -->
-                                        <Border Background="{DynamicResource MaterialDesignDivider}"
-                                              CornerRadius="8"
-                                              Padding="15"
-                                              Margin="0,0,0,20">
-                                            <Grid>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="*"/>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                </Grid.ColumnDefinitions>
+                                            <!-- New Value Input -->
+                                            <TextBox Text="{Binding MemoryEditor.SelectedValue.NewValue, UpdateSourceTrigger=PropertyChanged}"
+                                                   Background="White"
+                                                   BorderBrush="Gray"
+                                                   BorderThickness="2"
+                                                   Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                                   FontSize="24"
+                                                   Margin="0,0,0,30"
+                                                   Padding="15"/>
 
-                                                <StackPanel Grid.Column="0">
-                                                    <TextBlock Text="Current Value"
-                                                             Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                                             Opacity="0.7"/>
-                                                    <TextBlock Text="{Binding MemoryEditor.SelectedValue.CurrentValue}"
-                                                             FontSize="32"
-                                                             FontWeight="Bold"
-                                                             Foreground="{DynamicResource PrimaryHueMidBrush}"/>
+                                            <!-- Apply Button -->
+                                            <Button Command="{Binding MemoryEditor.ApplyValueCommand}"
+                                                  Style="{StaticResource MaterialDesignRaisedButton}"
+                                                  Height="50">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <materialDesign:PackIcon Kind="Check"
+                                                                           Width="24"
+                                                                           Height="24"
+                                                                           VerticalAlignment="Center"
+                                                                           Margin="0,0,10,0"/>
+                                                    <TextBlock Text="Apply New Value"
+                                                             VerticalAlignment="Center"
+                                                             FontSize="16"
+                                                             FontWeight="Medium"/>
                                                 </StackPanel>
-
-                                                <materialDesign:PackIcon Grid.Column="1"
-                                                                       Kind="Eye"
-                                                                       Width="48"
-                                                                       Height="48"
-                                                                       Opacity="0.3"
-                                                                       VerticalAlignment="Center"/>
-                                            </Grid>
-                                        </Border>
-
-                                        <!-- New Value Input -->
-                                        <TextBox Text="{Binding MemoryEditor.SelectedValue.NewValue, UpdateSourceTrigger=PropertyChanged}"
-                                               materialDesign:HintAssist.Hint="New Value"
-                                               Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                                               FontSize="20"
-                                               Margin="0,0,0,20"/>
-
-                                        <!-- Apply Button -->
-                                        <Button Command="{Binding MemoryEditor.ApplyValueCommand}"
-                                              Style="{StaticResource MaterialDesignRaisedButton}"
-                                              Height="50">
-                                            <StackPanel Orientation="Horizontal">
-                                                <materialDesign:PackIcon Kind="Check"
-                                                                       Width="24"
-                                                                       Height="24"
-                                                                       VerticalAlignment="Center"
-                                                                       Margin="0,0,10,0"/>
-                                                <TextBlock Text="Apply New Value"
-                                                         VerticalAlignment="Center"
-                                                         FontSize="16"
-                                                         FontWeight="Medium"/>
-                                            </StackPanel>
-                                        </Button>
-                                    </StackPanel>
+                                            </Button>
+                                        </StackPanel>
+                                    </Border>
 
                                     <!-- No Selection Placeholder -->
                                     <StackPanel Visibility="{Binding MemoryEditor.SelectedValue, Converter={StaticResource InverseNullToVisibilityConverter}}"
@@ -655,11 +797,11 @@
                                         </StackPanel>
                                     </Button>
 
-                                    <TextBlock Text="Inazuma Flowers"
+                                    <TextBlock Text="Kizuna Flowers"
                                              Style="{StaticResource MaterialDesignHeadline6TextBlock}"
                                              Margin="0,0,0,15"/>
 
-                                    <TextBlock Text="Edit Ina Flowers values in real-time. Make sure the game is closed before using these tools."
+                                    <TextBlock Text="Edit Flowers (OBJECTS) values from the Kizuna mode in real-time. Make sure the game is closed before using these tools."
                                              Style="{StaticResource MaterialDesignBody2TextBlock}"
                                              Opacity="0.7"
                                              TextWrapping="Wrap"
@@ -679,13 +821,13 @@
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
 
-                                        <materialDesign:PackIcon Grid.Column="0"
-                                                               Kind="Flower"
-                                                               Width="32"
-                                                               Height="32"
-                                                               VerticalAlignment="Center"
-                                                               Margin="0,0,15,0"
-                                                               Foreground="{DynamicResource PrimaryHueMidBrush}"/>
+                                        <Image Grid.Column="0"
+                                               Source="/Resources/Cards/Inazuma Flower.png"
+                                               Width="32"
+                                               Height="32"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,15,0"
+                                               RenderOptions.BitmapScalingMode="HighQuality"/>
 
                                         <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                             <TextBlock Text="Current Status"
@@ -775,35 +917,50 @@
                                            Style="{StaticResource MaterialDesignListBox}">
                                         <ListBox.ItemTemplate>
                                             <DataTemplate>
-                                                <Grid Margin="5">
-                                                    <Grid.RowDefinitions>
-                                                        <RowDefinition Height="Auto"/>
-                                                        <RowDefinition Height="Auto"/>
-                                                    </Grid.RowDefinitions>
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="*"/>
-                                                        <ColumnDefinition Width="Auto"/>
-                                                    </Grid.ColumnDefinitions>
+                                                <StackPanel Orientation="Horizontal"
+                                                           Height="60"
+                                                           Margin="5">
+                                                    <!-- Flower Image -->
+                                                    <Image Width="60"
+                                                           Height="60"
+                                                           Stretch="Uniform"
+                                                           VerticalAlignment="Center"
+                                                           RenderOptions.BitmapScalingMode="HighQuality">
+                                                        <Image.Style>
+                                                            <Style TargetType="Image">
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding Name}" Value="Inazuma Flowers">
+                                                                        <Setter Property="Source" Value="/Resources/Cards/Inazuma Flower.png"/>
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding Name}" Value="God Hand">
+                                                                        <Setter Property="Source" Value="/Resources/Cards/God Hand Flower.png"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </Image.Style>
+                                                    </Image>
 
-                                                    <TextBlock Grid.Row="0" Grid.Column="0"
-                                                             Text="{Binding Name}"
-                                                             FontWeight="Medium"
-                                                             FontSize="14"/>
-
-                                                    <TextBlock Grid.Row="0" Grid.Column="1"
-                                                             Text="{Binding CurrentValue}"
-                                                             FontWeight="Bold"
-                                                             FontSize="16"
-                                                             Foreground="{DynamicResource PrimaryHueMidBrush}"/>
-
-                                                    <TextBlock Grid.Row="1" Grid.Column="0"
-                                                             Grid.ColumnSpan="2"
-                                                             Text="{Binding Description}"
-                                                             Opacity="0.7"
-                                                             FontSize="11"
-                                                             TextWrapping="Wrap"
-                                                             Margin="0,5,0,0"/>
-                                                </Grid>
+                                                    <!-- Quantity Badge -->
+                                                    <Border Background="#E91E63"
+                                                           CornerRadius="12"
+                                                           Padding="8,4"
+                                                           VerticalAlignment="Center"
+                                                           Margin="10,0,0,0">
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <materialDesign:PackIcon Kind="Counter"
+                                                                                   Width="16"
+                                                                                   Height="16"
+                                                                                   Foreground="White"
+                                                                                   VerticalAlignment="Center"
+                                                                                   Margin="0,0,4,0"/>
+                                                            <TextBlock Text="{Binding CurrentValue}"
+                                                                     FontSize="16"
+                                                                     FontWeight="Bold"
+                                                                     Foreground="White"
+                                                                     VerticalAlignment="Center"/>
+                                                        </StackPanel>
+                                                    </Border>
+                                                </StackPanel>
                                             </DataTemplate>
                                         </ListBox.ItemTemplate>
                                     </ListBox>
@@ -811,7 +968,7 @@
                                     <Button Grid.Row="2"
                                           Command="{Binding MemoryEditor.RefreshValuesCommand}"
                                           Style="{StaticResource MaterialDesignOutlinedButton}"
-                                          Margin="0,0,5,0"
+                                          Margin="0,15,5,0"
                                           Height="40">
                                         <StackPanel Orientation="Horizontal">
                                             <materialDesign:PackIcon Kind="Refresh"
@@ -826,71 +983,52 @@
                             <!-- Right Panel - Editor -->
                             <materialDesign:Card Grid.Column="1" Style="{StaticResource CardStyle}" Margin="10,-10,0,0">
                                 <Grid>
-                                    <StackPanel Visibility="{Binding MemoryEditor.SelectedValue, Converter={StaticResource NullToVisibilityConverter}}">
-                                        <!-- Description -->
-                                        <TextBlock Text="Description:"
-                                                 Style="{StaticResource MaterialDesignBody2TextBlock}"
-                                                 Opacity="0.7"
-                                                 Margin="0,0,0,5"/>
-                                        <TextBlock Text="{Binding MemoryEditor.SelectedValue.Description}"
-                                                 Style="{StaticResource MaterialDesignBody1TextBlock}"
-                                                 TextWrapping="Wrap"
-                                                 Margin="0,0,0,20"/>
+                                    <Border Background="White"
+                                           CornerRadius="8"
+                                           Padding="20"
+                                           Visibility="{Binding MemoryEditor.SelectedValue, Converter={StaticResource NullToVisibilityConverter}}"
+                                           VerticalAlignment="Center">
+                                        <StackPanel>
+                                            <!-- New Value Label -->
+                                            <Border Background="White"
+                                                   CornerRadius="8"
+                                                   Padding="8,4"
+                                                   HorizontalAlignment="Left"
+                                                   Margin="0,0,0,10">
+                                                <TextBlock Text="New Value"
+                                                         FontSize="14"
+                                                         FontWeight="SemiBold"
+                                                         Foreground="Gray"/>
+                                            </Border>
 
-                                        <!-- Current Value -->
-                                        <Border Background="{DynamicResource MaterialDesignDivider}"
-                                              CornerRadius="8"
-                                              Padding="15"
-                                              Margin="0,0,0,20">
-                                            <Grid>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="*"/>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                </Grid.ColumnDefinitions>
+                                            <!-- New Value Input -->
+                                            <TextBox Text="{Binding MemoryEditor.SelectedValue.NewValue, UpdateSourceTrigger=PropertyChanged}"
+                                                   Background="White"
+                                                   BorderBrush="Gray"
+                                                   BorderThickness="2"
+                                                   Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                                   FontSize="24"
+                                                   Margin="0,0,0,30"
+                                                   Padding="15"/>
 
-                                                <StackPanel Grid.Column="0">
-                                                    <TextBlock Text="Current Value"
-                                                             Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                                             Opacity="0.7"/>
-                                                    <TextBlock Text="{Binding MemoryEditor.SelectedValue.CurrentValue}"
-                                                             FontSize="32"
-                                                             FontWeight="Bold"
-                                                             Foreground="{DynamicResource PrimaryHueMidBrush}"/>
+                                            <!-- Apply Button -->
+                                            <Button Command="{Binding MemoryEditor.ApplyValueCommand}"
+                                                  Style="{StaticResource MaterialDesignRaisedButton}"
+                                                  Height="50">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <materialDesign:PackIcon Kind="Check"
+                                                                           Width="24"
+                                                                           Height="24"
+                                                                           VerticalAlignment="Center"
+                                                                           Margin="0,0,10,0"/>
+                                                    <TextBlock Text="Apply New Value"
+                                                             VerticalAlignment="Center"
+                                                             FontSize="16"
+                                                             FontWeight="Medium"/>
                                                 </StackPanel>
-
-                                                <materialDesign:PackIcon Grid.Column="1"
-                                                                       Kind="Eye"
-                                                                       Width="48"
-                                                                       Height="48"
-                                                                       Opacity="0.3"
-                                                                       VerticalAlignment="Center"/>
-                                            </Grid>
-                                        </Border>
-
-                                        <!-- New Value Input -->
-                                        <TextBox Text="{Binding MemoryEditor.SelectedValue.NewValue, UpdateSourceTrigger=PropertyChanged}"
-                                               materialDesign:HintAssist.Hint="New Value"
-                                               Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                                               FontSize="20"
-                                               Margin="0,0,0,20"/>
-
-                                        <!-- Apply Button -->
-                                        <Button Command="{Binding MemoryEditor.ApplyValueCommand}"
-                                              Style="{StaticResource MaterialDesignRaisedButton}"
-                                              Height="50">
-                                            <StackPanel Orientation="Horizontal">
-                                                <materialDesign:PackIcon Kind="Check"
-                                                                       Width="24"
-                                                                       Height="24"
-                                                                       VerticalAlignment="Center"
-                                                                       Margin="0,0,10,0"/>
-                                                <TextBlock Text="Apply New Value"
-                                                         VerticalAlignment="Center"
-                                                         FontSize="16"
-                                                         FontWeight="Medium"/>
-                                            </StackPanel>
-                                        </Button>
-                                    </StackPanel>
+                                            </Button>
+                                        </StackPanel>
+                                    </Border>
 
                                     <!-- No Selection Placeholder -->
                                     <StackPanel Visibility="{Binding MemoryEditor.SelectedValue, Converter={StaticResource InverseNullToVisibilityConverter}}"
@@ -915,6 +1053,441 @@
                                 </Grid>
                             </materialDesign:Card>
                         </Grid>
+                            </StackPanel>
+                        </materialDesign:Card>
+                        </Grid>
+
+                        <!-- Spirits Editor View -->
+                        <Grid Visibility="{Binding MemoryEditor.SelectedTool, Converter={StaticResource EqualToVisibilityConverter}, ConverterParameter=spirits}">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- Header -->
+                            <materialDesign:Card Grid.Row="0" Style="{StaticResource CardStyle}">
+                                <StackPanel>
+                                    <Button Command="{Binding MemoryEditor.BackToMenuCommand}"
+                                          Style="{StaticResource MaterialDesignOutlinedButton}"
+                                          HorizontalAlignment="Left"
+                                          Margin="0,0,0,15"
+                                          Height="35">
+                                        <StackPanel Orientation="Horizontal">
+                                            <materialDesign:PackIcon Kind="ChevronLeft"
+                                                                   VerticalAlignment="Center"
+                                                                   Margin="0,0,8,0"/>
+                                            <TextBlock Text="Back to Menu" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Button>
+
+                                    <TextBlock Text="Spirits"
+                                             Style="{StaticResource MaterialDesignHeadline6TextBlock}"
+                                             Margin="0,0,0,15"/>
+
+                                    <TextBlock Text="Click on a spirit to add 2 to its quantity. Make sure the game is closed before using these tools."
+                                             Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                             Opacity="0.7"
+                                             TextWrapping="Wrap"
+                                             Margin="0,0,0,10"/>
+                                </StackPanel>
+                            </materialDesign:Card>
+
+                            <materialDesign:Card Grid.Row="1" Style="{StaticResource CardStyle}" Margin="10">
+                            <StackPanel>
+                                <Border Background="{DynamicResource MaterialDesignDivider}"
+                                       CornerRadius="8"
+                                       Margin="0,0,0,20">
+                                    <Grid Margin="15">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <Image Grid.Column="0"
+                                               Source="/Resources/Cards/Spirits.png"
+                                               Width="32"
+                                               Height="32"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,15,0"
+                                               RenderOptions.BitmapScalingMode="HighQuality"/>
+
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                            <TextBlock Text="Current Status"
+                                                     FontSize="12"
+                                                     Opacity="0.7"/>
+                                            <TextBlock Text="{Binding MemoryEditor.StatusMessage}"
+                                                     FontSize="24"
+                                                     FontWeight="Bold"
+                                                     Margin="0,5,0,0"/>
+                                            <TextBlock Text="Click attach to connect to the game"
+                                                     FontSize="11"
+                                                     Opacity="0.6"
+                                                     Margin="0,5,0,0"
+                                                     FontStyle="Italic"/>
+                                        </StackPanel>
+
+                                        <Button Grid.Column="2"
+                                              Command="{Binding MemoryEditor.AttachToProcessCommand}"
+                                              Style="{StaticResource MaterialDesignRaisedButton}"
+                                              Height="45"
+                                              VerticalAlignment="Center"
+                                              Background="#4CAF50">
+                                            <StackPanel Orientation="Horizontal">
+                                                <materialDesign:PackIcon Kind="Link"
+                                                                       Width="20"
+                                                                       Height="20"
+                                                                       VerticalAlignment="Center"
+                                                                       Margin="0,0,8,0"/>
+                                                <TextBlock Text="Attach to Game"
+                                                         VerticalAlignment="Center"
+                                                         FontWeight="Medium"/>
+                                            </StackPanel>
+                                        </Button>
+
+                                        <Button Grid.Column="2"
+                                              Command="{Binding MemoryEditor.DetachFromProcessCommand}"
+                                              Style="{StaticResource MaterialDesignRaisedButton}"
+                                              Height="45"
+                                              VerticalAlignment="Center"
+                                              Background="#D32F2F"
+                                              Visibility="{Binding MemoryEditor.IsAttached, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                            <StackPanel Orientation="Horizontal">
+                                                <materialDesign:PackIcon Kind="LinkOff"
+                                                                       Width="20"
+                                                                       Height="20"
+                                                                       VerticalAlignment="Center"
+                                                                       Margin="0,0,8,0"/>
+                                                <TextBlock Text="Detach"
+                                                         VerticalAlignment="Center"
+                                                         FontWeight="Medium"/>
+                                            </StackPanel>
+                                        </Button>
+                                    </Grid>
+                                </Border>
+
+                                <!-- Spirits List -->
+                                <StackPanel Margin="0,20,0,0">
+                                    <TextBlock Text="Available Spirits"
+                                             Style="{StaticResource MaterialDesignHeadline6TextBlock}"
+                                             Margin="0,0,0,15"/>
+
+                                    <CheckBox IsChecked="{Binding MemoryEditor.AutoRefresh}"
+                                            IsEnabled="{Binding MemoryEditor.IsAttached}"
+                                            Content="Auto-refresh (1s)"
+                                            Style="{StaticResource MaterialDesignCheckBox}"
+                                            Margin="0,0,0,15"/>
+
+                                    <ItemsControl ItemsSource="{Binding MemoryEditor.SpiritsCollection}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <UniformGrid Columns="2"/>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid Margin="0,0,10,10"
+                                                      Cursor="Hand"
+                                                      RenderTransformOrigin="0.5,0.5"
+                                                      HorizontalAlignment="Left"
+                                                      Width="300"
+                                                      MouseEnter="SpiritCard_MouseEnter"
+                                                      MouseLeave="SpiritCard_MouseLeave"
+                                                      MouseLeftButtonDown="SpiritCard_MouseLeftButtonDown">
+                                                    <Grid.RenderTransform>
+                                                        <ScaleTransform/>
+                                                    </Grid.RenderTransform>
+                                                    <Grid.InputBindings>
+                                                        <MouseBinding MouseAction="LeftClick"
+                                                                    Command="{Binding DataContext.MemoryEditor.AddSpiritsCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                    CommandParameter="{Binding}"/>
+                                                    </Grid.InputBindings>
+
+                                                    <!-- Spirit Image with Quantity Overlay -->
+                                                    <Border CornerRadius="12"
+                                                           Background="Transparent"
+                                                           Padding="0"
+                                                           Height="90"
+                                                           HorizontalAlignment="Left">
+                                                        <Grid>
+                                                            <!-- Spirit Image -->
+                                                            <Image Stretch="Uniform"
+                                                                   HorizontalAlignment="Left"
+                                                                   VerticalAlignment="Center"
+                                                                   RenderOptions.BitmapScalingMode="HighQuality">
+                                                                <Image.Style>
+                                                                    <Style TargetType="Image">
+                                                                        <Style.Triggers>
+                                                                            <DataTrigger Binding="{Binding Name}" Value="Harper Evans Breach">
+                                                                                <Setter Property="Source" Value="/Resources/Spirits/Harper Evans Breach.png"/>
+                                                                            </DataTrigger>
+                                                                            <DataTrigger Binding="{Binding Name}" Value="Hector Helio Justice">
+                                                                                <Setter Property="Source" Value="/Resources/Spirits/Hector Helio Justice.png"/>
+                                                                            </DataTrigger>
+                                                                        </Style.Triggers>
+                                                                    </Style>
+                                                                </Image.Style>
+                                                            </Image>
+
+                                                            <!-- Quantity Badge -->
+                                                            <Border Background="#E91E63"
+                                                                   CornerRadius="12"
+                                                                   Padding="6,3"
+                                                                   HorizontalAlignment="Left"
+                                                                   VerticalAlignment="Bottom"
+                                                                   Margin="6">
+                                                                <StackPanel Orientation="Horizontal">
+                                                                    <materialDesign:PackIcon Kind="Counter"
+                                                                                           Width="14"
+                                                                                           Height="14"
+                                                                                           Foreground="White"
+                                                                                           VerticalAlignment="Center"
+                                                                                           Margin="0,0,4,0"/>
+                                                                    <TextBlock Text="{Binding CurrentValue}"
+                                                                             FontSize="14"
+                                                                             FontWeight="Bold"
+                                                                             Foreground="White"
+                                                                             VerticalAlignment="Center"/>
+                                                                </StackPanel>
+                                                            </Border>
+                                                        </Grid>
+                                                    </Border>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+
+                                    <Button Command="{Binding MemoryEditor.RefreshValuesCommand}"
+                                          Style="{StaticResource MaterialDesignOutlinedButton}"
+                                          Margin="0,20,0,0"
+                                          Height="40">
+                                        <StackPanel Orientation="Horizontal">
+                                            <materialDesign:PackIcon Kind="Refresh"
+                                                                   VerticalAlignment="Center"
+                                                                   Margin="0,0,8,0"/>
+                                            <TextBlock Text="Refresh Now" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Button>
+                                </StackPanel>
+                            </StackPanel>
+                        </materialDesign:Card>
+                        </Grid>
+
+                        <!-- Beans Editor View -->
+                        <Grid Visibility="{Binding MemoryEditor.SelectedTool, Converter={StaticResource EqualToVisibilityConverter}, ConverterParameter=beans}">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- Header -->
+                            <materialDesign:Card Grid.Row="0" Style="{StaticResource CardStyle}">
+                                <StackPanel>
+                                    <Button Command="{Binding MemoryEditor.BackToMenuCommand}"
+                                          Style="{StaticResource MaterialDesignOutlinedButton}"
+                                          HorizontalAlignment="Left"
+                                          Margin="0,0,0,15"
+                                          Height="35">
+                                        <StackPanel Orientation="Horizontal">
+                                            <materialDesign:PackIcon Kind="ChevronLeft"
+                                                                   VerticalAlignment="Center"
+                                                                   Margin="0,0,8,0"/>
+                                            <TextBlock Text="Back to Menu" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Button>
+
+                                    <TextBlock Text="Beans"
+                                             Style="{StaticResource MaterialDesignHeadline6TextBlock}"
+                                             Margin="0,0,0,15"/>
+
+                                    <TextBlock Text="Click on a bean to add 1000 to its quantity. Make sure the game is closed before using these tools."
+                                             Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                             Opacity="0.7"
+                                             TextWrapping="Wrap"
+                                             Margin="0,0,0,10"/>
+                                </StackPanel>
+                            </materialDesign:Card>
+
+                            <materialDesign:Card Grid.Row="1" Style="{StaticResource CardStyle}" Margin="10">
+                            <StackPanel>
+                                <Border Background="{DynamicResource MaterialDesignDivider}"
+                                       CornerRadius="8"
+                                       Margin="0,0,0,20">
+                                    <Grid Margin="15">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <Image Grid.Column="0"
+                                               Source="/Resources/Cards/Kicking Power.png"
+                                               Width="32"
+                                               Height="32"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,15,0"
+                                               RenderOptions.BitmapScalingMode="HighQuality"/>
+
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                            <TextBlock Text="Current Status"
+                                                     FontSize="12"
+                                                     Opacity="0.7"/>
+                                            <TextBlock Text="{Binding MemoryEditor.StatusMessage}"
+                                                     FontSize="24"
+                                                     FontWeight="Bold"
+                                                     Margin="0,5,0,0"/>
+                                            <TextBlock Text="Click attach to connect to the game"
+                                                     FontSize="11"
+                                                     Opacity="0.6"
+                                                     Margin="0,5,0,0"
+                                                     FontStyle="Italic"/>
+                                        </StackPanel>
+
+                                        <Button Grid.Column="2"
+                                              Command="{Binding MemoryEditor.AttachToProcessCommand}"
+                                              Style="{StaticResource MaterialDesignRaisedButton}"
+                                              Height="45"
+                                              VerticalAlignment="Center"
+                                              Background="#4CAF50">
+                                            <StackPanel Orientation="Horizontal">
+                                                <materialDesign:PackIcon Kind="Link"
+                                                                       Width="20"
+                                                                       Height="20"
+                                                                       VerticalAlignment="Center"
+                                                                       Margin="0,0,8,0"/>
+                                                <TextBlock Text="Attach to Game"
+                                                         VerticalAlignment="Center"
+                                                         FontWeight="Medium"/>
+                                            </StackPanel>
+                                        </Button>
+
+                                        <Button Grid.Column="2"
+                                              Command="{Binding MemoryEditor.DetachFromProcessCommand}"
+                                              Style="{StaticResource MaterialDesignRaisedButton}"
+                                              Height="45"
+                                              VerticalAlignment="Center"
+                                              Background="#D32F2F"
+                                              Visibility="{Binding MemoryEditor.IsAttached, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                            <StackPanel Orientation="Horizontal">
+                                                <materialDesign:PackIcon Kind="LinkOff"
+                                                                       Width="20"
+                                                                       Height="20"
+                                                                       VerticalAlignment="Center"
+                                                                       Margin="0,0,8,0"/>
+                                                <TextBlock Text="Detach"
+                                                         VerticalAlignment="Center"
+                                                         FontWeight="Medium"/>
+                                            </StackPanel>
+                                        </Button>
+                                    </Grid>
+                                </Border>
+
+                                <!-- Beans List -->
+                                <StackPanel Margin="0,20,0,0">
+                                    <TextBlock Text="Available Beans"
+                                             Style="{StaticResource MaterialDesignHeadline6TextBlock}"
+                                             Margin="0,0,0,15"/>
+
+                                    <CheckBox IsChecked="{Binding MemoryEditor.AutoRefresh}"
+                                            IsEnabled="{Binding MemoryEditor.IsAttached}"
+                                            Content="Auto-refresh (1s)"
+                                            Style="{StaticResource MaterialDesignCheckBox}"
+                                            Margin="0,0,0,15"/>
+
+                                    <ItemsControl ItemsSource="{Binding MemoryEditor.BeansCollection}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <UniformGrid Rows="1"/>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid Margin="0,0,10,10"
+                                                      Cursor="Hand"
+                                                      RenderTransformOrigin="0.5,0.5"
+                                                      HorizontalAlignment="Center"
+                                                      Width="130"
+                                                      MouseEnter="SpiritCard_MouseEnter"
+                                                      MouseLeave="SpiritCard_MouseLeave"
+                                                      MouseLeftButtonDown="SpiritCard_MouseLeftButtonDown">
+                                                    <Grid.RenderTransform>
+                                                        <ScaleTransform/>
+                                                    </Grid.RenderTransform>
+                                                    <Grid.InputBindings>
+                                                        <MouseBinding MouseAction="LeftClick"
+                                                                    Command="{Binding DataContext.MemoryEditor.AddBeansCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                    CommandParameter="{Binding}"/>
+                                                    </Grid.InputBindings>
+
+                                                    <!-- Bean Image with Quantity Overlay -->
+                                                    <Border CornerRadius="12"
+                                                           Background="Transparent"
+                                                           Padding="0"
+                                                           Height="80"
+                                                           HorizontalAlignment="Center">
+                                                        <Grid>
+                                                            <!-- Bean Image -->
+                                                            <Image Stretch="Uniform"
+                                                                   HorizontalAlignment="Center"
+                                                                   VerticalAlignment="Center"
+                                                                   RenderOptions.BitmapScalingMode="HighQuality">
+                                                                <Image.Style>
+                                                                    <Style TargetType="Image">
+                                                                        <Style.Triggers>
+                                                                            <DataTrigger Binding="{Binding Name}" Value="Instantaneous">
+                                                                                <Setter Property="Source" Value="/Resources/Beans/Instantaneous.png"/>
+                                                                            </DataTrigger>
+                                                                            <DataTrigger Binding="{Binding Name}" Value="Intelligence">
+                                                                                <Setter Property="Source" Value="/Resources/Beans/Intelligence.png"/>
+                                                                            </DataTrigger>
+                                                                            <DataTrigger Binding="{Binding Name}" Value="Kicking Power">
+                                                                                <Setter Property="Source" Value="/Resources/Beans/Kicking Power.png"/>
+                                                                            </DataTrigger>
+                                                                            <DataTrigger Binding="{Binding Name}" Value="Mind's Eye">
+                                                                                <Setter Property="Source" Value="/Resources/Beans/Minds Eye.png"/>
+                                                                            </DataTrigger>
+                                                                            <DataTrigger Binding="{Binding Name}" Value="Strength">
+                                                                                <Setter Property="Source" Value="/Resources/Beans/Strength.png"/>
+                                                                            </DataTrigger>
+                                                                            <DataTrigger Binding="{Binding Name}" Value="Technique">
+                                                                                <Setter Property="Source" Value="/Resources/Beans/Technique.png"/>
+                                                                            </DataTrigger>
+                                                                            <DataTrigger Binding="{Binding Name}" Value="Unshakable">
+                                                                                <Setter Property="Source" Value="/Resources/Beans/Unshakable.png"/>
+                                                                            </DataTrigger>
+                                                                        </Style.Triggers>
+                                                                    </Style>
+                                                                </Image.Style>
+                                                            </Image>
+
+                                                            <!-- Quantity Badge -->
+                                                            <Border Background="#E91E63"
+                                                                   CornerRadius="12"
+                                                                   Padding="6,3"
+                                                                   HorizontalAlignment="Left"
+                                                                   VerticalAlignment="Bottom"
+                                                                   Margin="6">
+                                                                <StackPanel Orientation="Horizontal">
+                                                                    <materialDesign:PackIcon Kind="Counter"
+                                                                                           Width="14"
+                                                                                           Height="14"
+                                                                                           Foreground="White"
+                                                                                           VerticalAlignment="Center"
+                                                                                           Margin="0,0,4,0"/>
+                                                                    <TextBlock Text="{Binding CurrentValue}"
+                                                                             FontSize="14"
+                                                                             FontWeight="Bold"
+                                                                             Foreground="White"
+                                                                             VerticalAlignment="Center"/>
+                                                                </StackPanel>
+                                                            </Border>
+                                                        </Grid>
+                                                    </Border>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
                             </StackPanel>
                         </materialDesign:Card>
                         </Grid>

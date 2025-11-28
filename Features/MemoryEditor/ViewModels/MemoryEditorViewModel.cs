@@ -48,8 +48,20 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
                 SelectedTool = "inaflowers";
                 SelectedValue = InaFlowersValue;
             });
+            SelectSpiritsEditorCommand = new RelayCommand(() =>
+            {
+                SelectedTool = "spirits";
+                SelectedValue = null;
+            });
+            SelectBeansEditorCommand = new RelayCommand(() =>
+            {
+                SelectedTool = "beans";
+                SelectedValue = InstantaneousValue;
+            });
             BackToMenuCommand = new RelayCommand(() => SelectedTool = "menu");
             ToggleStarsFreezeCommand = new RelayCommand(ToggleStarsFreeze, CanToggleStarsFreeze);
+            AddSpiritsCommand = new RelayCommand(AddSpiritsValue, CanAddSpirits);
+            AddBeansCommand = new RelayCommand(AddBeansValue, CanAddBeans);
 
             MemoryValues = new ObservableCollection<MemoryValue>
             {
@@ -79,6 +91,87 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
                     Offsets = new int[] { 0x6018, 0x18, 0x10, 0x1018, 0x20F0, 0x1C0, 0x2E0 },
                     CurrentValue = 0,
                     NewValue = 0
+                },
+                new MemoryValue
+                {
+                    Name = "Harper Evans Breach",
+                    Description = "Harper Evans - Breach Spirit",
+                    BaseAddress = 0x02087BB8,
+                    Offsets = new int[] { 0x10, 0x10, 0x10, 0x10, 0x8, 0xE0, 0x23C },
+                    CurrentValue = 0,
+                    NewValue = 0
+                },
+                new MemoryValue
+                {
+                    Name = "Hector Helio Justice",
+                    Description = "Hector Helio Justice Spirit",
+                    BaseAddress = 0x01AC27A8,
+                    Offsets = new int[] { 0x2A30, 0x10, 0x1178, 0x2110, 0x10, 0x40, 0xFC },
+                    CurrentValue = 0,
+                    NewValue = 0
+                },
+                new MemoryValue
+                {
+                    Name = "Instantaneous",
+                    Description = "Instantaneous Bean",
+                    BaseAddress = 0x01AC27A8,
+                    Offsets = new int[] { 0xFE8, 0x1F98, 0x60, 0x4100, 0x7A1C },
+                    CurrentValue = 0,
+                    NewValue = 0
+                },
+                new MemoryValue
+                {
+                    Name = "Intelligence",
+                    Description = "Intelligence Bean",
+                    BaseAddress = 0x01AC27A8,
+                    Offsets = new int[] { 0xFE8, 0x1F98, 0x70, 0x3F0, 0x12E0 },
+                    CurrentValue = 0,
+                    NewValue = 0
+                },
+                new MemoryValue
+                {
+                    Name = "Kicking Power",
+                    Description = "Kicking Power Bean",
+                    BaseAddress = 0x01AC27A8,
+                    Offsets = new int[] { 0xFE8, 0x1F98, 0x70, 0x920, 0xAC4 },
+                    CurrentValue = 0,
+                    NewValue = 0
+                },
+                new MemoryValue
+                {
+                    Name = "Mind's Eye",
+                    Description = "Mind's Eye Bean",
+                    BaseAddress = 0x01AC27A8,
+                    Offsets = new int[] { 0xFE8, 0x1F98, 0x70, 0x6A0, 0xEA0 },
+                    CurrentValue = 0,
+                    NewValue = 0
+                },
+                new MemoryValue
+                {
+                    Name = "Strength",
+                    Description = "Strength Bean",
+                    BaseAddress = 0x01AC27A8,
+                    Offsets = new int[] { 0xFE8, 0x1F98, 0x60, 0x43A0, 0x75A0 },
+                    CurrentValue = 0,
+                    NewValue = 0
+                },
+                new MemoryValue
+                {
+                    Name = "Technique",
+                    Description = "Technique Bean",
+                    BaseAddress = 0x01AC27A8,
+                    Offsets = new int[] { 0xFE8, 0x1F98, 0x70, 0x1B0, 0x1624 },
+                    CurrentValue = 0,
+                    NewValue = 0
+                },
+                new MemoryValue
+                {
+                    Name = "Unshakable",
+                    Description = "Unshakable Bean",
+                    BaseAddress = 0x01AC27A8,
+                    Offsets = new int[] { 0x1148, 0x2000, 0x68, 0x630, 0x1DE4 },
+                    CurrentValue = 0,
+                    NewValue = 0
                 }
             };
 
@@ -106,9 +199,31 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
 
         public MemoryValue GodHandFlowersValue => MemoryValues.FirstOrDefault(v => v.Name == "God Hand")!;
 
+        public MemoryValue HarperEvansBreachValue => MemoryValues.FirstOrDefault(v => v.Name == "Harper Evans Breach")!;
+
+        public MemoryValue HectorHelioJusticeValue => MemoryValues.FirstOrDefault(v => v.Name == "Hector Helio Justice")!;
+
+        public MemoryValue InstantaneousValue => MemoryValues.FirstOrDefault(v => v.Name == "Instantaneous")!;
+
+        public MemoryValue IntelligenceValue => MemoryValues.FirstOrDefault(v => v.Name == "Intelligence")!;
+
+        public MemoryValue KickingPowerValue => MemoryValues.FirstOrDefault(v => v.Name == "Kicking Power")!;
+
+        public MemoryValue MindsEyeValue => MemoryValues.FirstOrDefault(v => v.Name == "Mind's Eye")!;
+
+        public MemoryValue StrengthValue => MemoryValues.FirstOrDefault(v => v.Name == "Strength")!;
+
+        public MemoryValue TechniqueValue => MemoryValues.FirstOrDefault(v => v.Name == "Technique")!;
+
+        public MemoryValue UnshakableValue => MemoryValues.FirstOrDefault(v => v.Name == "Unshakable")!;
+
         public MemoryValue[] StarsCollection => new[] { StarsValue }.Where(v => v != null).ToArray();
 
         public MemoryValue[] InaFlowersCollection => new[] { InaFlowersValue, GodHandFlowersValue }.Where(v => v != null).ToArray();
+
+        public MemoryValue[] SpiritsCollection => new[] { HarperEvansBreachValue, HectorHelioJusticeValue }.Where(v => v != null).ToArray();
+
+        public MemoryValue[] BeansCollection => new[] { InstantaneousValue, IntelligenceValue, KickingPowerValue, MindsEyeValue, StrengthValue, TechniqueValue, UnshakableValue }.Where(v => v != null).ToArray();
 
         public MemoryValue? SelectedValue
         {
@@ -181,8 +296,12 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
         public ICommand ApplyValueCommand { get; }
         public ICommand SelectTicketEditorCommand { get; }
         public ICommand SelectInaFlowersEditorCommand { get; }
+        public ICommand SelectSpiritsEditorCommand { get; }
+        public ICommand SelectBeansEditorCommand { get; }
         public ICommand BackToMenuCommand { get; }
         public ICommand ToggleStarsFreezeCommand { get; }
+        public ICommand AddSpiritsCommand { get; }
+        public ICommand AddBeansCommand { get; }
 
         public bool IsStarsFrozen
         {
@@ -200,7 +319,7 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
             return !IsAttached;
         }
 
-        private void AttachToProcess(object? parameter)
+        private async void AttachToProcess(object? parameter)
         {
             try
             {
@@ -209,8 +328,11 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
                 if (success)
                 {
                     IsAttached = true;
-                    StatusMessage = "Successfully attached to game process";
+                    StatusMessage = "Successfully attached - waiting for game to initialize...";
                     _autoAttachTimer.Stop();
+
+                    // Wait 2 seconds for game to fully initialize before first read
+                    await System.Threading.Tasks.Task.Delay(2000);
 
                     RefreshValues(null);
 
@@ -383,7 +505,7 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
             TryAutoAttach();
         }
 
-        private void TryAutoAttach()
+        private async void TryAutoAttach()
         {
             if (IsAttached)
                 return;
@@ -395,8 +517,11 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
                 if (success)
                 {
                     IsAttached = true;
-                    StatusMessage = "Successfully attached to game process";
+                    StatusMessage = "Successfully attached - waiting for game to initialize...";
                     _autoAttachTimer.Stop();
+
+                    // Wait 2 seconds for game to fully initialize before first read
+                    await System.Threading.Tasks.Task.Delay(2000);
 
                     RefreshValues(null);
 
@@ -474,6 +599,86 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
                     "Error",
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
+            }
+        }
+
+        private bool CanAddSpirits(object? parameter)
+        {
+            return IsAttached;
+        }
+
+        private void AddSpiritsValue(object? parameter)
+        {
+            if (!IsAttached || parameter == null)
+                return;
+
+            var spiritValue = parameter as MemoryValue;
+            if (spiritValue == null)
+                return;
+
+            try
+            {
+                int newValue = spiritValue.CurrentValue + 2;
+                bool success = _memoryService.WriteValue(
+                    spiritValue.BaseAddress,
+                    spiritValue.Offsets,
+                    newValue
+                );
+
+                if (success)
+                {
+                    spiritValue.CurrentValue = newValue;
+                    spiritValue.NewValue = newValue;
+                    StatusMessage = $"Added 2 to {spiritValue.Name}. New value: {newValue}";
+                }
+                else
+                {
+                    StatusMessage = $"Failed to update {spiritValue.Name}";
+                }
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Error adding to spirit value: {ex.Message}";
+            }
+        }
+
+        private bool CanAddBeans(object? parameter)
+        {
+            return IsAttached;
+        }
+
+        private void AddBeansValue(object? parameter)
+        {
+            if (!IsAttached || parameter == null)
+                return;
+
+            var beanValue = parameter as MemoryValue;
+            if (beanValue == null)
+                return;
+
+            try
+            {
+                int newValue = beanValue.CurrentValue + 1000;
+                bool success = _memoryService.WriteValue(
+                    beanValue.BaseAddress,
+                    beanValue.Offsets,
+                    newValue
+                );
+
+                if (success)
+                {
+                    beanValue.CurrentValue = newValue;
+                    beanValue.NewValue = newValue;
+                    StatusMessage = $"Added 1000 to {beanValue.Name}. New value: {newValue}";
+                }
+                else
+                {
+                    StatusMessage = $"Failed to update {beanValue.Name}";
+                }
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Error adding to bean value: {ex.Message}";
             }
         }
 
