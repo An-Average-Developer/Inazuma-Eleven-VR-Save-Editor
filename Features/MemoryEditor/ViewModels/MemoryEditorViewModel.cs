@@ -25,10 +25,23 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
         private int _lastKnownGoodTicketValue = 0;
         private string _selectedTool = "menu";
         private bool _isStarsFrozen = false;
+        private bool _isFlowersIncrementEnabled = false;
 
-        private const long STAR_FREEZE_ADDRESS = 0xD8E8A3;
+        // Individual maintenance flags for each card
+        private bool _isStarsUnderMaintenance = false;
+        private bool _isFlowersUnderMaintenance = false;
+        private bool _isSpiritsUnderMaintenance = true;
+        private bool _isBeansUnderMaintenance = true;
+        private bool _isVictoryItemsUnderMaintenance = true;
+
+        private const long STAR_FREEZE_ADDRESS = 0xD912C3;
+        private const long FLOWER_INCREMENT_ADDRESS = 0xD912B9;
+
         private static readonly byte[] FREEZE_BYTES = new byte[] { 0x90, 0x90, 0x90 };
         private static readonly byte[] ORIGINAL_BYTES = new byte[] { 0x89, 0x68, 0x10 };
+
+        private static readonly byte[] FLOWER_ORIGINAL_BYTES = new byte[] { 0x41, 0x2B, 0xCE };
+        private static readonly byte[] FLOWER_INCREMENT_BYTES = new byte[] { 0x41, 0x03, 0xCE };
 
         public MemoryEditorViewModel()
         {
@@ -58,8 +71,14 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
                 SelectedTool = "beans";
                 SelectedValue = InstantaneousValue;
             });
+            SelectVictoryItemsEditorCommand = new RelayCommand(() =>
+            {
+                SelectedTool = "victoryitems";
+                SelectedValue = VictoryStarValue;
+            });
             BackToMenuCommand = new RelayCommand(() => SelectedTool = "menu");
             ToggleStarsFreezeCommand = new RelayCommand(ToggleStarsFreeze, CanToggleStarsFreeze);
+            ToggleFlowersIncrementCommand = new RelayCommand(ToggleFlowersIncrement, CanToggleFlowersIncrement);
             AddSpiritsCommand = new RelayCommand(AddSpiritsValue, CanAddSpirits);
             AddBeansCommand = new RelayCommand(AddBeansValue, CanAddBeans);
 
@@ -69,8 +88,8 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
                 {
                     Name = "Stars",
                     Description = "Stars for the Gachapon",
-                    BaseAddress = 0x020B0750,
-                    Offsets = new int[] { 0x6018, 0x1028, 0x20F0, 0x8, 0x10, 0x110, 0x128 },
+                    BaseAddress = 0x01AC87C8,
+                    Offsets = new int[] { 0x1148, 0x2000, 0x10, 0x1310, 0x10, 0xC0, 0x24 },
                     CurrentValue = 0,
                     NewValue = 0
                 },
@@ -78,8 +97,8 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
                 {
                     Name = "Inazuma Flowers",
                     Description = "Inazuma Flowers (object)",
-                    BaseAddress = 0x020B0750,
-                    Offsets = new int[] { 0x6018, 0x1028, 0x20F0, 0x8, 0x10, 0x1F0, 0x2B8 },
+                    BaseAddress = 0x01AC87F8,
+                    Offsets = new int[] { 0xFE8, 0x20E0, 0x18, 0x8, 0x10, 0x1C0, 0x9C },
                     CurrentValue = 0,
                     NewValue = 0
                 },
@@ -87,8 +106,8 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
                 {
                     Name = "God Hand",
                     Description = "God Hand Flowers (object)",
-                    BaseAddress = 0x020B0750,
-                    Offsets = new int[] { 0x6018, 0x18, 0x10, 0x1018, 0x20F0, 0x1C0, 0x2E0 },
+                    BaseAddress = 0x01AC87F8,
+                    Offsets = new int[] { 0xFE8, 0x20E0, 0x18, 0x8, 0x10, 0x50, 0x254 },
                     CurrentValue = 0,
                     NewValue = 0
                 },
@@ -96,8 +115,8 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
                 {
                     Name = "Harper Evans Breach",
                     Description = "Harper Evans - Breach Spirit",
-                    BaseAddress = 0x02087BB8,
-                    Offsets = new int[] { 0x10, 0x10, 0x10, 0x10, 0x8, 0xE0, 0x23C },
+                    BaseAddress = 0x0208DBE8,
+                    Offsets = new int[] { 0x10, 0x10, 0x10, 0x10, 0x8, 0x1B0, 0xC },
                     CurrentValue = 0,
                     NewValue = 0
                 },
@@ -105,8 +124,8 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
                 {
                     Name = "Hector Helio Justice",
                     Description = "Hector Helio Justice Spirit",
-                    BaseAddress = 0x01AC27A8,
-                    Offsets = new int[] { 0x2A30, 0x10, 0x1178, 0x2110, 0x10, 0x40, 0xFC },
+                    BaseAddress = 0x0208DBE8,
+                    Offsets = new int[] { 0x10, 0x10, 0x10, 0x10, 0x8, 0x50, 0xD4 },
                     CurrentValue = 0,
                     NewValue = 0
                 },
@@ -172,6 +191,24 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
                     Offsets = new int[] { 0x1148, 0x2000, 0x68, 0x630, 0x1DE4 },
                     CurrentValue = 0,
                     NewValue = 0
+                },
+                new MemoryValue
+                {
+                    Name = "Victory Star",
+                    Description = "Victory Star",
+                    BaseAddress = 0x020B67A0,
+                    Offsets = new int[] { 0x6018, 0x20, 0x10, 0x1018, 0x20F0, 0xA0, 0x10 },
+                    CurrentValue = 0,
+                    NewValue = 0
+                },
+                new MemoryValue
+                {
+                    Name = "Victory Stone",
+                    Description = "Victory Stone",
+                    BaseAddress = 0x01AC87F8,
+                    Offsets = new int[] { 0x1148, 0x2000, 0xA0, 0x9E8, 0x10, 0x50, 0x4C },
+                    CurrentValue = 0,
+                    NewValue = 0
                 }
             };
 
@@ -217,6 +254,10 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
 
         public MemoryValue UnshakableValue => MemoryValues.FirstOrDefault(v => v.Name == "Unshakable")!;
 
+        public MemoryValue VictoryStarValue => MemoryValues.FirstOrDefault(v => v.Name == "Victory Star")!;
+
+        public MemoryValue VictoryStoneValue => MemoryValues.FirstOrDefault(v => v.Name == "Victory Stone")!;
+
         public MemoryValue[] StarsCollection => new[] { StarsValue }.Where(v => v != null).ToArray();
 
         public MemoryValue[] InaFlowersCollection => new[] { InaFlowersValue, GodHandFlowersValue }.Where(v => v != null).ToArray();
@@ -224,6 +265,8 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
         public MemoryValue[] SpiritsCollection => new[] { HarperEvansBreachValue, HectorHelioJusticeValue }.Where(v => v != null).ToArray();
 
         public MemoryValue[] BeansCollection => new[] { InstantaneousValue, IntelligenceValue, KickingPowerValue, MindsEyeValue, StrengthValue, TechniqueValue, UnshakableValue }.Where(v => v != null).ToArray();
+
+        public MemoryValue[] VictoryItemsCollection => new[] { VictoryStarValue, VictoryStoneValue }.Where(v => v != null).ToArray();
 
         public MemoryValue? SelectedValue
         {
@@ -248,6 +291,7 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
                 ((RelayCommand)RefreshValuesCommand).RaiseCanExecuteChanged();
                 ((RelayCommand)ApplyValueCommand).RaiseCanExecuteChanged();
                 ((RelayCommand)ToggleStarsFreezeCommand).RaiseCanExecuteChanged();
+                ((RelayCommand)ToggleFlowersIncrementCommand).RaiseCanExecuteChanged();
             }
         }
 
@@ -298,8 +342,10 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
         public ICommand SelectInaFlowersEditorCommand { get; }
         public ICommand SelectSpiritsEditorCommand { get; }
         public ICommand SelectBeansEditorCommand { get; }
+        public ICommand SelectVictoryItemsEditorCommand { get; }
         public ICommand BackToMenuCommand { get; }
         public ICommand ToggleStarsFreezeCommand { get; }
+        public ICommand ToggleFlowersIncrementCommand { get; }
         public ICommand AddSpiritsCommand { get; }
         public ICommand AddBeansCommand { get; }
 
@@ -313,6 +359,82 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
                 ((RelayCommand)ToggleStarsFreezeCommand).RaiseCanExecuteChanged();
             }
         }
+
+        public bool IsFlowersIncrementEnabled
+        {
+            get => _isFlowersIncrementEnabled;
+            set
+            {
+                _isFlowersIncrementEnabled = value;
+                OnPropertyChanged();
+                ((RelayCommand)ToggleFlowersIncrementCommand).RaiseCanExecuteChanged();
+            }
+        }
+
+        // Stars maintenance
+        public bool IsStarsUnderMaintenance
+        {
+            get => _isStarsUnderMaintenance;
+            set
+            {
+                _isStarsUnderMaintenance = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(IsStarsEnabled));
+            }
+        }
+        public bool IsStarsEnabled => !_isStarsUnderMaintenance;
+
+        // Flowers maintenance
+        public bool IsFlowersUnderMaintenance
+        {
+            get => _isFlowersUnderMaintenance;
+            set
+            {
+                _isFlowersUnderMaintenance = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(IsFlowersEnabled));
+            }
+        }
+        public bool IsFlowersEnabled => !_isFlowersUnderMaintenance;
+
+        // Spirits maintenance
+        public bool IsSpiritsUnderMaintenance
+        {
+            get => _isSpiritsUnderMaintenance;
+            set
+            {
+                _isSpiritsUnderMaintenance = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(IsSpiritsEnabled));
+            }
+        }
+        public bool IsSpiritsEnabled => !_isSpiritsUnderMaintenance;
+
+        // Beans maintenance
+        public bool IsBeansUnderMaintenance
+        {
+            get => _isBeansUnderMaintenance;
+            set
+            {
+                _isBeansUnderMaintenance = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(IsBeansEnabled));
+            }
+        }
+        public bool IsBeansEnabled => !_isBeansUnderMaintenance;
+
+        // Victory Items maintenance
+        public bool IsVictoryItemsUnderMaintenance
+        {
+            get => _isVictoryItemsUnderMaintenance;
+            set
+            {
+                _isVictoryItemsUnderMaintenance = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(IsVictoryItemsEnabled));
+            }
+        }
+        public bool IsVictoryItemsEnabled => !_isVictoryItemsUnderMaintenance;
 
         private bool CanAttachToProcess(object? parameter)
         {
@@ -366,6 +488,7 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
                 IsAttached = false;
                 _lastKnownGoodTicketValue = 0;
                 IsStarsFrozen = false;
+                IsFlowersIncrementEnabled = false;
                 StatusMessage = "Detached from game process. Searching for game...";
 
                 _autoAttachTimer.Start();
@@ -491,6 +614,7 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
                     IsAttached = false;
                     _lastKnownGoodTicketValue = 0;
                     IsStarsFrozen = false;
+                    IsFlowersIncrementEnabled = false;
                     StatusMessage = "Game closed. Waiting for game to start...";
                     _autoAttachTimer.Start();
                     return;
@@ -596,6 +720,70 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
                 StatusMessage = $"Error toggling star freeze: {ex.Message}";
                 MessageBox.Show(
                     $"Error occurred while toggling star freeze:\n\n{ex.Message}",
+                    "Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
+
+        private bool CanToggleFlowersIncrement(object? parameter)
+        {
+            return IsAttached;
+        }
+
+        private void ToggleFlowersIncrement(object? parameter)
+        {
+            if (!IsAttached)
+                return;
+
+            try
+            {
+                bool success;
+
+                if (!IsFlowersIncrementEnabled)
+                {
+                    success = _memoryService.WriteBytes(FLOWER_INCREMENT_ADDRESS, FLOWER_INCREMENT_BYTES);
+
+                    if (success)
+                    {
+                        IsFlowersIncrementEnabled = true;
+                        StatusMessage = "Flower increment enabled - flowers will increase when buying!";
+                    }
+                    else
+                    {
+                        StatusMessage = "Failed to enable flower increment";
+                        MessageBox.Show(
+                            "Failed to enable flower increment. Make sure the game is running and you are attached to the process.",
+                            "Enable Failed",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Error);
+                    }
+                }
+                else
+                {
+                    success = _memoryService.WriteBytes(FLOWER_INCREMENT_ADDRESS, FLOWER_ORIGINAL_BYTES);
+
+                    if (success)
+                    {
+                        IsFlowersIncrementEnabled = false;
+                        StatusMessage = "Flower increment disabled - normal flower behavior restored";
+                    }
+                    else
+                    {
+                        StatusMessage = "Failed to disable flower increment";
+                        MessageBox.Show(
+                            "Failed to disable flower increment.",
+                            "Disable Failed",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Error);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Error toggling flower increment: {ex.Message}";
+                MessageBox.Show(
+                    $"Error occurred while toggling flower increment:\n\n{ex.Message}",
                     "Error",
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);

@@ -1,0 +1,222 @@
+<UserControl x:Class="InazumaElevenVRSaveEditor.Features.MemoryEditor.Views.BeansEditorControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <materialDesign:Card Grid.Row="0" Style="{StaticResource CardStyle}">
+            <StackPanel>
+                <Button Command="{Binding MemoryEditor.BackToMenuCommand}"
+                      Style="{StaticResource MaterialDesignOutlinedButton}"
+                      HorizontalAlignment="Left"
+                      Margin="0,0,0,15"
+                      Height="35">
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon Kind="ChevronLeft"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,8,0"/>
+                        <TextBlock Text="Back to Menu" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+
+                <TextBlock Text="Beans"
+                         Style="{StaticResource MaterialDesignHeadline6TextBlock}"
+                         Margin="0,0,0,15"/>
+
+                <TextBlock Text="Click on a bean to add 1000 to its quantity. Make sure the game is closed before using these tools."
+                         Style="{StaticResource MaterialDesignBody2TextBlock}"
+                         Opacity="0.7"
+                         TextWrapping="Wrap"
+                         Margin="0,0,0,10"/>
+            </StackPanel>
+        </materialDesign:Card>
+
+        <materialDesign:Card Grid.Row="1" Style="{StaticResource CardStyle}" Margin="10">
+            <StackPanel>
+                <Border Background="{DynamicResource MaterialDesignDivider}"
+                       CornerRadius="8"
+                       Margin="0,0,0,20">
+                    <Grid Margin="15">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Image Grid.Column="0"
+                               Source="/Resources/Cards/Kicking Power.png"
+                               Width="32"
+                               Height="32"
+                               VerticalAlignment="Center"
+                               Margin="0,0,15,0"
+                               RenderOptions.BitmapScalingMode="HighQuality"/>
+
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock Text="Current Status"
+                                     FontSize="12"
+                                     Opacity="0.7"/>
+                            <TextBlock Text="{Binding MemoryEditor.StatusMessage}"
+                                     FontSize="24"
+                                     FontWeight="Bold"
+                                     Margin="0,5,0,0"/>
+                            <TextBlock Text="Click attach to connect to the game"
+                                     FontSize="11"
+                                     Opacity="0.6"
+                                     Margin="0,5,0,0"
+                                     FontStyle="Italic"/>
+                        </StackPanel>
+
+                        <Button Grid.Column="2"
+                              Command="{Binding MemoryEditor.AttachToProcessCommand}"
+                              Style="{StaticResource MaterialDesignRaisedButton}"
+                              Height="45"
+                              VerticalAlignment="Center"
+                              Background="#4CAF50">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="Link"
+                                                       Width="20"
+                                                       Height="20"
+                                                       VerticalAlignment="Center"
+                                                       Margin="0,0,8,0"/>
+                                <TextBlock Text="Attach to Game"
+                                         VerticalAlignment="Center"
+                                         FontWeight="Medium"/>
+                            </StackPanel>
+                        </Button>
+
+                        <Button Grid.Column="2"
+                              Command="{Binding MemoryEditor.DetachFromProcessCommand}"
+                              Style="{StaticResource MaterialDesignRaisedButton}"
+                              Height="45"
+                              VerticalAlignment="Center"
+                              Background="#D32F2F"
+                              Visibility="{Binding MemoryEditor.IsAttached, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="LinkOff"
+                                                       Width="20"
+                                                       Height="20"
+                                                       VerticalAlignment="Center"
+                                                       Margin="0,0,8,0"/>
+                                <TextBlock Text="Detach"
+                                         VerticalAlignment="Center"
+                                         FontWeight="Medium"/>
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+                </Border>
+
+                <!-- Beans List -->
+                <StackPanel Margin="0,20,0,0">
+                    <TextBlock Text="Available Beans"
+                             Style="{StaticResource MaterialDesignHeadline6TextBlock}"
+                             Margin="0,0,0,15"/>
+
+                    <CheckBox IsChecked="{Binding MemoryEditor.AutoRefresh}"
+                            IsEnabled="{Binding MemoryEditor.IsAttached}"
+                            Content="Auto-refresh (1s)"
+                            Style="{StaticResource MaterialDesignCheckBox}"
+                            Margin="0,0,0,15"/>
+
+                    <ItemsControl ItemsSource="{Binding MemoryEditor.BeansCollection}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <UniformGrid Rows="1"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="0,0,10,10"
+                                      Cursor="Hand"
+                                      RenderTransformOrigin="0.5,0.5"
+                                      HorizontalAlignment="Center"
+                                      Width="130"
+                                      MouseEnter="SpiritCard_MouseEnter"
+                                      MouseLeave="SpiritCard_MouseLeave"
+                                      MouseLeftButtonDown="SpiritCard_MouseLeftButtonDown">
+                                    <Grid.RenderTransform>
+                                        <ScaleTransform/>
+                                    </Grid.RenderTransform>
+                                    <Grid.InputBindings>
+                                        <MouseBinding MouseAction="LeftClick"
+                                                    Command="{Binding DataContext.MemoryEditor.AddBeansCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    CommandParameter="{Binding}"/>
+                                    </Grid.InputBindings>
+
+                                    <!-- Bean Image with Quantity Overlay -->
+                                    <Border CornerRadius="12"
+                                           Background="Transparent"
+                                           Padding="0"
+                                           Height="80"
+                                           HorizontalAlignment="Center">
+                                        <Grid>
+                                            <!-- Bean Image -->
+                                            <Image Stretch="Uniform"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center"
+                                                   RenderOptions.BitmapScalingMode="HighQuality">
+                                                <Image.Style>
+                                                    <Style TargetType="Image">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding Name}" Value="Instantaneous">
+                                                                <Setter Property="Source" Value="/Resources/Beans/Instantaneous.png"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding Name}" Value="Intelligence">
+                                                                <Setter Property="Source" Value="/Resources/Beans/Intelligence.png"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding Name}" Value="Kicking Power">
+                                                                <Setter Property="Source" Value="/Resources/Beans/Kicking Power.png"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding Name}" Value="Mind's Eye">
+                                                                <Setter Property="Source" Value="/Resources/Beans/Minds Eye.png"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding Name}" Value="Strength">
+                                                                <Setter Property="Source" Value="/Resources/Beans/Strength.png"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding Name}" Value="Technique">
+                                                                <Setter Property="Source" Value="/Resources/Beans/Technique.png"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding Name}" Value="Unshakable">
+                                                                <Setter Property="Source" Value="/Resources/Beans/Unshakable.png"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Image.Style>
+                                            </Image>
+
+                                            <!-- Quantity Badge -->
+                                            <Border Background="#E91E63"
+                                                   CornerRadius="12"
+                                                   Padding="6,3"
+                                                   HorizontalAlignment="Left"
+                                                   VerticalAlignment="Bottom"
+                                                   Margin="6">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <materialDesign:PackIcon Kind="Counter"
+                                                                           Width="14"
+                                                                           Height="14"
+                                                                           Foreground="White"
+                                                                           VerticalAlignment="Center"
+                                                                           Margin="0,0,4,0"/>
+                                                    <TextBlock Text="{Binding CurrentValue}"
+                                                             FontSize="14"
+                                                             FontWeight="Bold"
+                                                             Foreground="White"
+                                                             VerticalAlignment="Center"/>
+                                                </StackPanel>
+                                            </Border>
+                                        </Grid>
+                                    </Border>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </StackPanel>
+        </materialDesign:Card>
+    </Grid>
+</UserControl>

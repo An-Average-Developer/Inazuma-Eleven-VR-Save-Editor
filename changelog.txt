@@ -1,4 +1,4 @@
-1.0.2
-- Improved UI 
-- Added a system to add Spirits
-- Added a system to add Beans
+1.0.3
+- Fixed: Stars Editor and Flowers Editor (the rest is under maintenance)
+- Added a freeze items option when buy option (all items)
+- Added an increase items option when buy option (all items)

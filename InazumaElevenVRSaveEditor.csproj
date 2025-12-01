@@ -8,7 +8,7 @@
     <UseWPF>true</UseWPF>
     <AssemblyName>InazumaElevenVRSaveEditor</AssemblyName>
     <RootNamespace>InazumaElevenVRSaveEditor</RootNamespace>
-    <Version>1.0.2</Version>
+    <Version>1.0.3</Version>
     <Authors>An Average Developer</Authors>
     <Product>Inazuma Eleven VR Save Editor</Product>
     <Description>A simple save editor for Inazuma Eleven VR</Description>
@@ -39,6 +39,9 @@
     <Resource Include="Resources\Cards\God Hand Flower.png" />
     <Resource Include="Resources\Cards\Inazuma Flower.png" />
     <Resource Include="Resources\Cards\Kicking Power.png" />
+    <Resource Include="Resources\Cards\VSTAR.png" />
+    <Resource Include="Resources\Vitems\VSTAR.png" />
+    <Resource Include="Resources\Vitems\VSTONE.png" />
     <Resource Include="Resources\Beans\Instantaneous.png" />
     <Resource Include="Resources\Beans\Intelligence.png" />
     <Resource Include="Resources\Beans\Kicking Power.png" />
