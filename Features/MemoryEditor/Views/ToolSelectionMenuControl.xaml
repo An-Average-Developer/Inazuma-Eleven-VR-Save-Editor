@@ -104,6 +104,7 @@
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
 
                         <materialDesign:PackIcon Grid.Column="0"
@@ -133,6 +134,25 @@
                                      Command="{Binding MemoryEditor.ToggleStarsFreezeCommand}"
                                      VerticalAlignment="Center"
                                      Margin="10,0,0,0"/>
+
+                        <Button Grid.Column="3"
+                               Command="{Binding MemoryEditor.OpenItemListCommand}"
+                               Style="{StaticResource MaterialDesignRaisedButton}"
+                               Background="#2196F3"
+                               Height="35"
+                               Margin="10,0,0,0"
+                               VerticalAlignment="Center">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="FormatListBulleted"
+                                                       Width="18"
+                                                       Height="18"
+                                                       VerticalAlignment="Center"
+                                                       Margin="0,0,5,0"/>
+                                <TextBlock Text="Working on Items"
+                                         VerticalAlignment="Center"
+                                         FontSize="12"/>
+                            </StackPanel>
+                        </Button>
                     </Grid>
                 </Border>
 
@@ -145,6 +165,7 @@
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
 
@@ -175,6 +196,25 @@
                                      Command="{Binding MemoryEditor.ToggleFlowersIncrementCommand}"
                                      VerticalAlignment="Center"
                                      Margin="10,0,0,0"/>
+
+                        <Button Grid.Column="3"
+                               Command="{Binding MemoryEditor.OpenItemListCommand}"
+                               Style="{StaticResource MaterialDesignRaisedButton}"
+                               Background="#2196F3"
+                               Height="35"
+                               Margin="10,0,0,0"
+                               VerticalAlignment="Center">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="FormatListBulleted"
+                                                       Width="18"
+                                                       Height="18"
+                                                       VerticalAlignment="Center"
+                                                       Margin="0,0,5,0"/>
+                                <TextBlock Text="Working on Items"
+                                         VerticalAlignment="Center"
+                                         FontSize="12"/>
+                            </StackPanel>
+                        </Button>
                     </Grid>
                 </Border>
             </StackPanel>

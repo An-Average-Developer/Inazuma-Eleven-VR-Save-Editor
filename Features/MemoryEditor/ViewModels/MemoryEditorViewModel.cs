@@ -34,18 +34,59 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
         private bool _isBeansUnderMaintenance = true;
         private bool _isVictoryItemsUnderMaintenance = true;
 
-        private const long STAR_FREEZE_ADDRESS = 0xD912C3;
-        private const long FLOWER_INCREMENT_ADDRESS = 0xD912B9;
+        private const long STAR_FREEZE_ADDRESS = 0xD9475D;
+
+        private const long FLOWER_INCREMENT_ADDRESS = 0xD94755;
 
         private static readonly byte[] FREEZE_BYTES = new byte[] { 0x90, 0x90, 0x90 };
-        private static readonly byte[] ORIGINAL_BYTES = new byte[] { 0x89, 0x68, 0x10 };
+        private static readonly byte[] ORIGINAL_BYTES = new byte[] { 0x89, 0x50, 0x10 };
 
-        private static readonly byte[] FLOWER_ORIGINAL_BYTES = new byte[] { 0x41, 0x2B, 0xCE };
-        private static readonly byte[] FLOWER_INCREMENT_BYTES = new byte[] { 0x41, 0x03, 0xCE };
+        private static readonly byte[] FLOWER_ORIGINAL_BYTES = new byte[] { 0x2B, 0xCD };
+        private static readonly byte[] FLOWER_INCREMENT_BYTES = new byte[] { 0x03, 0xCD };
 
         public MemoryEditorViewModel()
         {
             _memoryService = new MemoryEditorService();
+
+            WorkingItems = new ObservableCollection<ItemInfo>
+            {
+                new ItemInfo
+                {
+                    Name = "Inazuma Flowers",
+                    ImagePath = "/Resources/Cards/Inazuma Flower.png",
+                    Category = "Flowers"
+                },
+                new ItemInfo
+                {
+                    Name = "God Hand Flower",
+                    ImagePath = "/Resources/Cards/God Hand Flower.png",
+                    Category = "Flowers"
+                },
+                new ItemInfo
+                {
+                    Name = "Beans",
+                    ImagePath = "/Resources/Cards/Kicking Power.png",
+                    Category = "Beans"
+                },
+                new ItemInfo
+                {
+                    Name = "Stars",
+                    ImagePath = "/Resources/Cards/Stars.png",
+                    Category = "Stars"
+                },
+                new ItemInfo
+                {
+                    Name = "Victory Stars",
+                    ImagePath = "/Resources/Cards/VSTAR.png",
+                    Category = "Victory Items"
+                },
+                new ItemInfo
+                {
+                    Name = "New Possibilities",
+                    ImagePath = "/Resources/Cards/NPOSS.png",
+                    Category = "Special"
+                }
+            };
 
             AttachToProcessCommand = new RelayCommand(AttachToProcess, CanAttachToProcess);
             DetachFromProcessCommand = new RelayCommand(DetachFromProcess, CanDetachFromProcess);
@@ -81,6 +122,7 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
             ToggleFlowersIncrementCommand = new RelayCommand(ToggleFlowersIncrement, CanToggleFlowersIncrement);
             AddSpiritsCommand = new RelayCommand(AddSpiritsValue, CanAddSpirits);
             AddBeansCommand = new RelayCommand(AddBeansValue, CanAddBeans);
+            OpenItemListCommand = new RelayCommand(OpenItemListWindow);
 
             MemoryValues = new ObservableCollection<MemoryValue>
             {
@@ -88,8 +130,8 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
                 {
                     Name = "Stars",
                     Description = "Stars for the Gachapon",
-                    BaseAddress = 0x01AC87C8,
-                    Offsets = new int[] { 0x1148, 0x2000, 0x10, 0x1310, 0x10, 0xC0, 0x24 },
+                    BaseAddress = 0x01AD1828,
+                    Offsets = new int[] { 0xFE8, 0x20F0, 0x8, 0x10, 0xA0, 0x4C },
                     CurrentValue = 0,
                     NewValue = 0
                 },
@@ -97,8 +139,8 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
                 {
                     Name = "Inazuma Flowers",
                     Description = "Inazuma Flowers (object)",
-                    BaseAddress = 0x01AC87F8,
-                    Offsets = new int[] { 0xFE8, 0x20E0, 0x18, 0x8, 0x10, 0x1C0, 0x9C },
+                    BaseAddress = 0x01AD1828,
+                    Offsets = new int[] { 0xFE8, 0x20E0, 0x18, 0x90, 0x218 },
                     CurrentValue = 0,
                     NewValue = 0
                 },
@@ -106,8 +148,8 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
                 {
                     Name = "God Hand",
                     Description = "God Hand Flowers (object)",
-                    BaseAddress = 0x01AC87F8,
-                    Offsets = new int[] { 0xFE8, 0x20E0, 0x18, 0x8, 0x10, 0x50, 0x254 },
+                    BaseAddress = 0x01AD1828,
+                    Offsets = new int[] { 0x1148, 0x2000, 0x8, 0x170, 0xB0 },
                     CurrentValue = 0,
                     NewValue = 0
                 },
@@ -268,6 +310,8 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
 
         public MemoryValue[] VictoryItemsCollection => new[] { VictoryStarValue, VictoryStoneValue }.Where(v => v != null).ToArray();
 
+        public ObservableCollection<ItemInfo> WorkingItems { get; }
+
         public MemoryValue? SelectedValue
         {
             get => _selectedValue;
@@ -348,6 +392,7 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
         public ICommand ToggleFlowersIncrementCommand { get; }
         public ICommand AddSpiritsCommand { get; }
         public ICommand AddBeansCommand { get; }
+        public ICommand OpenItemListCommand { get; }
 
         public bool IsStarsFrozen
         {
@@ -868,6 +913,11 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
             {
                 StatusMessage = $"Error adding to bean value: {ex.Message}";
             }
+        }
+
+        private void OpenItemListWindow(object? parameter)
+        {
+            SelectedTool = "itemslist";
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;

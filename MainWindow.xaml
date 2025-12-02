@@ -172,6 +172,11 @@
                         <memoryEditorViews:VictoryItemsEditorControl
                             Visibility="{Binding MemoryEditor.SelectedTool, Converter={StaticResource EqualToVisibilityConverter}, ConverterParameter=victoryitems}"
                             DataContext="{Binding}"/>
+
+                        <!-- Items List View -->
+                        <memoryEditorViews:ItemListControl
+                            Visibility="{Binding MemoryEditor.SelectedTool, Converter={StaticResource EqualToVisibilityConverter}, ConverterParameter=itemslist}"
+                            DataContext="{Binding}"/>
                     </Grid>
                 </TabItem>
 
