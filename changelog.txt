@@ -1,4 +1,3 @@
-1.0.3
-- Fixed: Stars Editor and Flowers Editor (the rest is under maintenance)
-- Added a freeze items option when buy option (all items)
-- Added an increase items option when buy option (all items)
+1.0.4
+- Fixed: Stars Editor and Flowers Editor "Again" (the rest is under maintenance)
+- Fixed freeze items and increase items option when buy option (items detaileds into the list inside the tool)
