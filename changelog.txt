@@ -1,3 +1,2 @@
-1.0.4
-- Fixed Stars Editor and Flowers Editor "Again" (the rest is under maintenance)
-- Fixed freeze and increase items options when buy (items detaileds into the list inside the tool)
+1.0.5
+- Added an option to freeze spirits when summoning
