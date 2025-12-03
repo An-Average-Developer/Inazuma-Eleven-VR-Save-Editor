@@ -64,6 +64,6 @@
 
 ## 📝 Version
 
-Current Version: **1.0.3**
+Current Version: **1.0.5**
 
 Check for updates in the **Updates** tab!
