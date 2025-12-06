@@ -217,6 +217,90 @@
                         </Button>
                     </Grid>
                 </Border>
+
+                <!-- Freeze Spirits Toggle -->
+                <Border Background="#9C27B0"
+                       CornerRadius="8"
+                       Margin="0,10,0,0"
+                       Visibility="{Binding MemoryEditor.IsAttached, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <Grid Margin="15">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <materialDesign:PackIcon Grid.Column="0"
+                                               Kind="Snowflake"
+                                               Width="28"
+                                               Height="28"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,15,0"
+                                               Foreground="White"/>
+
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock Text="Freeze Spirits"
+                                     FontSize="16"
+                                     FontWeight="Bold"
+                                     Foreground="White"/>
+                            <TextBlock Text="Prevent spirits from decreasing (unlimited spirits)"
+                                     FontSize="11"
+                                     Foreground="White"
+                                     Opacity="0.9"
+                                     Margin="0,3,0,0"/>
+                        </StackPanel>
+
+                        <ToggleButton Grid.Column="2"
+                                     IsChecked="{Binding MemoryEditor.IsSpiritsFrozen, Mode=OneWay}"
+                                     Style="{StaticResource MaterialDesignSwitchToggleButton}"
+                                     ToolTip="Toggle freeze on/off"
+                                     Command="{Binding MemoryEditor.ToggleSpiritsFreezeCommand}"
+                                     VerticalAlignment="Center"
+                                     Margin="10,0,0,0"/>
+                    </Grid>
+                </Border>
+
+                <!-- Store Item Multiplier Toggle -->
+                <Border Background="#F44336"
+                       CornerRadius="8"
+                       Margin="0,10,0,0"
+                       Visibility="{Binding MemoryEditor.IsAttached, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <Grid Margin="15">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <materialDesign:PackIcon Grid.Column="0"
+                                               Kind="Multiplication"
+                                               Width="28"
+                                               Height="28"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,15,0"
+                                               Foreground="White"/>
+
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock Text="Store Item Multiplier x2457"
+                                     FontSize="16"
+                                     FontWeight="Bold"
+                                     Foreground="White"/>
+                            <TextBlock Text="Multiply items received from store purchases by 2457"
+                                     FontSize="11"
+                                     Foreground="White"
+                                     Opacity="0.9"
+                                     Margin="0,3,0,0"/>
+                        </StackPanel>
+
+                        <ToggleButton Grid.Column="2"
+                                     IsChecked="{Binding MemoryEditor.IsStoreItemMultiplierEnabled, Mode=OneWay}"
+                                     Style="{StaticResource MaterialDesignSwitchToggleButton}"
+                                     ToolTip="Toggle multiplier on/off"
+                                     Command="{Binding MemoryEditor.ToggleStoreItemMultiplierCommand}"
+                                     VerticalAlignment="Center"
+                                     Margin="10,0,0,0"/>
+                    </Grid>
+                </Border>
             </StackPanel>
         </materialDesign:Card>
 

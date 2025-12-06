@@ -26,23 +26,34 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
         private string _selectedTool = "menu";
         private bool _isStarsFrozen = false;
         private bool _isFlowersIncrementEnabled = false;
+        private bool _isSpiritsFrozen = false;
+        private bool _isStoreItemMultiplierEnabled = false;
 
         // Individual maintenance flags for each card
-        private bool _isStarsUnderMaintenance = false;
-        private bool _isFlowersUnderMaintenance = false;
+        private bool _isStarsUnderMaintenance = true;
+        private bool _isFlowersUnderMaintenance = true;
         private bool _isSpiritsUnderMaintenance = true;
         private bool _isBeansUnderMaintenance = true;
         private bool _isVictoryItemsUnderMaintenance = true;
 
-        private const long STAR_FREEZE_ADDRESS = 0xD9475D;
+        private const long STAR_FREEZE_ADDRESS = 0xD9545D;
 
-        private const long FLOWER_INCREMENT_ADDRESS = 0xD94755;
+        private const long FLOWER_INCREMENT_ADDRESS = 0xD95455;
+
+        private const long SPIRIT_FREEZE_ADDRESS = 0xCE92C6;
+        private const long ELITE_SPIRIT_FREEZE_ADDRESS = 0xCE9295;
 
         private static readonly byte[] FREEZE_BYTES = new byte[] { 0x90, 0x90, 0x90 };
         private static readonly byte[] ORIGINAL_BYTES = new byte[] { 0x89, 0x50, 0x10 };
 
         private static readonly byte[] FLOWER_ORIGINAL_BYTES = new byte[] { 0x2B, 0xCD };
         private static readonly byte[] FLOWER_INCREMENT_BYTES = new byte[] { 0x03, 0xCD };
+
+        private static readonly byte[] SPIRIT_ORIGINAL_BYTES = new byte[] { 0x66, 0x89, 0x68, 0x0C };
+        private static readonly byte[] SPIRIT_FREEZE_BYTES = new byte[] { 0x90, 0x90, 0x90, 0x90 };
+
+        private static readonly byte[] ELITE_SPIRIT_ORIGINAL_BYTES = new byte[] { 0x66, 0x41, 0x89, 0x6C, 0x78, 0x10 };
+        private static readonly byte[] ELITE_SPIRIT_FREEZE_BYTES = new byte[] { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 };
 
         public MemoryEditorViewModel()
         {
@@ -120,6 +131,8 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
             BackToMenuCommand = new RelayCommand(() => SelectedTool = "menu");
             ToggleStarsFreezeCommand = new RelayCommand(ToggleStarsFreeze, CanToggleStarsFreeze);
             ToggleFlowersIncrementCommand = new RelayCommand(ToggleFlowersIncrement, CanToggleFlowersIncrement);
+            ToggleSpiritsFreezeCommand = new RelayCommand(ToggleSpiritsFreeze, CanToggleSpiritsFreeze);
+            ToggleStoreItemMultiplierCommand = new RelayCommand(ToggleStoreItemMultiplier, CanToggleStoreItemMultiplier);
             AddSpiritsCommand = new RelayCommand(AddSpiritsValue, CanAddSpirits);
             AddBeansCommand = new RelayCommand(AddBeansValue, CanAddBeans);
             OpenItemListCommand = new RelayCommand(OpenItemListWindow);
@@ -336,6 +349,8 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
                 ((RelayCommand)ApplyValueCommand).RaiseCanExecuteChanged();
                 ((RelayCommand)ToggleStarsFreezeCommand).RaiseCanExecuteChanged();
                 ((RelayCommand)ToggleFlowersIncrementCommand).RaiseCanExecuteChanged();
+                ((RelayCommand)ToggleSpiritsFreezeCommand).RaiseCanExecuteChanged();
+                ((RelayCommand)ToggleStoreItemMultiplierCommand).RaiseCanExecuteChanged();
             }
         }
 
@@ -390,6 +405,8 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
         public ICommand BackToMenuCommand { get; }
         public ICommand ToggleStarsFreezeCommand { get; }
         public ICommand ToggleFlowersIncrementCommand { get; }
+        public ICommand ToggleSpiritsFreezeCommand { get; }
+        public ICommand ToggleStoreItemMultiplierCommand { get; }
         public ICommand AddSpiritsCommand { get; }
         public ICommand AddBeansCommand { get; }
         public ICommand OpenItemListCommand { get; }
@@ -413,6 +430,28 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
                 _isFlowersIncrementEnabled = value;
                 OnPropertyChanged();
                 ((RelayCommand)ToggleFlowersIncrementCommand).RaiseCanExecuteChanged();
+            }
+        }
+
+        public bool IsSpiritsFrozen
+        {
+            get => _isSpiritsFrozen;
+            set
+            {
+                _isSpiritsFrozen = value;
+                OnPropertyChanged();
+                ((RelayCommand)ToggleSpiritsFreezeCommand).RaiseCanExecuteChanged();
+            }
+        }
+
+        public bool IsStoreItemMultiplierEnabled
+        {
+            get => _isStoreItemMultiplierEnabled;
+            set
+            {
+                _isStoreItemMultiplierEnabled = value;
+                OnPropertyChanged();
+                ((RelayCommand)ToggleStoreItemMultiplierCommand).RaiseCanExecuteChanged();
             }
         }
 
@@ -534,6 +573,8 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
                 _lastKnownGoodTicketValue = 0;
                 IsStarsFrozen = false;
                 IsFlowersIncrementEnabled = false;
+                IsSpiritsFrozen = false;
+                IsStoreItemMultiplierEnabled = false;
                 StatusMessage = "Detached from game process. Searching for game...";
 
                 _autoAttachTimer.Start();
@@ -660,6 +701,8 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
                     _lastKnownGoodTicketValue = 0;
                     IsStarsFrozen = false;
                     IsFlowersIncrementEnabled = false;
+                    IsSpiritsFrozen = false;
+                    IsStoreItemMultiplierEnabled = false;
                     StatusMessage = "Game closed. Waiting for game to start...";
                     _autoAttachTimer.Start();
                     return;
@@ -829,6 +872,166 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
                 StatusMessage = $"Error toggling flower increment: {ex.Message}";
                 MessageBox.Show(
                     $"Error occurred while toggling flower increment:\n\n{ex.Message}",
+                    "Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
+
+        private bool CanToggleSpiritsFreeze(object? parameter)
+        {
+            return IsAttached;
+        }
+
+        private void ToggleSpiritsFreeze(object? parameter)
+        {
+            if (!IsAttached)
+                return;
+
+            try
+            {
+                bool success1, success2;
+
+                if (!IsSpiritsFrozen)
+                {
+                    // Show custom dialog asking about extra kenshins and hissatsus
+                    var dialog = new Views.SpiritsFreezeConfirmDialog
+                    {
+                        Owner = Application.Current.MainWindow
+                    };
+
+                    bool? dialogResult = dialog.ShowDialog();
+
+                    // Freeze spirits
+                    success1 = _memoryService.WriteBytes(SPIRIT_FREEZE_ADDRESS, SPIRIT_FREEZE_BYTES);
+                    success2 = _memoryService.WriteBytes(ELITE_SPIRIT_FREEZE_ADDRESS, ELITE_SPIRIT_FREEZE_BYTES);
+
+                    if (success1 && success2)
+                    {
+                        IsSpiritsFrozen = true;
+                        StatusMessage = "Spirits frozen - unlimited hero & elite spirits enabled!";
+
+                        // If user clicked Yes, also activate the flowers increment feature
+                        if (dialogResult == true && !IsFlowersIncrementEnabled)
+                        {
+                            bool flowerSuccess = _memoryService.WriteBytes(FLOWER_INCREMENT_ADDRESS, FLOWER_INCREMENT_BYTES);
+                            if (flowerSuccess)
+                            {
+                                IsFlowersIncrementEnabled = true;
+                                StatusMessage = "Spirits frozen with extra rewards - 9 bonus kenshins & hissatsus activated!";
+                            }
+                            else
+                            {
+                                MessageBox.Show(
+                                    "Spirits frozen successfully, but failed to enable extra rewards.",
+                                    "Partial Success",
+                                    MessageBoxButton.OK,
+                                    MessageBoxImage.Warning);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        StatusMessage = "Failed to freeze spirits";
+                        MessageBox.Show(
+                            "Failed to freeze spirits. Make sure the game is running and you are attached to the process.",
+                            "Freeze Failed",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Error);
+                    }
+                }
+                else
+                {
+                    // Unfreeze spirits
+                    success1 = _memoryService.WriteBytes(SPIRIT_FREEZE_ADDRESS, SPIRIT_ORIGINAL_BYTES);
+                    success2 = _memoryService.WriteBytes(ELITE_SPIRIT_FREEZE_ADDRESS, ELITE_SPIRIT_ORIGINAL_BYTES);
+
+                    if (success1 && success2)
+                    {
+                        IsSpiritsFrozen = false;
+                        StatusMessage = "Spirits unfrozen - normal spirit behavior restored";
+                    }
+                    else
+                    {
+                        StatusMessage = "Failed to unfreeze spirits";
+                        MessageBox.Show(
+                            "Failed to unfreeze spirits.",
+                            "Unfreeze Failed",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Error);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Error toggling spirit freeze: {ex.Message}";
+                MessageBox.Show(
+                    $"Error occurred while toggling spirit freeze:\n\n{ex.Message}",
+                    "Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
+
+        private bool CanToggleStoreItemMultiplier(object? parameter)
+        {
+            return IsAttached;
+        }
+
+        private void ToggleStoreItemMultiplier(object? parameter)
+        {
+            if (!IsAttached)
+                return;
+
+            try
+            {
+                bool success;
+
+                if (!IsStoreItemMultiplierEnabled)
+                {
+                    success = _memoryService.InjectStoreItemMultiplier();
+
+                    if (success)
+                    {
+                        IsStoreItemMultiplierEnabled = true;
+                        StatusMessage = "Store item multiplier enabled - items will be multiplied by 2457 when purchased!";
+                    }
+                    else
+                    {
+                        StatusMessage = "Failed to enable store item multiplier";
+                        MessageBox.Show(
+                            "Failed to enable store item multiplier.\n\n" +
+                            "Make sure the game is running and you are attached to the process.",
+                            "Enable Failed",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Error);
+                    }
+                }
+                else
+                {
+                    success = _memoryService.RemoveStoreItemMultiplier();
+
+                    if (success)
+                    {
+                        IsStoreItemMultiplierEnabled = false;
+                        StatusMessage = "Store item multiplier disabled - normal purchase behavior restored";
+                    }
+                    else
+                    {
+                        StatusMessage = "Failed to disable store item multiplier";
+                        MessageBox.Show(
+                            "Failed to disable store item multiplier.",
+                            "Disable Failed",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Error);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Error toggling store item multiplier: {ex.Message}";
+                MessageBox.Show(
+                    $"Error occurred while toggling store item multiplier:\n\n{ex.Message}\n\nStack Trace:\n{ex.StackTrace}",
                     "Error",
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
