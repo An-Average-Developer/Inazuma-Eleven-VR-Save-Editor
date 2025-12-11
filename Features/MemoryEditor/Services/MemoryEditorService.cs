@@ -39,9 +39,9 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.Services
         private string _processName = "nie";
         private IntPtr _moduleBase = IntPtr.Zero;
         private Process? _targetProcess;
-        private IntPtr _storeItemMultiplierCodeCave1 = IntPtr.Zero; // For nie.exe+21EE85
-        private IntPtr _storeItemMultiplierCodeCave2 = IntPtr.Zero; // For nie.exe+21DE45
-        private IntPtr _storeItemMultiplierCodeCave3 = IntPtr.Zero; // For nie.exe+21E185
+        private IntPtr _storeItemMultiplierCodeCave1 = IntPtr.Zero; // For nie.exe+21EF25
+        private IntPtr _storeItemMultiplierCodeCave2 = IntPtr.Zero; // For nie.exe+21DEE5
+        private IntPtr _storeItemMultiplierCodeCave3 = IntPtr.Zero; // For nie.exe+21E225
 
         public bool IsAttached => _isAttached;
 
@@ -393,9 +393,9 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.Services
             try
             {
                 // Inject at all three item purchase locations (InjectAtAddress will throw detailed exceptions on failure)
-                InjectAtAddress(0x21EE85, 7, ref _storeItemMultiplierCodeCave1); // First - Hissatsus and Kenshins (return to 21EE8C)
-                InjectAtAddress(0x21DE45, 5, ref _storeItemMultiplierCodeCave2); // Second - Items unless boots and kizuna items (return to 21DE4A)
-                InjectAtAddress(0x21E185, 5, ref _storeItemMultiplierCodeCave3); // Third - Boots (return to 21E18A)
+                InjectAtAddress(0x21EF25, 7, ref _storeItemMultiplierCodeCave1); // First - Hissatsus and Kenshins (return to 21EF2A)
+                InjectAtAddress(0x21DEE5, 5, ref _storeItemMultiplierCodeCave2); // Second - Items unless boots and kizuna items (return to 21DEEA)
+                InjectAtAddress(0x21E225, 5, ref _storeItemMultiplierCodeCave3); // Third - Boots and kizuna items (return to 21E22A)
 
                 return true;
             }
@@ -416,13 +416,13 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.Services
             try
             {
                 // Restore original bytes at all three locations (5 bytes each)
-                byte[] originalBytes1 = new byte[] { 0x89, 0x4E, 0x10, 0x8B, 0xC3 }; // nie.exe+21EE85: mov [rsi+10],ecx; mov eax,ebx
-                byte[] originalBytes2 = new byte[] { 0x89, 0x4E, 0x10, 0x8B, 0xC3 }; // nie.exe+21DE45: mov [rsi+10],ecx; mov eax,ebx
-                byte[] originalBytes3 = new byte[] { 0x89, 0x4E, 0x10, 0x8B, 0xC3 }; // nie.exe+21E185: mov [rsi+10],ecx; mov eax,ebx
+                byte[] originalBytes1 = new byte[] { 0x89, 0x4E, 0x10, 0x8B, 0xC3 }; // nie.exe+21EF25: mov [rsi+10],ecx; mov eax,ebx
+                byte[] originalBytes2 = new byte[] { 0x89, 0x4E, 0x10, 0x8B, 0xC3 }; // nie.exe+21DEE5: mov [rsi+10],ecx; mov eax,ebx
+                byte[] originalBytes3 = new byte[] { 0x89, 0x4E, 0x10, 0x8B, 0xC3 }; // nie.exe+21E225: mov [rsi+10],ecx; mov eax,ebx
 
-                bool success1 = WriteBytes(0x21EE85, originalBytes1);
-                bool success2 = WriteBytes(0x21DE45, originalBytes2);
-                bool success3 = WriteBytes(0x21E185, originalBytes3);
+                bool success1 = WriteBytes(0x21EF25, originalBytes1);
+                bool success2 = WriteBytes(0x21DEE5, originalBytes2);
+                bool success3 = WriteBytes(0x21E225, originalBytes3);
 
                 // Free allocated memory
                 if (_storeItemMultiplierCodeCave1 != IntPtr.Zero)

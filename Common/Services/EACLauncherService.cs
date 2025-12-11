@@ -132,20 +132,28 @@ namespace InazumaElevenVRSaveEditor.Common.Services
                 string libraryFoldersPath = Path.Combine(steamPath, "steamapps", "libraryfolders.vdf");
                 if (File.Exists(libraryFoldersPath))
                 {
-                    string[] lines = File.ReadAllLines(libraryFoldersPath);
-                    foreach (string line in lines)
+                    string content = File.ReadAllText(libraryFoldersPath);
+
+                    // Parse all "path" entries from VDF file - handles multiple formats
+                    System.Text.RegularExpressions.Regex pathRegex = new System.Text.RegularExpressions.Regex(
+                        @"""path""\s*""([^""]+)""",
+                        System.Text.RegularExpressions.RegexOptions.IgnoreCase
+                    );
+
+                    var matches = pathRegex.Matches(content);
+                    foreach (System.Text.RegularExpressions.Match match in matches)
                     {
-                        if (line.Contains("\"path\""))
+                        if (match.Groups.Count >= 2)
                         {
-                            string[] parts = line.Split(new[] { '"' }, StringSplitOptions.RemoveEmptyEntries);
-                            if (parts.Length >= 2)
+                            string libraryPath = match.Groups[1].Value.Replace("\\\\", "\\");
+                            string gamePath = Path.Combine(libraryPath, "steamapps", "common", GAME_NAME);
+
+                            System.Diagnostics.Debug.WriteLine($"Checking Steam library: {libraryPath}");
+
+                            if (Directory.Exists(gamePath))
                             {
-                                string libraryPath = parts[1].Replace("\\\\", "\\");
-                                string gamePath = Path.Combine(libraryPath, "steamapps", "common", GAME_NAME);
-                                if (Directory.Exists(gamePath))
-                                {
-                                    return gamePath;
-                                }
+                                System.Diagnostics.Debug.WriteLine($"Found game at: {gamePath}");
+                                return gamePath;
                             }
                         }
                     }

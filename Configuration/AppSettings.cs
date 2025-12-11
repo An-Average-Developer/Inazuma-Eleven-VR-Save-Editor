@@ -7,6 +7,7 @@ namespace InazumaElevenVRSaveEditor.Configuration
     public class AppSettings
     {
         public string? ModsDirectory { get; set; }
+        public bool ShowLoadingScreen { get; set; } = true;
     }
 
     public static class SettingsService
@@ -66,6 +67,19 @@ namespace InazumaElevenVRSaveEditor.Configuration
         {
             var settings = LoadSettings() ?? new AppSettings();
             settings.ModsDirectory = modsDirectory;
+            SaveSettings(settings);
+        }
+
+        public static bool GetShowLoadingScreen()
+        {
+            var settings = LoadSettings();
+            return settings?.ShowLoadingScreen ?? true;
+        }
+
+        public static void SaveShowLoadingScreen(bool showLoadingScreen)
+        {
+            var settings = LoadSettings() ?? new AppSettings();
+            settings.ShowLoadingScreen = showLoadingScreen;
             SaveSettings(settings);
         }
     }

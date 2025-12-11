@@ -39,6 +39,95 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
+            <!-- Loading Screen Overlay -->
+            <Grid x:Name="LoadingScreenOverlay"
+                  Grid.RowSpan="3"
+                  Panel.ZIndex="9999"
+                  Visibility="Visible">
+                <Grid.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                        <GradientStop Color="#FF1E3A8A" Offset="0"/>
+                        <GradientStop Color="#FF3B82F6" Offset="1"/>
+                    </LinearGradientBrush>
+                </Grid.Background>
+
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Animated Card Image Area -->
+                    <Viewbox Grid.Row="1" Width="150" Height="150" Margin="0,0,0,30">
+                        <Image x:Name="LoadingCardImage"
+                              Stretch="Uniform"
+                              RenderTransformOrigin="0.5,0.5">
+                            <Image.Effect>
+                                <DropShadowEffect x:Name="LoadingCardGlow"
+                                                Color="#FFD700"
+                                                BlurRadius="25"
+                                                ShadowDepth="0"
+                                                Opacity="0.9"/>
+                            </Image.Effect>
+                            <Image.RenderTransform>
+                                <TransformGroup>
+                                    <ScaleTransform x:Name="LoadingCardScale" ScaleX="1" ScaleY="1"/>
+                                    <RotateTransform x:Name="LoadingCardRotate" Angle="0"/>
+                                </TransformGroup>
+                            </Image.RenderTransform>
+                        </Image>
+                    </Viewbox>
+
+                    <!-- Loading Text -->
+                    <TextBlock Grid.Row="2"
+                              Text="INAZUMA ELEVEN VR - SAVE EDITOR"
+                              FontSize="26"
+                              FontWeight="Bold"
+                              Foreground="White"
+                              HorizontalAlignment="Center"
+                              Margin="0,0,0,15"/>
+
+                    <!-- Progress Bar -->
+                    <Grid Grid.Row="3" Margin="100,0" MaxWidth="600">
+                        <Border Height="12"
+                               Background="#22FFFFFF"
+                               CornerRadius="6"/>
+                        <Border x:Name="LoadingProgressBar"
+                               Height="12"
+                               Width="0"
+                               HorizontalAlignment="Left"
+                               CornerRadius="6">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                    <GradientStop Color="#FFD700" Offset="0"/>
+                                    <GradientStop Color="#FFA500" Offset="0.5"/>
+                                    <GradientStop Color="#FFD700" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.Background>
+                            <Border.Effect>
+                                <DropShadowEffect Color="#FFD700"
+                                                BlurRadius="15"
+                                                ShadowDepth="0"
+                                                Opacity="0.8"/>
+                            </Border.Effect>
+                        </Border>
+                    </Grid>
+
+                    <!-- Loading Status Text -->
+                    <TextBlock x:Name="LoadingStatusText"
+                              Grid.Row="4"
+                              Text="Initializing..."
+                              FontSize="14"
+                              Foreground="#AAFFFFFF"
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Top"
+                              Margin="0,20,0,0"/>
+                </Grid>
+            </Grid>
+
             <!-- Theme Transition Overlay - shows static snapshot of old theme outside ring -->
             <Grid x:Name="ThemeTransitionOverlay"
                   Grid.RowSpan="3"
@@ -95,6 +184,16 @@
                            HorizontalAlignment="Right"
                            VerticalAlignment="Center"
                            Margin="0,0,16,0">
+                    <Button x:Name="SettingsButton"
+                            Style="{StaticResource MaterialDesignFloatingActionButton}"
+                            ToolTip="Settings"
+                            Click="SettingsButton_Click"
+                            Margin="5,0"
+                            Width="50"
+                            Height="50"
+                            Background="{DynamicResource SecondaryHueMidBrush}">
+                        <materialDesign:PackIcon Kind="Cog" Width="26" Height="26"/>
+                    </Button>
                     <Button x:Name="ThemeToggleButton"
                             Style="{StaticResource MaterialDesignFloatingActionButton}"
                             ToolTip="Toggle Theme"
@@ -116,6 +215,31 @@
                         <materialDesign:PackIcon Kind="Close" Width="26" Height="26"/>
                     </Button>
                 </StackPanel>
+
+                <!-- Settings Popup Menu -->
+                <Popup x:Name="SettingsPopup"
+                       Placement="Bottom"
+                       PlacementTarget="{Binding ElementName=SettingsButton}"
+                       StaysOpen="False"
+                       AllowsTransparency="True"
+                       PopupAnimation="Fade">
+                    <Border Background="{DynamicResource MaterialDesignPaper}"
+                            BorderBrush="{DynamicResource PrimaryHueMidBrush}"
+                            BorderThickness="2"
+                            CornerRadius="5"
+                            Padding="10"
+                            materialDesign:ElevationAssist.Elevation="Dp8">
+                        <StackPanel>
+                            <CheckBox x:Name="LoadingScreenCheckBox"
+                                     Content="Show Loading Screen"
+                                     IsChecked="True"
+                                     Checked="LoadingScreenCheckBox_Changed"
+                                     Unchecked="LoadingScreenCheckBox_Changed"
+                                     Margin="5"
+                                     Style="{StaticResource MaterialDesignCheckBox}"/>
+                        </StackPanel>
+                    </Border>
+                </Popup>
             </Grid>
 
             <!-- Main Content -->

@@ -36,12 +36,12 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
         private bool _isBeansUnderMaintenance = true;
         private bool _isVictoryItemsUnderMaintenance = true;
 
-        private const long STAR_FREEZE_ADDRESS = 0xD9545D;
+        private const long STAR_FREEZE_ADDRESS = 0xD95F1D;
 
-        private const long FLOWER_INCREMENT_ADDRESS = 0xD95455;
+        private const long FLOWER_INCREMENT_ADDRESS = 0xD95F15;
 
-        private const long SPIRIT_FREEZE_ADDRESS = 0xCE92C6;
-        private const long ELITE_SPIRIT_FREEZE_ADDRESS = 0xCE9295;
+        private const long SPIRIT_FREEZE_ADDRESS = 0xCE9A46;
+        private const long ELITE_SPIRIT_FREEZE_ADDRESS = 0xCE9A15;
 
         private static readonly byte[] FREEZE_BYTES = new byte[] { 0x90, 0x90, 0x90 };
         private static readonly byte[] ORIGINAL_BYTES = new byte[] { 0x89, 0x50, 0x10 };
@@ -50,6 +50,7 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
         private static readonly byte[] FLOWER_INCREMENT_BYTES = new byte[] { 0x03, 0xCD };
 
         private static readonly byte[] SPIRIT_ORIGINAL_BYTES = new byte[] { 0x66, 0x89, 0x68, 0x0C };
+
         private static readonly byte[] SPIRIT_FREEZE_BYTES = new byte[] { 0x90, 0x90, 0x90, 0x90 };
 
         private static readonly byte[] ELITE_SPIRIT_ORIGINAL_BYTES = new byte[] { 0x66, 0x41, 0x89, 0x6C, 0x78, 0x10 };
