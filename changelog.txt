@@ -1,3 +1,3 @@
 1.1.0
 - Fixed multiple options to work with the update 1.5.1
-- Fixed the issue where it did not work when the game was on another disc.
+- Fixed the issue where the editor doesn't work when the game is on another disc.
