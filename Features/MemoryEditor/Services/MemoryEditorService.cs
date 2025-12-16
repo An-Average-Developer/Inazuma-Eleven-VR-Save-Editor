@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -42,6 +43,12 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.Services
         private IntPtr _storeItemMultiplierCodeCave1 = IntPtr.Zero; // For nie.exe+21EF25
         private IntPtr _storeItemMultiplierCodeCave2 = IntPtr.Zero; // For nie.exe+21DEE5
         private IntPtr _storeItemMultiplierCodeCave3 = IntPtr.Zero; // For nie.exe+21E225
+        private IntPtr _heroSpiritIncrementCodeCave = IntPtr.Zero; // For Heroes Spirits AOB injection
+        private IntPtr _eliteSpiritIncrementCodeCave = IntPtr.Zero; // For Elite Spirits AOB injection
+        private IntPtr _passiveValueCodeCave = IntPtr.Zero; // For Passive Value injection
+        private IntPtr _passiveValAdrAddress = IntPtr.Zero; // Address where passiveValAdr is stored
+        private IntPtr _passiveValTypeAddress = IntPtr.Zero; // Address where passiveValType is stored
+        private IntPtr _passiveValueHookAddress = IntPtr.Zero; // Address of the hook
 
         public bool IsAttached => _isAttached;
 
@@ -444,6 +451,621 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.Services
                 }
 
                 return success1 && success2 && success3;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        private IntPtr AOBScan(byte[] pattern, byte[]? mask = null)
+        {
+            if (_targetProcess == null || _moduleBase == IntPtr.Zero)
+                return IntPtr.Zero;
+
+            try
+            {
+                var module = _targetProcess.MainModule;
+                if (module == null)
+                    return IntPtr.Zero;
+
+                long moduleSize = module.ModuleMemorySize;
+                byte[] buffer = new byte[moduleSize];
+
+                if (!ReadProcessMemory(_processHandle, _moduleBase, buffer, (int)moduleSize, out _))
+                    return IntPtr.Zero;
+
+                // If no mask provided, create a mask of all 1s (match all bytes)
+                if (mask == null)
+                {
+                    mask = new byte[pattern.Length];
+                    for (int i = 0; i < mask.Length; i++)
+                        mask[i] = 1;
+                }
+
+                for (long i = 0; i < moduleSize - pattern.Length; i++)
+                {
+                    bool found = true;
+                    for (int j = 0; j < pattern.Length; j++)
+                    {
+                        // Skip comparison if mask is 0 (wildcard)
+                        if (mask[j] != 0 && buffer[i + j] != pattern[j])
+                        {
+                            found = false;
+                            break;
+                        }
+                    }
+
+                    if (found)
+                    {
+                        return new IntPtr(_moduleBase.ToInt64() + i);
+                    }
+                }
+
+                return IntPtr.Zero;
+            }
+            catch (Exception)
+            {
+                return IntPtr.Zero;
+            }
+        }
+
+        public bool InjectSpiritIncrement()
+        {
+            if (!_isAttached || _processHandle == IntPtr.Zero)
+            {
+                throw new InvalidOperationException("Not attached to process");
+            }
+
+            try
+            {
+                // Heroes Spirits: AOB scan for "66 89 68 0C E9"
+                byte[] heroesAOB = new byte[] { 0x66, 0x89, 0x68, 0x0C, 0xE9 };
+                IntPtr heroesAddress = AOBScan(heroesAOB, null);
+
+                if (heroesAddress == IntPtr.Zero)
+                {
+                    throw new Exception("Failed to find Heroes Spirits AOB pattern");
+                }
+
+                // Elite Spirits: AOB scan for "66 41 89 6C 78 10 E9"
+                byte[] eliteAOB = new byte[] { 0x66, 0x41, 0x89, 0x6C, 0x78, 0x10, 0xE9 };
+                IntPtr eliteAddress = AOBScan(eliteAOB, null);
+
+                if (eliteAddress == IntPtr.Zero)
+                {
+                    throw new Exception("Failed to find Elite Spirits AOB pattern");
+                }
+
+                // Inject Heroes Spirits (5 bytes to replace for jmp instruction)
+                InjectSpiritAtAddress(heroesAddress, 5, true, ref _heroSpiritIncrementCodeCave);
+
+                // Inject Elite Spirits (7 bytes to replace: 6 for mov + 1 for next instruction)
+                InjectSpiritAtAddress(eliteAddress, 7, false, ref _eliteSpiritIncrementCodeCave);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                RemoveSpiritIncrement();
+                throw new Exception($"Spirit increment injection failed: {ex.Message}", ex);
+            }
+        }
+
+        private bool InjectSpiritAtAddress(IntPtr address, int bytesToReplace, bool isHeroSpirit, ref IntPtr codeCave)
+        {
+            try
+            {
+                // Try multiple allocation attempts at different offsets to find memory within ±2GB range
+                long[] offsets = { 0x10000000, 0x20000000, 0x30000000, -0x10000000, -0x20000000, 0x05000000, 0x01000000 };
+
+                foreach (long offset in offsets)
+                {
+                    IntPtr preferredAddress = new IntPtr(_moduleBase.ToInt64() + offset);
+                    codeCave = VirtualAllocEx(_processHandle, preferredAddress, 2048, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+
+                    if (codeCave != IntPtr.Zero)
+                    {
+                        long distance = codeCave.ToInt64() - address.ToInt64();
+                        if (Math.Abs(distance) <= 0x7FFFFFFF)
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            VirtualFreeEx(_processHandle, codeCave, 0, MEM_RELEASE);
+                            codeCave = IntPtr.Zero;
+                        }
+                    }
+                }
+
+                if (codeCave == IntPtr.Zero)
+                {
+                    codeCave = VirtualAllocEx(_processHandle, IntPtr.Zero, 2048, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+
+                    if (codeCave != IntPtr.Zero)
+                    {
+                        long distance = codeCave.ToInt64() - address.ToInt64();
+                        if (Math.Abs(distance) > 0x7FFFFFFF)
+                        {
+                            VirtualFreeEx(_processHandle, codeCave, 0, MEM_RELEASE);
+                            codeCave = IntPtr.Zero;
+                        }
+                    }
+                }
+
+                if (codeCave == IntPtr.Zero)
+                {
+                    throw new Exception($"Failed to allocate memory within ±2GB range");
+                }
+
+                // Build injected code
+                byte[] injectedCode;
+                int jmpOffsetPos;
+
+                if (isHeroSpirit)
+                {
+                    // Heroes: add bp, 2; mov [rax+0C],bp; jmp to original destination
+                    injectedCode = new byte[13];
+                    injectedCode[0] = 0x66; injectedCode[1] = 0x83; injectedCode[2] = 0xC5; injectedCode[3] = 0x02; // add bp, 2
+                    injectedCode[4] = 0x66; injectedCode[5] = 0x89; injectedCode[6] = 0x68; injectedCode[7] = 0x0C; // mov [rax+0C],bp
+                    injectedCode[8] = 0xE9; // jmp (offset will be calculated)
+                    jmpOffsetPos = 9;
+                }
+                else
+                {
+                    // Elite: add bp, 2; mov [r8+rdi*2+10],bp; jmp to original destination
+                    injectedCode = new byte[15];
+                    injectedCode[0] = 0x66; injectedCode[1] = 0x83; injectedCode[2] = 0xC5; injectedCode[3] = 0x02; // add bp, 2
+                    injectedCode[4] = 0x66; injectedCode[5] = 0x41; injectedCode[6] = 0x89; injectedCode[7] = 0x6C;
+                    injectedCode[8] = 0x78; injectedCode[9] = 0x10; // mov [r8+rdi*2+10],bp
+                    injectedCode[10] = 0xE9; // jmp (offset will be calculated)
+                    jmpOffsetPos = 11;
+                }
+
+                // Calculate jump to the original jump destination (nie.exe+CE9B07)
+                // Both heroes and elite spirits jump to the same destination after the mov instruction
+                IntPtr originalDestination = new IntPtr(_moduleBase.ToInt64() + 0xCE9B07);
+                long jmpOffset = originalDestination.ToInt64() - (codeCave.ToInt64() + injectedCode.Length);
+
+                byte[] offsetBytes = BitConverter.GetBytes((int)jmpOffset);
+                Array.Copy(offsetBytes, 0, injectedCode, jmpOffsetPos, 4);
+
+                // Write injected code to code cave
+                if (!WriteProcessMemory(_processHandle, codeCave, injectedCode, injectedCode.Length, out _))
+                {
+                    VirtualFreeEx(_processHandle, codeCave, 0, MEM_RELEASE);
+                    codeCave = IntPtr.Zero;
+                    throw new Exception($"Failed to write injected code");
+                }
+
+                // Create hook: replace original bytes with jump to code cave
+                long jmpToCodeCave = codeCave.ToInt64() - (address.ToInt64() + 5);
+                byte[] hookBytes = new byte[bytesToReplace];
+                hookBytes[0] = 0xE9; // jmp opcode
+                byte[] hookOffsetBytes = BitConverter.GetBytes((int)jmpToCodeCave);
+                Array.Copy(hookOffsetBytes, 0, hookBytes, 1, 4);
+
+                // Fill remaining bytes with NOPs if needed
+                for (int i = 5; i < bytesToReplace; i++)
+                {
+                    hookBytes[i] = 0x90; // NOP
+                }
+
+                // Change memory protection and write hook
+                uint oldProtect;
+                if (!VirtualProtectEx(_processHandle, address, (uint)bytesToReplace, PAGE_EXECUTE_READWRITE, out oldProtect))
+                {
+                    VirtualFreeEx(_processHandle, codeCave, 0, MEM_RELEASE);
+                    codeCave = IntPtr.Zero;
+                    throw new Exception("Failed to change memory protection");
+                }
+
+                bool hookSuccess = WriteProcessMemory(_processHandle, address, hookBytes, hookBytes.Length, out _);
+                VirtualProtectEx(_processHandle, address, (uint)bytesToReplace, oldProtect, out _);
+
+                if (!hookSuccess)
+                {
+                    VirtualFreeEx(_processHandle, codeCave, 0, MEM_RELEASE);
+                    codeCave = IntPtr.Zero;
+                    throw new Exception("Failed to write hook");
+                }
+
+                return true;
+            }
+            catch (Exception)
+            {
+                if (codeCave != IntPtr.Zero)
+                {
+                    VirtualFreeEx(_processHandle, codeCave, 0, MEM_RELEASE);
+                    codeCave = IntPtr.Zero;
+                }
+                throw;
+            }
+        }
+
+        public bool RemoveSpiritIncrement()
+        {
+            if (!_isAttached || _processHandle == IntPtr.Zero)
+            {
+                throw new InvalidOperationException("Not attached to process");
+            }
+
+            try
+            {
+                bool success1 = true;
+                bool success2 = true;
+
+                // Restore Heroes Spirits original bytes
+                if (_heroSpiritIncrementCodeCave != IntPtr.Zero)
+                {
+                    // Use the known offset since it's already hooked
+                    IntPtr heroesAddress = new IntPtr(_moduleBase.ToInt64() + 0xCE9A46);
+
+                    // Restore 5 bytes: the original 4-byte mov instruction + the next byte
+                    byte[] heroesOriginal = new byte[] { 0x66, 0x89, 0x68, 0x0C, 0xE9 };
+                    uint oldProtect;
+                    VirtualProtectEx(_processHandle, heroesAddress, (uint)heroesOriginal.Length, PAGE_EXECUTE_READWRITE, out oldProtect);
+                    success1 = WriteProcessMemory(_processHandle, heroesAddress, heroesOriginal, heroesOriginal.Length, out _);
+                    VirtualProtectEx(_processHandle, heroesAddress, (uint)heroesOriginal.Length, oldProtect, out _);
+
+                    VirtualFreeEx(_processHandle, _heroSpiritIncrementCodeCave, 0, MEM_RELEASE);
+                    _heroSpiritIncrementCodeCave = IntPtr.Zero;
+                }
+
+                // Restore Elite Spirits original bytes
+                if (_eliteSpiritIncrementCodeCave != IntPtr.Zero)
+                {
+                    // Use the known offset since it's already hooked
+                    IntPtr eliteAddress = new IntPtr(_moduleBase.ToInt64() + 0xCE9A15);
+
+                    // Restore 7 bytes: the original 6-byte mov instruction + the next byte
+                    byte[] eliteOriginal = new byte[] { 0x66, 0x41, 0x89, 0x6C, 0x78, 0x10, 0xE9 };
+                    uint oldProtect;
+                    VirtualProtectEx(_processHandle, eliteAddress, (uint)eliteOriginal.Length, PAGE_EXECUTE_READWRITE, out oldProtect);
+                    success2 = WriteProcessMemory(_processHandle, eliteAddress, eliteOriginal, eliteOriginal.Length, out _);
+                    VirtualProtectEx(_processHandle, eliteAddress, (uint)eliteOriginal.Length, oldProtect, out _);
+
+                    VirtualFreeEx(_processHandle, _eliteSpiritIncrementCodeCave, 0, MEM_RELEASE);
+                    _eliteSpiritIncrementCodeCave = IntPtr.Zero;
+                }
+
+                return success1 && success2;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        public bool InjectPassiveValueEditing()
+        {
+            if (!_isAttached || _processHandle == IntPtr.Zero)
+            {
+                throw new InvalidOperationException("Not attached to process");
+            }
+
+            try
+            {
+                // AOB scan for "48 8B 0F 0F 57 C9 F3 * * * E8 * * * * EB * 0F"
+                // Pattern from Cheat Engine script with wildcards
+                byte[] aobPattern = new byte[] {
+                    0x48, 0x8B, 0x0F, 0x0F, 0x57, 0xC9, 0xF3, 0x00, 0x00, 0x00,
+                    0xE8, 0x00, 0x00, 0x00, 0x00, 0xEB, 0x00, 0x0F
+                };
+                byte[] aobMask = new byte[] {
+                    1, 1, 1, 1, 1, 1, 1, 0, 0, 0,  // Match first 7 bytes, wildcards for next 3
+                    1, 0, 0, 0, 0, 1, 0, 1          // Match 0xE8, wildcards for 4, match 0xEB, wildcard, match 0x0F
+                };
+                _passiveValueHookAddress = AOBScan(aobPattern, aobMask);
+
+                if (_passiveValueHookAddress == IntPtr.Zero)
+                {
+                    throw new Exception("Failed to find Passive Value AOB pattern.\n\n" +
+                        "Make sure:\n" +
+                        "1. The game is running\n" +
+                        "2. You are in the Abilearn Board screen\n" +
+                        "3. The game version is correct");
+                }
+
+                // Allocate memory for code cave (need space for code + passiveValAdr + passiveValType)
+                long[] offsets = { 0x10000000, 0x20000000, 0x30000000, -0x10000000, -0x20000000, 0x05000000, 0x01000000 };
+
+                foreach (long offset in offsets)
+                {
+                    IntPtr preferredAddress = new IntPtr(_moduleBase.ToInt64() + offset);
+                    _passiveValueCodeCave = VirtualAllocEx(_processHandle, preferredAddress, 4096, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+
+                    if (_passiveValueCodeCave != IntPtr.Zero)
+                    {
+                        long distance = _passiveValueCodeCave.ToInt64() - _passiveValueHookAddress.ToInt64();
+                        if (Math.Abs(distance) <= 0x7FFFFFFF)
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            VirtualFreeEx(_processHandle, _passiveValueCodeCave, 0, MEM_RELEASE);
+                            _passiveValueCodeCave = IntPtr.Zero;
+                        }
+                    }
+                }
+
+                if (_passiveValueCodeCave == IntPtr.Zero)
+                {
+                    _passiveValueCodeCave = VirtualAllocEx(_processHandle, IntPtr.Zero, 4096, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+
+                    if (_passiveValueCodeCave != IntPtr.Zero)
+                    {
+                        long distance = _passiveValueCodeCave.ToInt64() - _passiveValueHookAddress.ToInt64();
+                        if (Math.Abs(distance) > 0x7FFFFFFF)
+                        {
+                            VirtualFreeEx(_processHandle, _passiveValueCodeCave, 0, MEM_RELEASE);
+                            _passiveValueCodeCave = IntPtr.Zero;
+                        }
+                    }
+                }
+
+                if (_passiveValueCodeCave == IntPtr.Zero)
+                {
+                    throw new Exception("Failed to allocate memory within ±2GB range");
+                }
+
+                // Set up addresses for passiveValAdr and passiveValType (at the end of the code cave)
+                _passiveValAdrAddress = new IntPtr(_passiveValueCodeCave.ToInt64() + 100); // Store at offset 100
+                _passiveValTypeAddress = new IntPtr(_passiveValueCodeCave.ToInt64() + 108); // Store at offset 108
+
+                // Build injected code
+                // mov [passiveValAdr],rax
+                // mov cx,[rax+C]
+                // mov [passiveValType],cx
+                // mov rcx,[rdi]
+                // xorps xmm1,xmm1
+                // jmp return
+
+                List<byte> injectedCode = new List<byte>();
+
+                // mov [passiveValAdr],rax  (48 A3 + 8-byte address)
+                injectedCode.Add(0x48); // REX.W prefix
+                injectedCode.Add(0xA3); // mov moffs64, rax
+                injectedCode.AddRange(BitConverter.GetBytes(_passiveValAdrAddress.ToInt64()));
+
+                // mov cx,[rax+C]  (66 8B 48 0C)
+                injectedCode.Add(0x66); // Operand size prefix
+                injectedCode.Add(0x8B);
+                injectedCode.Add(0x48);
+                injectedCode.Add(0x0C);
+
+                // mov [passiveValType],cx  (66 89 0D + 4-byte RIP-relative offset)
+                injectedCode.Add(0x66); // Operand size prefix
+                injectedCode.Add(0x89);
+                injectedCode.Add(0x0D);
+                long typeOffset = _passiveValTypeAddress.ToInt64() - (_passiveValueCodeCave.ToInt64() + injectedCode.Count + 4);
+                injectedCode.AddRange(BitConverter.GetBytes((int)typeOffset));
+
+                // Original code: mov rcx,[rdi]  (48 8B 0F)
+                injectedCode.Add(0x48);
+                injectedCode.Add(0x8B);
+                injectedCode.Add(0x0F);
+
+                // Original code: xorps xmm1,xmm1  (0F 57 C9)
+                injectedCode.Add(0x0F);
+                injectedCode.Add(0x57);
+                injectedCode.Add(0xC9);
+
+                // jmp to return address (E9 + 4-byte offset)
+                injectedCode.Add(0xE9);
+                IntPtr returnAddress = new IntPtr(_passiveValueHookAddress.ToInt64() + 6); // 6 bytes for the original code
+                long jmpOffset = returnAddress.ToInt64() - (_passiveValueCodeCave.ToInt64() + injectedCode.Count + 4);
+                injectedCode.AddRange(BitConverter.GetBytes((int)jmpOffset));
+
+                // Write injected code
+                if (!WriteProcessMemory(_processHandle, _passiveValueCodeCave, injectedCode.ToArray(), injectedCode.Count, out _))
+                {
+                    VirtualFreeEx(_processHandle, _passiveValueCodeCave, 0, MEM_RELEASE);
+                    _passiveValueCodeCave = IntPtr.Zero;
+                    throw new Exception("Failed to write injected code");
+                }
+
+                // Initialize passiveValAdr and passiveValType to 0
+                byte[] zeroBuffer = new byte[8];
+                WriteProcessMemory(_processHandle, _passiveValAdrAddress, zeroBuffer, 8, out _);
+                WriteProcessMemory(_processHandle, _passiveValTypeAddress, new byte[4], 4, out _);
+
+                // Create hook: replace original 6 bytes with jump to code cave
+                long jmpToCodeCave = _passiveValueCodeCave.ToInt64() - (_passiveValueHookAddress.ToInt64() + 5);
+                byte[] hookBytes = new byte[6];
+                hookBytes[0] = 0xE9; // jmp opcode
+                byte[] hookOffsetBytes = BitConverter.GetBytes((int)jmpToCodeCave);
+                Array.Copy(hookOffsetBytes, 0, hookBytes, 1, 4);
+                hookBytes[5] = 0x90; // NOP to fill the 6th byte
+
+                // Change memory protection and write hook
+                uint oldProtect;
+                if (!VirtualProtectEx(_processHandle, _passiveValueHookAddress, 6, PAGE_EXECUTE_READWRITE, out oldProtect))
+                {
+                    VirtualFreeEx(_processHandle, _passiveValueCodeCave, 0, MEM_RELEASE);
+                    _passiveValueCodeCave = IntPtr.Zero;
+                    throw new Exception("Failed to change memory protection");
+                }
+
+                bool hookSuccess = WriteProcessMemory(_processHandle, _passiveValueHookAddress, hookBytes, hookBytes.Length, out _);
+                VirtualProtectEx(_processHandle, _passiveValueHookAddress, 6, oldProtect, out _);
+
+                if (!hookSuccess)
+                {
+                    VirtualFreeEx(_processHandle, _passiveValueCodeCave, 0, MEM_RELEASE);
+                    _passiveValueCodeCave = IntPtr.Zero;
+                    throw new Exception("Failed to write hook");
+                }
+
+                return true;
+            }
+            catch (Exception)
+            {
+                if (_passiveValueCodeCave != IntPtr.Zero)
+                {
+                    VirtualFreeEx(_processHandle, _passiveValueCodeCave, 0, MEM_RELEASE);
+                    _passiveValueCodeCave = IntPtr.Zero;
+                }
+                throw;
+            }
+        }
+
+        public bool RemovePassiveValueEditing()
+        {
+            if (!_isAttached || _processHandle == IntPtr.Zero)
+            {
+                throw new InvalidOperationException("Not attached to process");
+            }
+
+            try
+            {
+                bool success = true;
+
+                if (_passiveValueHookAddress != IntPtr.Zero)
+                {
+                    // Restore original bytes: 48 8B 0F 0F 57 C9
+                    byte[] originalBytes = new byte[] { 0x48, 0x8B, 0x0F, 0x0F, 0x57, 0xC9 };
+                    uint oldProtect;
+                    VirtualProtectEx(_processHandle, _passiveValueHookAddress, (uint)originalBytes.Length, PAGE_EXECUTE_READWRITE, out oldProtect);
+                    success = WriteProcessMemory(_processHandle, _passiveValueHookAddress, originalBytes, originalBytes.Length, out _);
+                    VirtualProtectEx(_processHandle, _passiveValueHookAddress, (uint)originalBytes.Length, oldProtect, out _);
+
+                    _passiveValueHookAddress = IntPtr.Zero;
+                }
+
+                if (_passiveValueCodeCave != IntPtr.Zero)
+                {
+                    VirtualFreeEx(_processHandle, _passiveValueCodeCave, 0, MEM_RELEASE);
+                    _passiveValueCodeCave = IntPtr.Zero;
+                }
+
+                _passiveValAdrAddress = IntPtr.Zero;
+                _passiveValTypeAddress = IntPtr.Zero;
+
+                return success;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        public (bool hasValue, int valueType, double currentValue) ReadPassiveValue()
+        {
+            if (!_isAttached || _processHandle == IntPtr.Zero || _passiveValAdrAddress == IntPtr.Zero)
+            {
+                return (false, 0, 0);
+            }
+
+            try
+            {
+                // Read passiveValAdr
+                byte[] adrBuffer = new byte[8];
+                if (!ReadProcessMemory(_processHandle, _passiveValAdrAddress, adrBuffer, 8, out _))
+                {
+                    return (false, 0, 0);
+                }
+
+                long passiveValAdr = BitConverter.ToInt64(adrBuffer, 0);
+                if (passiveValAdr == 0)
+                {
+                    return (false, 0, 0);
+                }
+
+                // Read passiveValType
+                byte[] typeBuffer = new byte[4];
+                if (!ReadProcessMemory(_processHandle, _passiveValTypeAddress, typeBuffer, 4, out _))
+                {
+                    return (false, 0, 0);
+                }
+
+                int passiveValType = BitConverter.ToInt32(typeBuffer, 0);
+
+                // Read the actual value at passiveValAdr
+                IntPtr valueAddress = new IntPtr(passiveValAdr);
+                byte[] valueBuffer = new byte[4];
+                if (!ReadProcessMemory(_processHandle, valueAddress, valueBuffer, 4, out _))
+                {
+                    return (false, 0, 0);
+                }
+
+                double currentValue;
+                if (passiveValType == 2)
+                {
+                    // Float value
+                    currentValue = BitConverter.ToSingle(valueBuffer, 0);
+                }
+                else
+                {
+                    // DWord value
+                    currentValue = BitConverter.ToInt32(valueBuffer, 0);
+                }
+
+                return (true, passiveValType, currentValue);
+            }
+            catch (Exception)
+            {
+                return (false, 0, 0);
+            }
+        }
+
+        public bool WritePassiveValue(string valueString)
+        {
+            if (!_isAttached || _processHandle == IntPtr.Zero || _passiveValAdrAddress == IntPtr.Zero)
+            {
+                return false;
+            }
+
+            try
+            {
+                // Read passiveValAdr
+                byte[] adrBuffer = new byte[8];
+                if (!ReadProcessMemory(_processHandle, _passiveValAdrAddress, adrBuffer, 8, out _))
+                {
+                    return false;
+                }
+
+                long passiveValAdr = BitConverter.ToInt64(adrBuffer, 0);
+                if (passiveValAdr == 0)
+                {
+                    return false;
+                }
+
+                // Read passiveValType
+                byte[] typeBuffer = new byte[4];
+                if (!ReadProcessMemory(_processHandle, _passiveValTypeAddress, typeBuffer, 4, out _))
+                {
+                    return false;
+                }
+
+                int passiveValType = BitConverter.ToInt32(typeBuffer, 0);
+
+                // Parse and write the value
+                IntPtr valueAddress = new IntPtr(passiveValAdr);
+                byte[] valueBuffer;
+
+                if (passiveValType == 2)
+                {
+                    // Float value
+                    if (!float.TryParse(valueString, out float floatValue))
+                    {
+                        return false;
+                    }
+                    valueBuffer = BitConverter.GetBytes(floatValue);
+                }
+                else
+                {
+                    // DWord value
+                    if (!int.TryParse(valueString, out int intValue))
+                    {
+                        return false;
+                    }
+                    valueBuffer = BitConverter.GetBytes(intValue);
+                }
+
+                return WriteProcessMemory(_processHandle, valueAddress, valueBuffer, valueBuffer.Length, out _);
             }
             catch (Exception)
             {

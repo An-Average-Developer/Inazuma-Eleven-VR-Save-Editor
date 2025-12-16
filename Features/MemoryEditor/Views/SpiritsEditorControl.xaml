@@ -110,6 +110,90 @@
                     </Grid>
                 </Border>
 
+                <!-- Freeze Spirits Toggle -->
+                <Border Background="#4CAF50"
+                       CornerRadius="8"
+                       Margin="0,20,0,0"
+                       Visibility="{Binding MemoryEditor.IsAttached, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <Grid Margin="15">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <materialDesign:PackIcon Grid.Column="0"
+                                               Kind="Snowflake"
+                                               Width="28"
+                                               Height="28"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,15,0"
+                                               Foreground="White"/>
+
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock Text="Freeze Spirits"
+                                     FontSize="16"
+                                     FontWeight="Bold"
+                                     Foreground="White"/>
+                            <TextBlock Text="Prevent spirits from decreasing (unlimited spirits)"
+                                     FontSize="11"
+                                     Foreground="White"
+                                     Opacity="0.9"
+                                     Margin="0,3,0,0"/>
+                        </StackPanel>
+
+                        <ToggleButton Grid.Column="2"
+                                     IsChecked="{Binding MemoryEditor.IsSpiritsFrozen, Mode=OneWay}"
+                                     Style="{StaticResource MaterialDesignSwitchToggleButton}"
+                                     ToolTip="Toggle freeze on/off"
+                                     Command="{Binding MemoryEditor.ToggleSpiritsFreezeCommand}"
+                                     VerticalAlignment="Center"
+                                     Margin="10,0,0,0"/>
+                    </Grid>
+                </Border>
+
+                <!-- Increment Spirits on Use Toggle -->
+                <Border Background="#2196F3"
+                       CornerRadius="8"
+                       Margin="0,10,0,0"
+                       Visibility="{Binding MemoryEditor.IsAttached, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <Grid Margin="15">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <materialDesign:PackIcon Grid.Column="0"
+                                               Kind="PlusCircle"
+                                               Width="28"
+                                               Height="28"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,15,0"
+                                               Foreground="White"/>
+
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock Text="Increment Spirits on Use"
+                                     FontSize="16"
+                                     FontWeight="Bold"
+                                     Foreground="White"/>
+                            <TextBlock Text="Spirits increase by 2 when used instead of decreasing"
+                                     FontSize="11"
+                                     Foreground="White"
+                                     Opacity="0.9"
+                                     Margin="0,3,0,0"/>
+                        </StackPanel>
+
+                        <ToggleButton Grid.Column="2"
+                                     IsChecked="{Binding MemoryEditor.IsSpiritIncrementEnabled, Mode=OneWay}"
+                                     Style="{StaticResource MaterialDesignSwitchToggleButton}"
+                                     ToolTip="Toggle increment on/off"
+                                     Command="{Binding MemoryEditor.ToggleSpiritIncrementCommand}"
+                                     VerticalAlignment="Center"
+                                     Margin="10,0,0,0"/>
+                    </Grid>
+                </Border>
+
                 <!-- Spirits List -->
                 <StackPanel Margin="0,20,0,0">
                     <TextBlock Text="Available Spirits"

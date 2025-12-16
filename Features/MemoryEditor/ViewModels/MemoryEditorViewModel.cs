@@ -27,7 +27,9 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
         private bool _isStarsFrozen = false;
         private bool _isFlowersIncrementEnabled = false;
         private bool _isSpiritsFrozen = false;
+        private bool _isSpiritIncrementEnabled = false;
         private bool _isStoreItemMultiplierEnabled = false;
+        private bool _isPassiveValueEditingEnabled = false;
 
         // Individual maintenance flags for each card
         private bool _isStarsUnderMaintenance = true;
@@ -35,6 +37,13 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
         private bool _isSpiritsUnderMaintenance = true;
         private bool _isBeansUnderMaintenance = true;
         private bool _isVictoryItemsUnderMaintenance = true;
+        private bool _isPassiveValuesUnderMaintenance = false;
+
+        // Passive value tracking
+        private string _passiveValueType = "Unknown";
+        private string _passiveCurrentValue = "N/A";
+        private string _passiveNewValue = "";
+        private bool _hasPassiveValue = false;
 
         private const long STAR_FREEZE_ADDRESS = 0xD95F1D;
 
@@ -133,10 +142,32 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
             ToggleStarsFreezeCommand = new RelayCommand(ToggleStarsFreeze, CanToggleStarsFreeze);
             ToggleFlowersIncrementCommand = new RelayCommand(ToggleFlowersIncrement, CanToggleFlowersIncrement);
             ToggleSpiritsFreezeCommand = new RelayCommand(ToggleSpiritsFreeze, CanToggleSpiritsFreeze);
+            ToggleSpiritIncrementCommand = new RelayCommand(ToggleSpiritIncrement, CanToggleSpiritIncrement);
             ToggleStoreItemMultiplierCommand = new RelayCommand(ToggleStoreItemMultiplier, CanToggleStoreItemMultiplier);
+            TogglePassiveValueEditingCommand = new RelayCommand(TogglePassiveValueEditing, CanTogglePassiveValueEditing);
             AddSpiritsCommand = new RelayCommand(AddSpiritsValue, CanAddSpirits);
             AddBeansCommand = new RelayCommand(AddBeansValue, CanAddBeans);
             OpenItemListCommand = new RelayCommand(OpenItemListWindow);
+            SelectPassiveValuesEditorCommand = new RelayCommand(() =>
+            {
+                // Show warning before entering Passive Values editor
+                var result = MessageBox.Show(
+                    "⚠️ IMPORTANT WARNING ⚠️\n\n" +
+                    "• Passive values you edit will affect ALL players who use this passive\n" +
+                    "• Passive values will reset to default after restarting the game\n" +
+                    "• Use this feature carefully\n\n" +
+                    "Do you want to continue?",
+                    "Passive Values Warning",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning);
+
+                if (result == MessageBoxResult.Yes)
+                {
+                    SelectedTool = "passivevalues";
+                    SelectedValue = null;
+                }
+            });
+            ApplyPassiveValueCommand = new RelayCommand(ApplyPassiveValue, CanApplyPassiveValue);
 
             MemoryValues = new ObservableCollection<MemoryValue>
             {
@@ -351,6 +382,7 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
                 ((RelayCommand)ToggleStarsFreezeCommand).RaiseCanExecuteChanged();
                 ((RelayCommand)ToggleFlowersIncrementCommand).RaiseCanExecuteChanged();
                 ((RelayCommand)ToggleSpiritsFreezeCommand).RaiseCanExecuteChanged();
+                ((RelayCommand)ToggleSpiritIncrementCommand).RaiseCanExecuteChanged();
                 ((RelayCommand)ToggleStoreItemMultiplierCommand).RaiseCanExecuteChanged();
             }
         }
@@ -407,10 +439,14 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
         public ICommand ToggleStarsFreezeCommand { get; }
         public ICommand ToggleFlowersIncrementCommand { get; }
         public ICommand ToggleSpiritsFreezeCommand { get; }
+        public ICommand ToggleSpiritIncrementCommand { get; }
         public ICommand ToggleStoreItemMultiplierCommand { get; }
+        public ICommand TogglePassiveValueEditingCommand { get; }
         public ICommand AddSpiritsCommand { get; }
         public ICommand AddBeansCommand { get; }
         public ICommand OpenItemListCommand { get; }
+        public ICommand SelectPassiveValuesEditorCommand { get; }
+        public ICommand ApplyPassiveValueCommand { get; }
 
         public bool IsStarsFrozen
         {
@@ -442,6 +478,17 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
                 _isSpiritsFrozen = value;
                 OnPropertyChanged();
                 ((RelayCommand)ToggleSpiritsFreezeCommand).RaiseCanExecuteChanged();
+            }
+        }
+
+        public bool IsSpiritIncrementEnabled
+        {
+            get => _isSpiritIncrementEnabled;
+            set
+            {
+                _isSpiritIncrementEnabled = value;
+                OnPropertyChanged();
+                ((RelayCommand)ToggleSpiritIncrementCommand).RaiseCanExecuteChanged();
             }
         }
 
@@ -521,6 +568,71 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
         }
         public bool IsVictoryItemsEnabled => !_isVictoryItemsUnderMaintenance;
 
+        // Passive Values maintenance
+        public bool IsPassiveValuesUnderMaintenance
+        {
+            get => _isPassiveValuesUnderMaintenance;
+            set
+            {
+                _isPassiveValuesUnderMaintenance = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(IsPassiveValuesEnabled));
+            }
+        }
+        public bool IsPassiveValuesEnabled => !_isPassiveValuesUnderMaintenance;
+
+        public bool IsPassiveValueEditingEnabled
+        {
+            get => _isPassiveValueEditingEnabled;
+            set
+            {
+                _isPassiveValueEditingEnabled = value;
+                OnPropertyChanged();
+                ((RelayCommand)TogglePassiveValueEditingCommand).RaiseCanExecuteChanged();
+            }
+        }
+
+        public string PassiveValueType
+        {
+            get => _passiveValueType;
+            set
+            {
+                _passiveValueType = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public string PassiveCurrentValue
+        {
+            get => _passiveCurrentValue;
+            set
+            {
+                _passiveCurrentValue = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public string PassiveNewValue
+        {
+            get => _passiveNewValue;
+            set
+            {
+                _passiveNewValue = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public bool HasPassiveValue
+        {
+            get => _hasPassiveValue;
+            set
+            {
+                _hasPassiveValue = value;
+                OnPropertyChanged();
+                ((RelayCommand)ApplyPassiveValueCommand).RaiseCanExecuteChanged();
+            }
+        }
+
         private bool CanAttachToProcess(object? parameter)
         {
             return !IsAttached;
@@ -575,6 +687,7 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
                 IsStarsFrozen = false;
                 IsFlowersIncrementEnabled = false;
                 IsSpiritsFrozen = false;
+                IsSpiritIncrementEnabled = false;
                 IsStoreItemMultiplierEnabled = false;
                 StatusMessage = "Detached from game process. Searching for game...";
 
@@ -703,6 +816,7 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
                     IsStarsFrozen = false;
                     IsFlowersIncrementEnabled = false;
                     IsSpiritsFrozen = false;
+                    IsSpiritIncrementEnabled = false;
                     IsStoreItemMultiplierEnabled = false;
                     StatusMessage = "Game closed. Waiting for game to start...";
                     _autoAttachTimer.Start();
@@ -974,6 +1088,70 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
             }
         }
 
+        private bool CanToggleSpiritIncrement(object? parameter)
+        {
+            return IsAttached;
+        }
+
+        private void ToggleSpiritIncrement(object? parameter)
+        {
+            if (!IsAttached)
+                return;
+
+            try
+            {
+                bool success;
+
+                if (!IsSpiritIncrementEnabled)
+                {
+                    success = _memoryService.InjectSpiritIncrement();
+
+                    if (success)
+                    {
+                        IsSpiritIncrementEnabled = true;
+                        StatusMessage = "Spirit increment enabled - spirits will increase by 2 when used!";
+                    }
+                    else
+                    {
+                        StatusMessage = "Failed to enable spirit increment";
+                        MessageBox.Show(
+                            "Failed to enable spirit increment. Make sure the game is running and you are attached to the process.",
+                            "Enable Failed",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Error);
+                    }
+                }
+                else
+                {
+                    success = _memoryService.RemoveSpiritIncrement();
+
+                    if (success)
+                    {
+                        IsSpiritIncrementEnabled = false;
+                        StatusMessage = "Spirit increment disabled - normal spirit behavior restored";
+                    }
+                    else
+                    {
+                        StatusMessage = "Failed to disable spirit increment";
+                        MessageBox.Show(
+                            "Failed to disable spirit increment.",
+                            "Disable Failed",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Error);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Error toggling spirit increment: {ex.Message}";
+                MessageBox.Show(
+                    $"Error occurred while toggling spirit increment:\n\n{ex.Message}",
+                    "Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
+
         private bool CanToggleStoreItemMultiplier(object? parameter)
         {
             return IsAttached;
@@ -1122,6 +1300,153 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
         private void OpenItemListWindow(object? parameter)
         {
             SelectedTool = "itemslist";
+        }
+
+        private bool CanTogglePassiveValueEditing(object? parameter)
+        {
+            return IsAttached;
+        }
+
+        private void TogglePassiveValueEditing(object? parameter)
+        {
+            if (!IsAttached)
+                return;
+
+            try
+            {
+                bool success;
+
+                if (!IsPassiveValueEditingEnabled)
+                {
+                    success = _memoryService.InjectPassiveValueEditing();
+
+                    if (success)
+                    {
+                        IsPassiveValueEditingEnabled = true;
+                        StatusMessage = "Passive value editing enabled! Now hover over a passive in the Abilearn Board.";
+
+                        // Start a timer to poll for passive value updates
+                        var passiveTimer = new DispatcherTimer
+                        {
+                            Interval = TimeSpan.FromMilliseconds(100)
+                        };
+                        passiveTimer.Tick += (s, e) =>
+                        {
+                            if (!IsPassiveValueEditingEnabled || !IsAttached)
+                            {
+                                passiveTimer.Stop();
+                                return;
+                            }
+
+                            var (hasValue, valueType, currentValue) = _memoryService.ReadPassiveValue();
+                            if (hasValue)
+                            {
+                                HasPassiveValue = true;
+                                PassiveValueType = valueType == 2 ? "Float" : "Integer (DWord)";
+                                PassiveCurrentValue = currentValue.ToString();
+                                if (string.IsNullOrEmpty(PassiveNewValue))
+                                {
+                                    PassiveNewValue = currentValue.ToString();
+                                }
+                            }
+                            else
+                            {
+                                if (HasPassiveValue)
+                                {
+                                    // Only reset if we previously had a value
+                                    HasPassiveValue = false;
+                                    PassiveValueType = "Unknown";
+                                    PassiveCurrentValue = "N/A";
+                                }
+                            }
+                        };
+                        passiveTimer.Start();
+                    }
+                    else
+                    {
+                        StatusMessage = "Failed to enable passive value editing";
+                        MessageBox.Show(
+                            "Failed to enable passive value editing.\n\n" +
+                            "Make sure the game is running and you are attached to the process.",
+                            "Enable Failed",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Error);
+                    }
+                }
+                else
+                {
+                    success = _memoryService.RemovePassiveValueEditing();
+
+                    if (success)
+                    {
+                        IsPassiveValueEditingEnabled = false;
+                        HasPassiveValue = false;
+                        PassiveValueType = "Unknown";
+                        PassiveCurrentValue = "N/A";
+                        PassiveNewValue = "";
+                        StatusMessage = "Passive value editing disabled - normal behavior restored";
+                    }
+                    else
+                    {
+                        StatusMessage = "Failed to disable passive value editing";
+                        MessageBox.Show(
+                            "Failed to disable passive value editing.",
+                            "Disable Failed",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Error);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Error toggling passive value editing: {ex.Message}";
+                MessageBox.Show(
+                    $"Error occurred while toggling passive value editing:\n\n{ex.Message}",
+                    "Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
+
+        private bool CanApplyPassiveValue(object? parameter)
+        {
+            return IsAttached && HasPassiveValue && !string.IsNullOrEmpty(PassiveNewValue);
+        }
+
+        private void ApplyPassiveValue(object? parameter)
+        {
+            if (!IsAttached || !HasPassiveValue)
+                return;
+
+            try
+            {
+                bool success = _memoryService.WritePassiveValue(PassiveNewValue);
+
+                if (success)
+                {
+                    StatusMessage = $"Successfully applied passive value: {PassiveNewValue}";
+                    PassiveCurrentValue = PassiveNewValue;
+                }
+                else
+                {
+                    StatusMessage = "Failed to apply passive value";
+                    MessageBox.Show(
+                        "Failed to apply passive value.\n\n" +
+                        "Make sure the game is running and you are hovering over a passive in the Abilearn Board.",
+                        "Apply Failed",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Error applying passive value: {ex.Message}";
+                MessageBox.Show(
+                    $"Error occurred while applying passive value:\n\n{ex.Message}",
+                    "Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;

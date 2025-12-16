@@ -260,6 +260,48 @@
                     </Grid>
                 </Border>
 
+                <!-- Increment Spirits on Use Toggle -->
+                <Border Background="#2196F3"
+                       CornerRadius="8"
+                       Margin="0,10,0,0"
+                       Visibility="{Binding MemoryEditor.IsAttached, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <Grid Margin="15">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <materialDesign:PackIcon Grid.Column="0"
+                                               Kind="PlusCircle"
+                                               Width="28"
+                                               Height="28"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,15,0"
+                                               Foreground="White"/>
+
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock Text="Increment Spirits on Use"
+                                     FontSize="16"
+                                     FontWeight="Bold"
+                                     Foreground="White"/>
+                            <TextBlock Text="Spirits increase by 2 when used instead of decreasing"
+                                     FontSize="11"
+                                     Foreground="White"
+                                     Opacity="0.9"
+                                     Margin="0,3,0,0"/>
+                        </StackPanel>
+
+                        <ToggleButton Grid.Column="2"
+                                     IsChecked="{Binding MemoryEditor.IsSpiritIncrementEnabled, Mode=OneWay}"
+                                     Style="{StaticResource MaterialDesignSwitchToggleButton}"
+                                     ToolTip="Toggle increment on/off"
+                                     Command="{Binding MemoryEditor.ToggleSpiritIncrementCommand}"
+                                     VerticalAlignment="Center"
+                                     Margin="10,0,0,0"/>
+                    </Grid>
+                </Border>
+
                 <!-- Store Item Multiplier Toggle -->
                 <Border Background="#F44336"
                        CornerRadius="8"
@@ -697,6 +739,89 @@
                     <Border Background="#CC808080"
                            CornerRadius="4"
                            Visibility="{Binding MemoryEditor.IsVictoryItemsUnderMaintenance, Converter={StaticResource BooleanToVisibilityConverter}}"
+                           IsHitTestVisible="True">
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <materialDesign:PackIcon Kind="Lock"
+                                                   Width="48"
+                                                   Height="48"
+                                                   Foreground="White"
+                                                   HorizontalAlignment="Center"
+                                                   Opacity="0.9"/>
+                            <TextBlock Text="UNDER"
+                                     FontSize="12"
+                                     FontWeight="Bold"
+                                     Foreground="White"
+                                     HorizontalAlignment="Center"
+                                     Margin="0,8,0,0"/>
+                            <TextBlock Text="MAINTENANCE"
+                                     FontSize="11"
+                                     FontWeight="Bold"
+                                     Foreground="White"
+                                     HorizontalAlignment="Center"
+                                     Margin="0,2,0,0"/>
+                        </StackPanel>
+                    </Border>
+                    </Grid>
+                </materialDesign:Card>
+
+                <!-- Passive Values Editor Card -->
+                <materialDesign:Card Style="{StaticResource CardStyle}"
+                                   Margin="10,0,0,0"
+                                   Padding="16,12,16,12"
+                                   Width="180"
+                                   MinHeight="170"
+                                   HorizontalAlignment="Left"
+                                   VerticalAlignment="Top"
+                                   Cursor="Hand"
+                                   MouseLeftButtonUp="PassiveValuesEditorCard_Click"
+                                   IsEnabled="{Binding MemoryEditor.IsPassiveValuesEnabled}">
+                    <Grid>
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <Image Source="/Resources/Cards/Pasivas.png"
+                               Width="48"
+                               Height="48"
+                               HorizontalAlignment="Center"
+                               Margin="0,0,0,8"
+                               RenderOptions.BitmapScalingMode="HighQuality"/>
+
+                        <TextBlock Text="Passive Values"
+                                 FontSize="15"
+                                 FontWeight="SemiBold"
+                                 HorizontalAlignment="Center"
+                                 Margin="0,0,0,4"/>
+
+                        <TextBlock Text="Edit Passive Values"
+                                 FontSize="11"
+                                 Opacity="0.6"
+                                 TextWrapping="Wrap"
+                                 TextAlignment="Center"
+                                 Margin="8,0,8,8"/>
+
+                        <Button Command="{Binding MemoryEditor.SelectPassiveValuesEditorCommand}"
+                              Style="{StaticResource MaterialDesignRaisedButton}"
+                              Height="28"
+                              Padding="12,0"
+                              Margin="0,0,0,0"
+                              Background="{DynamicResource SecondaryHueMidBrush}"
+                              Foreground="Black">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="ChevronRight"
+                                                       Width="14"
+                                                       Height="14"
+                                                       VerticalAlignment="Center"
+                                                       Margin="0,0,4,0"/>
+                                <TextBlock Text="Open"
+                                         FontSize="11"
+                                         VerticalAlignment="Center"
+                                         FontWeight="Medium"/>
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+
+                    <!-- Maintenance Overlay -->
+                    <Border Background="#CC808080"
+                           CornerRadius="4"
+                           Visibility="{Binding MemoryEditor.IsPassiveValuesUnderMaintenance, Converter={StaticResource BooleanToVisibilityConverter}}"
                            IsHitTestVisible="True">
                         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                             <materialDesign:PackIcon Kind="Lock"

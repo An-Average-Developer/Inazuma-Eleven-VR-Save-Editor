@@ -52,5 +52,13 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.Views
                 ViewModel.MemoryEditor.SelectVictoryItemsEditorCommand.Execute(null);
             }
         }
+
+        private void PassiveValuesEditorCard_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (ViewModel != null && ViewModel.MemoryEditor.SelectPassiveValuesEditorCommand.CanExecute(null))
+            {
+                ViewModel.MemoryEditor.SelectPassiveValuesEditorCommand.Execute(null);
+            }
+        }
     }
 }
