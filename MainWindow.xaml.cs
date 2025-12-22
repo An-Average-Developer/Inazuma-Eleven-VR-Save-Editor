@@ -12,6 +12,7 @@ using MaterialDesignThemes.Wpf;
 using InazumaElevenVRSaveEditor.ViewModels;
 using InazumaElevenVRSaveEditor.Common.Services;
 using InazumaElevenVRSaveEditor.Configuration;
+using System.Windows.Interop;
 
 namespace InazumaElevenVRSaveEditor
 {
@@ -19,6 +20,8 @@ namespace InazumaElevenVRSaveEditor
     {
         private MainViewModel? ViewModel => DataContext as MainViewModel;
         private bool _isThemeAnimating = false;
+        private bool _isInitializing = true;
+        private bool _isDragging = false;
 
         // Loading screen fields
         private string[] _cardImages = Array.Empty<string>();
@@ -36,8 +39,13 @@ namespace InazumaElevenVRSaveEditor
             this.Closing += MainWindow_Closing;
             this.Loaded += MainWindow_Loaded;
 
+            // Prevent maximization
+            this.MaxHeight = SystemParameters.MaximizedPrimaryScreenHeight;
+            this.MaxWidth = SystemParameters.MaximizedPrimaryScreenWidth;
+
             // Load loading screen preference
-            LoadingScreenCheckBox.IsChecked = SettingsService.GetShowLoadingScreen();
+            var showLoadingScreen = SettingsService.GetShowLoadingScreen();
+            LoadingScreenCheckBox.IsChecked = showLoadingScreen;
 
             // Card images are embedded as resources - use Pack URIs
             _cardImages = new[]
@@ -54,12 +62,14 @@ namespace InazumaElevenVRSaveEditor
             System.Diagnostics.Debug.WriteLine($"Loaded {_cardImages.Length} embedded card images");
 
             // Check if loading screen should be shown
-            bool showLoadingScreen = SettingsService.GetShowLoadingScreen();
             if (!showLoadingScreen)
             {
                 // Hide loading screen immediately if disabled
                 LoadingScreenOverlay.Visibility = Visibility.Collapsed;
             }
+
+            // Initialization complete
+            _isInitializing = false;
         }
 
         private void MainWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
@@ -71,7 +81,70 @@ namespace InazumaElevenVRSaveEditor
         {
             if (e.ChangedButton == System.Windows.Input.MouseButton.Left)
             {
-                this.DragMove();
+                _isDragging = true;
+                try
+                {
+                    this.DragMove();
+                }
+                finally
+                {
+                    _isDragging = false;
+                }
+            }
+        }
+
+        private void Window_StateChanged(object? sender, EventArgs e)
+        {
+            // Prevent maximization
+            if (this.WindowState == WindowState.Maximized)
+            {
+                this.WindowState = WindowState.Normal;
+            }
+        }
+
+        private void Window_LocationChanged(object? sender, EventArgs e)
+        {
+            // Don't interfere with dragging
+            if (_isDragging)
+                return;
+
+            // Ensure the title bar is always visible
+            EnsureWindowIsVisible();
+        }
+
+        private void EnsureWindowIsVisible()
+        {
+            // Get the screen working area
+            double screenWidth = SystemParameters.WorkArea.Width;
+            double screenHeight = SystemParameters.WorkArea.Height;
+            double screenLeft = SystemParameters.WorkArea.Left;
+            double screenTop = SystemParameters.WorkArea.Top;
+
+            // Minimum visible height of the title bar (in pixels)
+            const double minVisibleHeight = 50;
+
+            // Check if window is going off the top of the screen
+            if (this.Top < screenTop)
+            {
+                this.Top = screenTop;
+            }
+
+            // Check if window is going off the bottom
+            if (this.Top + minVisibleHeight > screenTop + screenHeight)
+            {
+                this.Top = screenTop + screenHeight - minVisibleHeight;
+            }
+
+            // Check if window is going off the left
+            if (this.Left + minVisibleHeight > screenLeft + screenWidth)
+            {
+                this.Left = screenLeft + screenWidth - minVisibleHeight;
+            }
+
+            // Check if window is going off the right
+            if (this.Left + this.ActualWidth < screenLeft + minVisibleHeight)
+            {
+                this.Left = screenLeft + minVisibleHeight - this.ActualWidth;
             }
         }
 
@@ -220,6 +293,10 @@ namespace InazumaElevenVRSaveEditor
 
         private void LoadingScreenCheckBox_Changed(object sender, RoutedEventArgs e)
         {
+            // Don't save during initialization
+            if (_isInitializing)
+                return;
+
             if (LoadingScreenCheckBox.IsChecked.HasValue)
             {
                 SettingsService.SaveShowLoadingScreen(LoadingScreenCheckBox.IsChecked.Value);
@@ -232,6 +309,9 @@ namespace InazumaElevenVRSaveEditor
             bool showLoadingScreen = SettingsService.GetShowLoadingScreen();
             if (!showLoadingScreen)
             {
+                // If loading screen is disabled, still check for updates after a delay
+                await Task.Delay(1000);
+                await CheckAndNotifyUpdates();
                 return;
             }
 
@@ -385,12 +465,37 @@ namespace InazumaElevenVRSaveEditor
 
             // Fade out loading screen
             var fadeOut = new DoubleAnimation(1, 0, TimeSpan.FromMilliseconds(500));
-            fadeOut.Completed += (s, e) =>
+            fadeOut.Completed += async (s, e) =>
             {
                 LoadingScreenOverlay.Visibility = Visibility.Collapsed;
                 _progressTimer?.Stop();
+
+                // Check for updates and show notification after loading screen is hidden
+                await CheckAndNotifyUpdates();
             };
             LoadingScreenOverlay.BeginAnimation(OpacityProperty, fadeOut);
+        }
+
+        private async Task CheckAndNotifyUpdates()
+        {
+            // Wait a bit for the UI to settle
+            await Task.Delay(500);
+
+            // Check if an update is available
+            if (ViewModel != null && ViewModel.IsUpdateAvailable)
+            {
+                var result = MessageBox.Show(
+                    $"A new version ({ViewModel.LatestVersion}) is available!\n\n" +
+                    "Would you like to view the update details?",
+                    "Update Available",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Information);
+
+                if (result == MessageBoxResult.Yes && ViewModel.ShowInstallationViewCommand.CanExecute(null))
+                {
+                    ViewModel.ShowInstallationViewCommand.Execute(null);
+                }
+            }
         }
     }
 }

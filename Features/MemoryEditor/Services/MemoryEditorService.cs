@@ -40,15 +40,20 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.Services
         private string _processName = "nie";
         private IntPtr _moduleBase = IntPtr.Zero;
         private Process? _targetProcess;
-        private IntPtr _storeItemMultiplierCodeCave1 = IntPtr.Zero; // For nie.exe+21EF25
-        private IntPtr _storeItemMultiplierCodeCave2 = IntPtr.Zero; // For nie.exe+21DEE5
-        private IntPtr _storeItemMultiplierCodeCave3 = IntPtr.Zero; // For nie.exe+21E225
+        private IntPtr _storeItemMultiplierCodeCave1 = IntPtr.Zero; // For nie.exe+221AD5
+        private IntPtr _storeItemMultiplierCodeCave2 = IntPtr.Zero; // For nie.exe+220A95
+        private IntPtr _storeItemMultiplierCodeCave3 = IntPtr.Zero; // For nie.exe+220DD5
         private IntPtr _heroSpiritIncrementCodeCave = IntPtr.Zero; // For Heroes Spirits AOB injection
         private IntPtr _eliteSpiritIncrementCodeCave = IntPtr.Zero; // For Elite Spirits AOB injection
         private IntPtr _passiveValueCodeCave = IntPtr.Zero; // For Passive Value injection
         private IntPtr _passiveValAdrAddress = IntPtr.Zero; // Address where passiveValAdr is stored
         private IntPtr _passiveValTypeAddress = IntPtr.Zero; // Address where passiveValType is stored
         private IntPtr _passiveValueHookAddress = IntPtr.Zero; // Address of the hook
+        private IntPtr _spiritCardInjectionCodeCave = IntPtr.Zero; // For Spirit Card injection
+        private IntPtr _spiritCardHookAddress = IntPtr.Zero; // Address of the spirit card hook
+        private IntPtr _cfHerospiritAddTypeAddress = IntPtr.Zero; // cfHerospiritAddType address
+        private IntPtr _cfHerospiritIDAddress = IntPtr.Zero; // cfHerospiritID address
+        private bool _isSpiritCardInjectionEnabled = false;
 
         public bool IsAttached => _isAttached;
 
@@ -400,9 +405,9 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.Services
             try
             {
                 // Inject at all three item purchase locations (InjectAtAddress will throw detailed exceptions on failure)
-                InjectAtAddress(0x21EF25, 7, ref _storeItemMultiplierCodeCave1); // First - Hissatsus and Kenshins (return to 21EF2A)
-                InjectAtAddress(0x21DEE5, 5, ref _storeItemMultiplierCodeCave2); // Second - Items unless boots and kizuna items (return to 21DEEA)
-                InjectAtAddress(0x21E225, 5, ref _storeItemMultiplierCodeCave3); // Third - Boots and kizuna items (return to 21E22A)
+                InjectAtAddress(0x221AD5, 7, ref _storeItemMultiplierCodeCave1); // First - Hissatsus and Kenshins (return to 221ADC)
+                InjectAtAddress(0x220A95, 5, ref _storeItemMultiplierCodeCave2); // Second - Items unless boots and kizuna items (return to 220A9A)
+                InjectAtAddress(0x220DD5, 5, ref _storeItemMultiplierCodeCave3); // Third - Boots and kizuna items (return to 220DDA)
 
                 return true;
             }
@@ -423,13 +428,13 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.Services
             try
             {
                 // Restore original bytes at all three locations (5 bytes each)
-                byte[] originalBytes1 = new byte[] { 0x89, 0x4E, 0x10, 0x8B, 0xC3 }; // nie.exe+21EF25: mov [rsi+10],ecx; mov eax,ebx
-                byte[] originalBytes2 = new byte[] { 0x89, 0x4E, 0x10, 0x8B, 0xC3 }; // nie.exe+21DEE5: mov [rsi+10],ecx; mov eax,ebx
-                byte[] originalBytes3 = new byte[] { 0x89, 0x4E, 0x10, 0x8B, 0xC3 }; // nie.exe+21E225: mov [rsi+10],ecx; mov eax,ebx
+                byte[] originalBytes1 = new byte[] { 0x89, 0x4E, 0x10, 0x8B, 0xC3 }; // nie.exe+221AD5: mov [rsi+10],ecx; mov eax,ebx
+                byte[] originalBytes2 = new byte[] { 0x89, 0x4E, 0x10, 0x8B, 0xC3 }; // nie.exe+220A95: mov [rsi+10],ecx; mov eax,ebx
+                byte[] originalBytes3 = new byte[] { 0x89, 0x4E, 0x10, 0x8B, 0xC3 }; // nie.exe+220DD5: mov [rsi+10],ecx; mov eax,ebx
 
-                bool success1 = WriteBytes(0x21EF25, originalBytes1);
-                bool success2 = WriteBytes(0x21DEE5, originalBytes2);
-                bool success3 = WriteBytes(0x21E225, originalBytes3);
+                bool success1 = WriteBytes(0x221AD5, originalBytes1);
+                bool success2 = WriteBytes(0x220A95, originalBytes2);
+                bool success3 = WriteBytes(0x220DD5, originalBytes3);
 
                 // Free allocated memory
                 if (_storeItemMultiplierCodeCave1 != IntPtr.Zero)
@@ -700,7 +705,7 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.Services
                 if (_heroSpiritIncrementCodeCave != IntPtr.Zero)
                 {
                     // Use the known offset since it's already hooked
-                    IntPtr heroesAddress = new IntPtr(_moduleBase.ToInt64() + 0xCE9A46);
+                    IntPtr heroesAddress = new IntPtr(_moduleBase.ToInt64() + 0xCF16EA);
 
                     // Restore 5 bytes: the original 4-byte mov instruction + the next byte
                     byte[] heroesOriginal = new byte[] { 0x66, 0x89, 0x68, 0x0C, 0xE9 };
@@ -717,7 +722,7 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.Services
                 if (_eliteSpiritIncrementCodeCave != IntPtr.Zero)
                 {
                     // Use the known offset since it's already hooked
-                    IntPtr eliteAddress = new IntPtr(_moduleBase.ToInt64() + 0xCE9A15);
+                    IntPtr eliteAddress = new IntPtr(_moduleBase.ToInt64() + 0xCF2B1D);
 
                     // Restore 7 bytes: the original 6-byte mov instruction + the next byte
                     byte[] eliteOriginal = new byte[] { 0x66, 0x41, 0x89, 0x6C, 0x78, 0x10, 0xE9 };
@@ -1066,6 +1071,452 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.Services
                 }
 
                 return WriteProcessMemory(_processHandle, valueAddress, valueBuffer, valueBuffer.Length, out _);
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        public bool EnableSpiritCardInjection()
+        {
+            if (!_isAttached || _processHandle == IntPtr.Zero)
+            {
+                throw new InvalidOperationException("Not attached to process");
+            }
+
+            if (_isSpiritCardInjectionEnabled)
+            {
+                return true; // Already enabled
+            }
+
+            try
+            {
+                // AOB scan for "49 8B 07 49 8B CF FF" pattern from the Cheat Engine script
+                // Full pattern: 49 8B 07 49 8B CF FF * * 45 * * 44
+                byte[] aobPattern = new byte[] { 0x49, 0x8B, 0x07, 0x49, 0x8B, 0xCF, 0xFF, 0x00, 0x00, 0x45, 0x00, 0x00, 0x44 };
+                byte[] aobMask = new byte[] { 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1 };
+
+                _spiritCardHookAddress = AOBScan(aobPattern, aobMask);
+
+                if (_spiritCardHookAddress == IntPtr.Zero)
+                {
+                    throw new Exception("Failed to find spirit card injection point.\n\nMake sure:\n1. The game is running\n2. You have opened Team Dock - Spirits at least once\n3. The game version is correct");
+                }
+
+                // Allocate code cave ($1000 = 4096 bytes)
+                long[] offsets = { 0x10000000, 0x20000000, 0x30000000, -0x10000000, -0x20000000, 0x05000000, 0x01000000 };
+
+                foreach (long offset in offsets)
+                {
+                    IntPtr preferredAddress = new IntPtr(_moduleBase.ToInt64() + offset);
+                    _spiritCardInjectionCodeCave = VirtualAllocEx(_processHandle, preferredAddress, 4096, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+
+                    if (_spiritCardInjectionCodeCave != IntPtr.Zero)
+                    {
+                        long distance = _spiritCardInjectionCodeCave.ToInt64() - _spiritCardHookAddress.ToInt64();
+                        if (Math.Abs(distance) <= 0x7FFFFFFF)
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            VirtualFreeEx(_processHandle, _spiritCardInjectionCodeCave, 0, MEM_RELEASE);
+                            _spiritCardInjectionCodeCave = IntPtr.Zero;
+                        }
+                    }
+                }
+
+                if (_spiritCardInjectionCodeCave == IntPtr.Zero)
+                {
+                    throw new Exception("Failed to allocate memory for spirit card injection");
+                }
+
+                // Set up memory layout in code cave
+                // Structure:
+                // +0x000: Injection code
+                // +0x200: cfHerospiritAddType (4 bytes)
+                // +0x204: cfHerospiritID (4 bytes)
+                // +0x208: addherospiritdata (16 bytes: spiritID, 0, 1, 0)
+                // +0x218: addherospiritTemp (4 bytes)
+
+                _cfHerospiritAddTypeAddress = new IntPtr(_spiritCardInjectionCodeCave.ToInt64() + 0x200);
+                _cfHerospiritIDAddress = new IntPtr(_spiritCardInjectionCodeCave.ToInt64() + 0x204);
+                IntPtr addherospiritdataAddress = new IntPtr(_spiritCardInjectionCodeCave.ToInt64() + 0x208);
+                IntPtr addherospiritTempAddress = new IntPtr(_spiritCardInjectionCodeCave.ToInt64() + 0x218);
+
+                // Initialize memory
+                byte[] initBytes = BitConverter.GetBytes(1); // Add-One mode
+                WriteProcessMemory(_processHandle, _cfHerospiritAddTypeAddress, initBytes, 4, out _);
+                initBytes = BitConverter.GetBytes(0); // Initial spirit ID
+                WriteProcessMemory(_processHandle, _cfHerospiritIDAddress, initBytes, 4, out _);
+
+                // Write the full injection code based on Cheat Engine script
+                List<byte> injectionCode = new List<byte>();
+
+                // cmp [r15+8],1
+                injectionCode.AddRange(new byte[] { 0x49, 0x83, 0x7F, 0x08, 0x01 });
+
+                // jne code (will patch offset later)
+                int jneCodeOffset = injectionCode.Count;
+                injectionCode.AddRange(new byte[] { 0x0F, 0x85, 0x00, 0x00, 0x00, 0x00 }); // jne (6 bytes)
+
+                // cmp dword ptr [cfHerospiritAddType],0
+                int cfTypeOffset = (int)(_cfHerospiritAddTypeAddress.ToInt64() - (_spiritCardInjectionCodeCave.ToInt64() + injectionCode.Count + 7));
+                injectionCode.AddRange(new byte[] { 0x83, 0x3D }); // cmp dword ptr [rel]
+                injectionCode.AddRange(BitConverter.GetBytes(cfTypeOffset));
+                injectionCode.Add(0x00); // compare with 0
+
+                // je codeA (skip to Add-All)
+                int jeCodeAOffset = injectionCode.Count;
+                injectionCode.AddRange(new byte[] { 0x0F, 0x84, 0x00, 0x00, 0x00, 0x00 }); // je (6 bytes)
+
+                // Add-One:
+                int addOneStart = injectionCode.Count;
+                // mov eax,[cfHerospiritID]
+                int cfIDOffset = (int)(_cfHerospiritIDAddress.ToInt64() - (_spiritCardInjectionCodeCave.ToInt64() + injectionCode.Count + 6));
+                injectionCode.AddRange(new byte[] { 0x8B, 0x05 }); // mov eax,[rel]
+                injectionCode.AddRange(BitConverter.GetBytes(cfIDOffset));
+
+                // mov [addherospiritdata],eax
+                int dataOffset1 = (int)(addherospiritdataAddress.ToInt64() - (_spiritCardInjectionCodeCave.ToInt64() + injectionCode.Count + 6));
+                injectionCode.AddRange(new byte[] { 0x89, 0x05 }); // mov [rel],eax
+                injectionCode.AddRange(BitConverter.GetBytes(dataOffset1));
+
+                // call fncAddHerospirit (will add later)
+                int callFncOffset = injectionCode.Count;
+                injectionCode.AddRange(new byte[] { 0xE8, 0x00, 0x00, 0x00, 0x00 }); // call
+
+                // jmp code
+                int jmpFromAddOne = injectionCode.Count;
+                injectionCode.AddRange(new byte[] { 0xE9, 0x00, 0x00, 0x00, 0x00 }); // jmp
+
+                // codeA (Add-All)
+                int codeAStart = injectionCode.Count;
+
+                // lea rcx,[herospiritIDAll]
+                IntPtr herospiritIDAllAddress = new IntPtr(_spiritCardInjectionCodeCave.ToInt64() + 0x300);
+                int herospiritIDAllOffset = (int)(herospiritIDAllAddress.ToInt64() - (_spiritCardInjectionCodeCave.ToInt64() + injectionCode.Count + 7));
+                injectionCode.AddRange(new byte[] { 0x48, 0x8D, 0x0D }); // lea rcx,[rel]
+                injectionCode.AddRange(BitConverter.GetBytes(herospiritIDAllOffset));
+
+                // codeR (loop):
+                int codeRStart = injectionCode.Count;
+
+                // cmp dword ptr [rcx],0
+                injectionCode.AddRange(new byte[] { 0x83, 0x39, 0x00 });
+
+                // je code (exit loop)
+                int jeCodeFromLoop = injectionCode.Count;
+                injectionCode.AddRange(new byte[] { 0x0F, 0x84, 0x00, 0x00, 0x00, 0x00 }); // je (6 bytes)
+
+                // mov eax,[rcx]
+                injectionCode.AddRange(new byte[] { 0x8B, 0x01 });
+
+                // mov [addherospiritdata],eax
+                int dataOffset2 = (int)(addherospiritdataAddress.ToInt64() - (_spiritCardInjectionCodeCave.ToInt64() + injectionCode.Count + 6));
+                injectionCode.AddRange(new byte[] { 0x89, 0x05 }); // mov [rel],eax
+                injectionCode.AddRange(BitConverter.GetBytes(dataOffset2));
+
+                // call fncAddHerospirit
+                int callFncFromLoop = injectionCode.Count;
+                injectionCode.AddRange(new byte[] { 0xE8, 0x00, 0x00, 0x00, 0x00 }); // call (will patch later)
+
+                // add rcx,4
+                injectionCode.AddRange(new byte[] { 0x48, 0x83, 0xC1, 0x04 });
+
+                // jmp codeR (loop back)
+                int jmpBackToLoop = injectionCode.Count;
+                int loopJmpOffset = codeRStart - (jmpBackToLoop + 5);
+                injectionCode.AddRange(new byte[] { 0xE9 }); // jmp
+                injectionCode.AddRange(BitConverter.GetBytes(loopJmpOffset));
+
+                // code: (original instructions)
+                int codeLabel = injectionCode.Count;
+
+                // Patch all jump offsets - need to convert to array first to modify
+                byte[] codeArray = injectionCode.ToArray();
+
+                // Patch jne code offset
+                int jneTarget = codeLabel - (jneCodeOffset + 6);
+                byte[] jneBytes = BitConverter.GetBytes(jneTarget);
+                Array.Copy(jneBytes, 0, codeArray, jneCodeOffset + 2, 4);
+
+                // Patch je codeA offset
+                int jeTarget = codeAStart - (jeCodeAOffset + 6);
+                byte[] jeBytes = BitConverter.GetBytes(jeTarget);
+                Array.Copy(jeBytes, 0, codeArray, jeCodeAOffset + 2, 4);
+
+                // Patch jmp from Add-One
+                int jmpTarget = codeLabel - (jmpFromAddOne + 5);
+                byte[] jmpBytes = BitConverter.GetBytes(jmpTarget);
+                Array.Copy(jmpBytes, 0, codeArray, jmpFromAddOne + 1, 4);
+
+                // Patch je from loop (exit loop to code)
+                int jeLoopTarget = codeLabel - (jeCodeFromLoop + 6);
+                byte[] jeLoopBytes = BitConverter.GetBytes(jeLoopTarget);
+                Array.Copy(jeLoopBytes, 0, codeArray, jeCodeFromLoop + 2, 4);
+
+                // Rebuild injectionCode from modified array
+                injectionCode.Clear();
+                injectionCode.AddRange(codeArray);
+
+                // Original code
+                injectionCode.AddRange(new byte[] { 0x49, 0x8B, 0x07 }); // mov rax,[r15]
+                injectionCode.AddRange(new byte[] { 0x49, 0x8B, 0xCF }); // mov rcx,r15
+
+                // Jump back to original code
+                injectionCode.Add(0xE9); // jmp
+                IntPtr returnAddress = new IntPtr(_spiritCardHookAddress.ToInt64() + 6);
+                long jmpOffset = returnAddress.ToInt64() - (_spiritCardInjectionCodeCave.ToInt64() + injectionCode.Count + 4);
+                injectionCode.AddRange(BitConverter.GetBytes((int)jmpOffset));
+
+                // fncAddHerospirit function
+                int fncStart = injectionCode.Count;
+
+                // Patch both calls to fncAddHerospirit
+                codeArray = injectionCode.ToArray();
+
+                // Patch call from Add-One
+                int callTarget = fncStart - (callFncOffset + 5);
+                byte[] callBytes = BitConverter.GetBytes(callTarget);
+                Array.Copy(callBytes, 0, codeArray, callFncOffset + 1, 4);
+
+                // Patch call from loop
+                int callTargetLoop = fncStart - (callFncFromLoop + 5);
+                byte[] callBytesLoop = BitConverter.GetBytes(callTargetLoop);
+                Array.Copy(callBytesLoop, 0, codeArray, callFncFromLoop + 1, 4);
+
+                injectionCode.Clear();
+                injectionCode.AddRange(codeArray);
+
+                // push rcx, rdx, r8, r9
+                injectionCode.AddRange(new byte[] { 0x51 }); // push rcx
+                injectionCode.AddRange(new byte[] { 0x52 }); // push rdx
+                injectionCode.AddRange(new byte[] { 0x41, 0x50 }); // push r8
+                injectionCode.AddRange(new byte[] { 0x41, 0x51 }); // push r9
+
+                // lea r8,[addherospiritdata]
+                int r8Offset = (int)(addherospiritdataAddress.ToInt64() - (_spiritCardInjectionCodeCave.ToInt64() + injectionCode.Count + 7));
+                injectionCode.AddRange(new byte[] { 0x4C, 0x8D, 0x05 }); // lea r8,[rel]
+                injectionCode.AddRange(BitConverter.GetBytes(r8Offset));
+
+                // lea rdx,[addherospiritTemp]
+                int rdxOffset = (int)(addherospiritTempAddress.ToInt64() - (_spiritCardInjectionCodeCave.ToInt64() + injectionCode.Count + 7));
+                injectionCode.AddRange(new byte[] { 0x48, 0x8D, 0x15 }); // lea rdx,[rel]
+                injectionCode.AddRange(BitConverter.GetBytes(rdxOffset));
+
+                // mov r9d,1
+                injectionCode.AddRange(new byte[] { 0x41, 0xB9, 0x01, 0x00, 0x00, 0x00 });
+
+                // mov rcx,r15
+                injectionCode.AddRange(new byte[] { 0x49, 0x8B, 0xCF });
+
+                // mov rax,[r15]
+                injectionCode.AddRange(new byte[] { 0x49, 0x8B, 0x07 });
+
+                // call qword ptr [rax+20]
+                injectionCode.AddRange(new byte[] { 0xFF, 0x50, 0x20 });
+
+                // pop r9, r8, rdx, rcx
+                injectionCode.AddRange(new byte[] { 0x41, 0x59 }); // pop r9
+                injectionCode.AddRange(new byte[] { 0x41, 0x58 }); // pop r8
+                injectionCode.AddRange(new byte[] { 0x5A }); // pop rdx
+                injectionCode.AddRange(new byte[] { 0x59 }); // pop rcx
+
+                // ret
+                injectionCode.AddRange(new byte[] { 0xC3 });
+
+                // Initialize addherospiritdata structure (spiritID, 0, quantity, 0)
+                byte[] spiritDataInit = new byte[16];
+                BitConverter.GetBytes(0).CopyTo(spiritDataInit, 0); // spiritID (will be set later)
+                BitConverter.GetBytes(0).CopyTo(spiritDataInit, 4);
+                BitConverter.GetBytes(1).CopyTo(spiritDataInit, 8); // Quantity = 1
+                BitConverter.GetBytes(0).CopyTo(spiritDataInit, 12);
+                WriteProcessMemory(_processHandle, addherospiritdataAddress, spiritDataInit, 16, out _);
+
+                // Write injection code to code cave
+                if (!WriteProcessMemory(_processHandle, _spiritCardInjectionCodeCave, injectionCode.ToArray(), injectionCode.Count, out _))
+                {
+                    VirtualFreeEx(_processHandle, _spiritCardInjectionCodeCave, 0, MEM_RELEASE);
+                    _spiritCardInjectionCodeCave = IntPtr.Zero;
+                    throw new Exception("Failed to write injection code");
+                }
+
+                // Create hook at the injection point
+                long jmpToCodeCave = _spiritCardInjectionCodeCave.ToInt64() - (_spiritCardHookAddress.ToInt64() + 5);
+                byte[] hookBytes = new byte[6];
+                hookBytes[0] = 0xE9; // jmp
+                byte[] hookOffsetBytes = BitConverter.GetBytes((int)jmpToCodeCave);
+                Array.Copy(hookOffsetBytes, 0, hookBytes, 1, 4);
+                hookBytes[5] = 0x90; // nop
+
+                uint oldProtect;
+                if (!VirtualProtectEx(_processHandle, _spiritCardHookAddress, 6, PAGE_EXECUTE_READWRITE, out oldProtect))
+                {
+                    VirtualFreeEx(_processHandle, _spiritCardInjectionCodeCave, 0, MEM_RELEASE);
+                    _spiritCardInjectionCodeCave = IntPtr.Zero;
+                    throw new Exception("Failed to change memory protection");
+                }
+
+                bool hookSuccess = WriteProcessMemory(_processHandle, _spiritCardHookAddress, hookBytes, hookBytes.Length, out _);
+                VirtualProtectEx(_processHandle, _spiritCardHookAddress, 6, oldProtect, out _);
+
+                if (!hookSuccess)
+                {
+                    VirtualFreeEx(_processHandle, _spiritCardInjectionCodeCave, 0, MEM_RELEASE);
+                    _spiritCardInjectionCodeCave = IntPtr.Zero;
+                    throw new Exception("Failed to write hook");
+                }
+
+                _isSpiritCardInjectionEnabled = true;
+                return true;
+            }
+            catch (Exception)
+            {
+                if (_spiritCardInjectionCodeCave != IntPtr.Zero)
+                {
+                    VirtualFreeEx(_processHandle, _spiritCardInjectionCodeCave, 0, MEM_RELEASE);
+                    _spiritCardInjectionCodeCave = IntPtr.Zero;
+                }
+                throw;
+            }
+        }
+
+        public bool DisableSpiritCardInjection()
+        {
+            if (!_isAttached || _processHandle == IntPtr.Zero)
+            {
+                throw new InvalidOperationException("Not attached to process");
+            }
+
+            if (!_isSpiritCardInjectionEnabled)
+            {
+                return true; // Already disabled
+            }
+
+            try
+            {
+                bool success = true;
+
+                if (_spiritCardHookAddress != IntPtr.Zero)
+                {
+                    // Restore original bytes: 49 8B 07 49 8B CF
+                    byte[] originalBytes = new byte[] { 0x49, 0x8B, 0x07, 0x49, 0x8B, 0xCF };
+                    uint oldProtect;
+                    VirtualProtectEx(_processHandle, _spiritCardHookAddress, (uint)originalBytes.Length, PAGE_EXECUTE_READWRITE, out oldProtect);
+                    success = WriteProcessMemory(_processHandle, _spiritCardHookAddress, originalBytes, originalBytes.Length, out _);
+                    VirtualProtectEx(_processHandle, _spiritCardHookAddress, (uint)originalBytes.Length, oldProtect, out _);
+
+                    _spiritCardHookAddress = IntPtr.Zero;
+                }
+
+                if (_spiritCardInjectionCodeCave != IntPtr.Zero)
+                {
+                    VirtualFreeEx(_processHandle, _spiritCardInjectionCodeCave, 0, MEM_RELEASE);
+                    _spiritCardInjectionCodeCave = IntPtr.Zero;
+                }
+
+                _cfHerospiritAddTypeAddress = IntPtr.Zero;
+                _cfHerospiritIDAddress = IntPtr.Zero;
+                _isSpiritCardInjectionEnabled = false;
+
+                return success;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        public bool SetSpiritCardToAdd(uint spiritId, int quantity)
+        {
+            if (!_isAttached || _processHandle == IntPtr.Zero || !_isSpiritCardInjectionEnabled)
+            {
+                return false;
+            }
+
+            try
+            {
+                // Set to Add-One mode
+                byte[] addTypeBytes = BitConverter.GetBytes(1); // 1 = Add-One mode
+                WriteProcessMemory(_processHandle, _cfHerospiritAddTypeAddress, addTypeBytes, 4, out _);
+
+                // Write the spirit ID to cfHerospiritID
+                byte[] spiritIdBytes = BitConverter.GetBytes(spiritId);
+                bool success = WriteProcessMemory(_processHandle, _cfHerospiritIDAddress, spiritIdBytes, 4, out _);
+
+                if (!success)
+                {
+                    return false;
+                }
+
+                // Note: The actual addition happens when you interact with the Team Dock - Spirits screen
+                // The quantity (50) is already set in the addherospiritdata structure
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        public bool SetAllSpiritCardsToAdd(List<uint> spiritIds)
+        {
+            if (!_isAttached || _processHandle == IntPtr.Zero || !_isSpiritCardInjectionEnabled)
+            {
+                return false;
+            }
+
+            try
+            {
+                // Set to Add-All mode
+                byte[] addTypeBytes = BitConverter.GetBytes(0); // 0 = Add-All mode
+                WriteProcessMemory(_processHandle, _cfHerospiritAddTypeAddress, addTypeBytes, 4, out _);
+
+                // Write all spirit IDs to herospiritIDAll array (after the data structures)
+                // herospiritIDAll starts at code cave + 0x300
+                IntPtr herospiritIDAllAddress = new IntPtr(_spiritCardInjectionCodeCave.ToInt64() + 0x300);
+
+                List<byte> allSpiritIds = new List<byte>();
+                foreach (uint spiritId in spiritIds)
+                {
+                    allSpiritIds.AddRange(BitConverter.GetBytes(spiritId));
+                }
+                // Add terminating 0
+                allSpiritIds.AddRange(BitConverter.GetBytes(0));
+
+                bool success = WriteProcessMemory(_processHandle, herospiritIDAllAddress, allSpiritIds.ToArray(), allSpiritIds.Count, out _);
+
+                return success;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        public bool AddSpiritCardToTeam(uint spiritId, int quantity = 50)
+        {
+            if (!_isAttached || _processHandle == IntPtr.Zero)
+            {
+                throw new InvalidOperationException("Not attached to process");
+            }
+
+            try
+            {
+                // Enable injection if not already enabled
+                if (!_isSpiritCardInjectionEnabled)
+                {
+                    bool enableSuccess = EnableSpiritCardInjection();
+                    if (!enableSuccess)
+                    {
+                        return false;
+                    }
+                }
+
+                // Set the spirit ID to add
+                return SetSpiritCardToAdd(spiritId, quantity);
             }
             catch (Exception)
             {
