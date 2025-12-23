@@ -50,8 +50,8 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
         private bool _isFreezeItemsUnderMaintenance = false;
         private bool _isIncrementItemsUnderMaintenance = false;
         private bool _isStoreMultiplierUnderMaintenance = false;
-        private bool _isFreezeSpiritsUnderMaintenance = true;
-        private bool _isIncrementSpiritsUnderMaintenance = true;
+        private bool _isFreezeSpiritsUnderMaintenance = false;
+        private bool _isIncrementSpiritsUnderMaintenance = false;
         private bool _isUnlimitedHeroesUnderMaintenance = true;
         private bool _isPlayerLevelUnderMaintenance = false;
 
@@ -61,12 +61,12 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
         private string _passiveNewValue = "";
         private bool _hasPassiveValue = false;
 
-        private const long STAR_FREEZE_ADDRESS = 0xDA234C;
+        private const long STAR_FREEZE_ADDRESS = 0xDA226C;
 
-        private const long FLOWER_INCREMENT_ADDRESS = 0xDA2344;
+        private const long FLOWER_INCREMENT_ADDRESS = 0xDA2266;
 
-        private const long SPIRIT_FREEZE_ADDRESS = 0xCF16EA;
-        private const long ELITE_SPIRIT_FREEZE_ADDRESS = 0xCF2B1D;
+        private const long SPIRIT_FREEZE_ADDRESS = 0xCF178A;
+        private const long ELITE_SPIRIT_FREEZE_ADDRESS = 0xCF1687;
 
         private static readonly byte[] FREEZE_BYTES = new byte[] { 0x90, 0x90, 0x90 };
         private static readonly byte[] ORIGINAL_BYTES = new byte[] { 0x89, 0x50, 0x10 };
@@ -159,6 +159,7 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
             BackToMenuCommand = new RelayCommand(() => SelectedTool = "menu");
             ToggleStarsFreezeCommand = new RelayCommand(ToggleStarsFreeze, CanToggleStarsFreeze);
             ToggleFlowersIncrementCommand = new RelayCommand(ToggleFlowersIncrement, CanToggleFlowersIncrement);
+            RestartGameCommand = new RelayCommand(RestartGame, CanRestartGame);
             ToggleSpiritsFreezeCommand = new RelayCommand(ToggleSpiritsFreeze, CanToggleSpiritsFreeze);
             ToggleSpiritIncrementCommand = new RelayCommand(ToggleSpiritIncrement, CanToggleSpiritIncrement);
             ToggleStoreItemMultiplierCommand = new RelayCommand(ToggleStoreItemMultiplier, CanToggleStoreItemMultiplier);
@@ -550,6 +551,7 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
         public ICommand BackToMenuCommand { get; }
         public ICommand ToggleStarsFreezeCommand { get; }
         public ICommand ToggleFlowersIncrementCommand { get; }
+        public ICommand RestartGameCommand { get; }
         public ICommand ToggleSpiritsFreezeCommand { get; }
         public ICommand ToggleSpiritIncrementCommand { get; }
         public ICommand ToggleStoreItemMultiplierCommand { get; }
@@ -586,6 +588,8 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
                 _isFlowersIncrementEnabled = value;
                 OnPropertyChanged();
                 ((RelayCommand)ToggleFlowersIncrementCommand).RaiseCanExecuteChanged();
+                ((RelayCommand)ToggleSpiritsFreezeCommand).RaiseCanExecuteChanged();
+                ((RelayCommand)ToggleSpiritIncrementCommand).RaiseCanExecuteChanged();
             }
         }
 
@@ -597,6 +601,7 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
                 _isSpiritsFrozen = value;
                 OnPropertyChanged();
                 ((RelayCommand)ToggleSpiritsFreezeCommand).RaiseCanExecuteChanged();
+                ((RelayCommand)ToggleSpiritIncrementCommand).RaiseCanExecuteChanged();
             }
         }
 
@@ -608,6 +613,7 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
                 _isSpiritIncrementEnabled = value;
                 OnPropertyChanged();
                 ((RelayCommand)ToggleSpiritIncrementCommand).RaiseCanExecuteChanged();
+                ((RelayCommand)ToggleSpiritsFreezeCommand).RaiseCanExecuteChanged();
             }
         }
 
@@ -1189,12 +1195,36 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
 
                 if (!IsFlowersIncrementEnabled)
                 {
+                    // Check if Spirit features are active
+                    if (IsSpiritsFrozen || IsSpiritIncrementEnabled)
+                    {
+                        IsFlowersIncrementEnabled = false; // Ensure toggle stays OFF
+                        MessageBox.Show(
+                            "Cannot activate Increment Items on Use while Freeze Spirits or Increment Spirits is active.\n\n" +
+                            "Please disable those features first to avoid conflicts.",
+                            "Feature Conflict",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Warning);
+                        return;
+                    }
+
                     success = _memoryService.WriteBytes(FLOWER_INCREMENT_ADDRESS, FLOWER_INCREMENT_BYTES);
 
                     if (success)
                     {
                         IsFlowersIncrementEnabled = true;
                         StatusMessage = "Flower increment enabled - flowers will increase when buying!";
+
+                        // Show important warning about spirits menu
+                        MessageBox.Show(
+                            "⚠️ IMPORTANT WARNING ⚠️\n\n" +
+                            "If you want to enter the Spirits menu:\n" +
+                            "1. RESTART THE GAME\n" +
+                            "2. DO NOT ACTIVATE THIS OPTION THE NEXT TIME\n\n" +
+                            "Otherwise the game will crash when entering the Spirits menu!",
+                            "Spirits Menu Warning",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Warning);
                     }
                     else
                     {
@@ -1212,14 +1242,34 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
 
                     if (success)
                     {
-                        IsFlowersIncrementEnabled = false;
-                        StatusMessage = "Flower increment disabled - normal flower behavior restored";
+                        // Verify the bytes were actually restored
+                        byte[]? readBack = _memoryService.ReadBytes(FLOWER_INCREMENT_ADDRESS, FLOWER_ORIGINAL_BYTES.Length);
+                        bool verified = readBack != null && readBack.SequenceEqual(FLOWER_ORIGINAL_BYTES);
+
+                        if (verified)
+                        {
+                            IsFlowersIncrementEnabled = false;
+                            StatusMessage = "Flower increment disabled - original bytes verified and restored!";
+                        }
+                        else
+                        {
+                            StatusMessage = "WARNING: Disable may have failed - bytes not verified!";
+                            MessageBox.Show(
+                                "The disable operation completed, but verification failed.\n\n" +
+                                "The original bytes may not have been restored correctly.\n\n" +
+                                "Try disabling again or restart the game.",
+                                "Verification Failed",
+                                MessageBoxButton.OK,
+                                MessageBoxImage.Warning);
+                        }
                     }
                     else
                     {
                         StatusMessage = "Failed to disable flower increment";
                         MessageBox.Show(
-                            "Failed to disable flower increment.",
+                            "Failed to disable flower increment.\n\n" +
+                            "The game memory could not be restored.\n\n" +
+                            "You may need to restart the game.",
                             "Disable Failed",
                             MessageBoxButton.OK,
                             MessageBoxImage.Error);
@@ -1239,7 +1289,7 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
 
         private bool CanToggleSpiritsFreeze(object? parameter)
         {
-            return IsAttached;
+            return IsAttached && !IsFlowersIncrementEnabled && !IsSpiritIncrementEnabled;
         }
 
         private void ToggleSpiritsFreeze(object? parameter)
@@ -1253,15 +1303,7 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
 
                 if (!IsSpiritsFrozen)
                 {
-                    // Show custom dialog asking about extra kenshins and hissatsus
-                    var dialog = new Views.SpiritsFreezeConfirmDialog
-                    {
-                        Owner = Application.Current.MainWindow
-                    };
-
-                    bool? dialogResult = dialog.ShowDialog();
-
-                    // Freeze spirits
+                    // Freeze spirits directly without dialog
                     success1 = _memoryService.WriteBytes(SPIRIT_FREEZE_ADDRESS, SPIRIT_FREEZE_BYTES);
                     success2 = _memoryService.WriteBytes(ELITE_SPIRIT_FREEZE_ADDRESS, ELITE_SPIRIT_FREEZE_BYTES);
 
@@ -1269,25 +1311,6 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
                     {
                         IsSpiritsFrozen = true;
                         StatusMessage = "Spirits frozen - unlimited hero & elite spirits enabled!";
-
-                        // If user clicked Yes, also activate the flowers increment feature
-                        if (dialogResult == true && !IsFlowersIncrementEnabled)
-                        {
-                            bool flowerSuccess = _memoryService.WriteBytes(FLOWER_INCREMENT_ADDRESS, FLOWER_INCREMENT_BYTES);
-                            if (flowerSuccess)
-                            {
-                                IsFlowersIncrementEnabled = true;
-                                StatusMessage = "Spirits frozen with extra rewards - 9 bonus kenshins & hissatsus activated!";
-                            }
-                            else
-                            {
-                                MessageBox.Show(
-                                    "Spirits frozen successfully, but failed to enable extra rewards.",
-                                    "Partial Success",
-                                    MessageBoxButton.OK,
-                                    MessageBoxImage.Warning);
-                            }
-                        }
                     }
                     else
                     {
@@ -1334,7 +1357,7 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
 
         private bool CanToggleSpiritIncrement(object? parameter)
         {
-            return IsAttached;
+            return IsAttached && !IsFlowersIncrementEnabled && !IsSpiritsFrozen;
         }
 
         private void ToggleSpiritIncrement(object? parameter)
@@ -2107,6 +2130,108 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
                 MessageBox.Show(
                     $"Error occurred while applying player level:\n\n{ex.Message}",
                     "Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
+
+        private bool CanRestartGame(object? parameter)
+        {
+            return IsAttached;
+        }
+
+        private async void RestartGame(object? parameter)
+        {
+            if (!IsAttached)
+                return;
+
+            try
+            {
+                var result = MessageBox.Show(
+                    "Are you sure you want to restart the game?\n\n" +
+                    "The game process will be terminated and restarted.\n" +
+                    "Make sure you have saved your progress!",
+                    "Restart Game",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
+
+                if (result == MessageBoxResult.Yes)
+                {
+                    // Get the process by name
+                    var processes = System.Diagnostics.Process.GetProcessesByName("nie");
+                    if (!processes.Any())
+                    {
+                        StatusMessage = "Game process not found";
+                        MessageBox.Show(
+                            "Could not find the game process.\n\n" +
+                            "Please restart the game manually.",
+                            "Process Not Found",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Error);
+                        return;
+                    }
+
+                    var process = processes[0];
+                    string? processPath = process.MainModule?.FileName;
+                    string? workingDirectory = System.IO.Path.GetDirectoryName(processPath);
+
+                    // Detach first
+                    DetachFromProcess(null);
+
+                    // Kill the process
+                    process.Kill();
+                    process.WaitForExit(5000);
+
+                    // Wait 10 seconds before restarting
+                    StatusMessage = "Game terminated. Waiting 10 seconds before restarting...";
+                    await System.Threading.Tasks.Task.Delay(10000);
+
+                    // Start a new instance if we have the path
+                    if (!string.IsNullOrEmpty(processPath) && System.IO.File.Exists(processPath))
+                    {
+                        try
+                        {
+                            var startInfo = new System.Diagnostics.ProcessStartInfo
+                            {
+                                FileName = processPath,
+                                WorkingDirectory = workingDirectory,
+                                UseShellExecute = true
+                            };
+                            System.Diagnostics.Process.Start(startInfo);
+                            StatusMessage = "Game restarted successfully!";
+                        }
+                        catch (Exception startEx)
+                        {
+                            StatusMessage = $"Failed to start game: {startEx.Message}";
+                            MessageBox.Show(
+                                $"The game was closed but failed to restart:\n\n{startEx.Message}\n\n" +
+                                $"Game path: {processPath}\n\n" +
+                                "Please start the game manually.",
+                                "Restart Failed",
+                                MessageBoxButton.OK,
+                                MessageBoxImage.Warning);
+                        }
+                    }
+                    else
+                    {
+                        StatusMessage = "Game terminated - please start it manually";
+                        MessageBox.Show(
+                            $"The game was closed but could not find the executable to restart.\n\n" +
+                            $"Path found: {processPath ?? "null"}\n\n" +
+                            "Please start the game manually.",
+                            "Path Not Found",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Warning);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Error restarting game: {ex.Message}";
+                MessageBox.Show(
+                    $"Error occurred while restarting the game:\n\n{ex.Message}\n\n" +
+                    "Please restart the game manually.",
+                    "Restart Failed",
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
             }

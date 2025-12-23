@@ -290,6 +290,34 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.Services
             }
         }
 
+        public byte[]? ReadBytes(long address, int length)
+        {
+            if (!_isAttached || _processHandle == IntPtr.Zero)
+            {
+                throw new InvalidOperationException("Not attached to process");
+            }
+
+            try
+            {
+                IntPtr targetAddress = new IntPtr(_moduleBase.ToInt64() + address);
+                byte[] buffer = new byte[length];
+
+                // Read the bytes
+                bool success = ReadProcessMemory(_processHandle, targetAddress, buffer, length, out int bytesRead);
+
+                if (success && bytesRead == length)
+                {
+                    return buffer;
+                }
+
+                return null;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
         private bool InjectAtAddress(long hookOffset, int bytesToSkip, ref IntPtr codeCave)
         {
             try
@@ -524,8 +552,8 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.Services
 
             try
             {
-                // Heroes Spirits: AOB scan for "66 89 68 0C E9"
-                byte[] heroesAOB = new byte[] { 0x66, 0x89, 0x68, 0x0C, 0xE9 };
+                // Heroes Spirits: AOB scan for "66 89 68 0C 48"
+                byte[] heroesAOB = new byte[] { 0x66, 0x89, 0x68, 0x0C, 0x48 };
                 IntPtr heroesAddress = AOBScan(heroesAOB, null);
 
                 if (heroesAddress == IntPtr.Zero)
@@ -533,20 +561,20 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.Services
                     throw new Exception("Failed to find Heroes Spirits AOB pattern");
                 }
 
-                // Elite Spirits: AOB scan for "66 41 89 6C 78 10 E9"
-                byte[] eliteAOB = new byte[] { 0x66, 0x41, 0x89, 0x6C, 0x78, 0x10, 0xE9 };
-                IntPtr eliteAddress = AOBScan(eliteAOB, null);
+                // Elite Spirits: DISABLED - needs more work
+                // byte[] eliteAOB = new byte[] { 0x66, 0x41, 0x89, 0x6C, 0x78, 0x10 };
+                // IntPtr eliteAddress = AOBScan(eliteAOB, null);
 
-                if (eliteAddress == IntPtr.Zero)
-                {
-                    throw new Exception("Failed to find Elite Spirits AOB pattern");
-                }
+                // if (eliteAddress == IntPtr.Zero)
+                // {
+                //     throw new Exception("Failed to find Elite Spirits AOB pattern");
+                // }
 
                 // Inject Heroes Spirits (5 bytes to replace for jmp instruction)
                 InjectSpiritAtAddress(heroesAddress, 5, true, ref _heroSpiritIncrementCodeCave);
 
-                // Inject Elite Spirits (7 bytes to replace: 6 for mov + 1 for next instruction)
-                InjectSpiritAtAddress(eliteAddress, 7, false, ref _eliteSpiritIncrementCodeCave);
+                // Inject Elite Spirits (DISABLED)
+                // InjectSpiritAtAddress(eliteAddress, 6, false, ref _eliteSpiritIncrementCodeCave);
 
                 return true;
             }
@@ -619,7 +647,7 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.Services
                 }
                 else
                 {
-                    // Elite: add bp, 2; mov [r8+rdi*2+10],bp; jmp to original destination
+                    // Elite: add bp, 2; mov [r8+rdi*2+10],bp; jmp back
                     injectedCode = new byte[15];
                     injectedCode[0] = 0x66; injectedCode[1] = 0x83; injectedCode[2] = 0xC5; injectedCode[3] = 0x02; // add bp, 2
                     injectedCode[4] = 0x66; injectedCode[5] = 0x41; injectedCode[6] = 0x89; injectedCode[7] = 0x6C;
@@ -628,9 +656,8 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.Services
                     jmpOffsetPos = 11;
                 }
 
-                // Calculate jump to the original jump destination (nie.exe+CE9B07)
-                // Both heroes and elite spirits jump to the same destination after the mov instruction
-                IntPtr originalDestination = new IntPtr(_moduleBase.ToInt64() + 0xCE9B07);
+                // Calculate jump back to continue execution after the replaced bytes
+                IntPtr originalDestination = new IntPtr(address.ToInt64() + bytesToReplace);
                 long jmpOffset = originalDestination.ToInt64() - (codeCave.ToInt64() + injectedCode.Length);
 
                 byte[] offsetBytes = BitConverter.GetBytes((int)jmpOffset);
@@ -705,10 +732,10 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.Services
                 if (_heroSpiritIncrementCodeCave != IntPtr.Zero)
                 {
                     // Use the known offset since it's already hooked
-                    IntPtr heroesAddress = new IntPtr(_moduleBase.ToInt64() + 0xCF16EA);
+                    IntPtr heroesAddress = new IntPtr(_moduleBase.ToInt64() + 0xCF178A);
 
                     // Restore 5 bytes: the original 4-byte mov instruction + the next byte
-                    byte[] heroesOriginal = new byte[] { 0x66, 0x89, 0x68, 0x0C, 0xE9 };
+                    byte[] heroesOriginal = new byte[] { 0x66, 0x89, 0x68, 0x0C, 0x48 };
                     uint oldProtect;
                     VirtualProtectEx(_processHandle, heroesAddress, (uint)heroesOriginal.Length, PAGE_EXECUTE_READWRITE, out oldProtect);
                     success1 = WriteProcessMemory(_processHandle, heroesAddress, heroesOriginal, heroesOriginal.Length, out _);
@@ -722,10 +749,10 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.Services
                 if (_eliteSpiritIncrementCodeCave != IntPtr.Zero)
                 {
                     // Use the known offset since it's already hooked
-                    IntPtr eliteAddress = new IntPtr(_moduleBase.ToInt64() + 0xCF2B1D);
+                    IntPtr eliteAddress = new IntPtr(_moduleBase.ToInt64() + 0xCF1687);
 
-                    // Restore 7 bytes: the original 6-byte mov instruction + the next byte
-                    byte[] eliteOriginal = new byte[] { 0x66, 0x41, 0x89, 0x6C, 0x78, 0x10, 0xE9 };
+                    // Restore 6 bytes: the original mov instruction
+                    byte[] eliteOriginal = new byte[] { 0x66, 0x41, 0x89, 0x6C, 0x78, 0x10 };
                     uint oldProtect;
                     VirtualProtectEx(_processHandle, eliteAddress, (uint)eliteOriginal.Length, PAGE_EXECUTE_READWRITE, out oldProtect);
                     success2 = WriteProcessMemory(_processHandle, eliteAddress, eliteOriginal, eliteOriginal.Length, out _);

@@ -173,7 +173,7 @@
                                                Foreground="White"/>
 
                         <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                            <TextBlock Text="Increment Spirits on Use"
+                            <TextBlock Text="Increment Spirits on Use (ONLY HERO AND FABLED SPIRITS)"
                                      FontSize="16"
                                      FontWeight="Bold"
                                      Foreground="White"/>
