@@ -37,7 +37,8 @@
         </materialDesign:Card>
 
         <materialDesign:Card Grid.Row="1" Style="{StaticResource CardStyle}" Margin="10">
-            <StackPanel>
+            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <StackPanel Margin="0,0,0,20">
                 <Border Background="{DynamicResource MaterialDesignDivider}"
                        CornerRadius="8"
                        Margin="0,0,0,20">
@@ -273,6 +274,7 @@
                     </materialDesign:Card>
                 </Grid>
             </StackPanel>
+            </ScrollViewer>
         </materialDesign:Card>
     </Grid>
 </UserControl>

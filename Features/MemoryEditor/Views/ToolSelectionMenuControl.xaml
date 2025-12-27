@@ -489,6 +489,74 @@
                     </Expander>
                     </Border>
 
+                    <!-- SPIRIT MARKET Section (Middle Right) -->
+                    <Border Grid.Row="1" Grid.Column="2"
+                           Background="#4CAF50"
+                           CornerRadius="8"
+                           Margin="0,10,0,0"
+                           VerticalAlignment="Top">
+                    <Expander Background="Transparent"
+                             IsExpanded="False">
+                        <Expander.Header>
+                            <Grid Margin="5">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <materialDesign:PackIcon Grid.Column="0"
+                                                       Kind="ShoppingOutline"
+                                                       Width="24"
+                                                       Height="24"
+                                                       VerticalAlignment="Center"
+                                                       Margin="0,0,12,0"
+                                                       Foreground="White"/>
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock Text="SPIRIT MARKET"
+                                             FontSize="15"
+                                             FontWeight="Bold"
+                                             Foreground="White"/>
+                                    <TextBlock Text="Free spirit purchases and quantity boost"
+                                             FontSize="10"
+                                             Foreground="White"
+                                             Opacity="0.9"/>
+                                </StackPanel>
+                            </Grid>
+                        </Expander.Header>
+                        <StackPanel Margin="10" Background="Transparent">
+                            <!-- Free Buy Spirit Market -->
+                            <Grid Margin="0,0,0,8">
+                            <Border Background="#4CAF50"
+                                   Style="{StaticResource OptionBorderHoverStyle}">
+                                <Grid Margin="12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <materialDesign:PackIcon Grid.Column="0"
+                                                           Kind="CurrencyUsd"
+                                                           Width="20"
+                                                           Height="20"
+                                                           VerticalAlignment="Center"
+                                                           Margin="0,0,10,0"
+                                                           Foreground="White"/>
+                                    <TextBlock Grid.Column="1"
+                                             Text="Free Buy Spirit Market"
+                                             FontSize="13"
+                                             FontWeight="SemiBold"
+                                             Foreground="White"
+                                             VerticalAlignment="Center"/>
+                                    <ToggleButton Grid.Column="2"
+                                                 IsChecked="{Binding MemoryEditor.IsFreeBuySpiritMarketEnabled, Mode=OneWay}"
+                                                 Style="{StaticResource MaterialDesignSwitchToggleButton}"
+                                                 Command="{Binding MemoryEditor.ToggleFreeBuySpiritMarketCommand}"/>
+                                </Grid>
+                            </Border>
+                            </Grid>
+                        </StackPanel>
+                    </Expander>
+                    </Border>
+
                     <!-- TEAM BUILDER Section (Bottom Left) -->
                     <Border Grid.Row="1" Grid.Column="0"
                            Background="#FFC107"
@@ -547,9 +615,9 @@
                                              Foreground="White"
                                              VerticalAlignment="Center"/>
                                     <ToggleButton Grid.Column="2"
-                                                 IsChecked="{Binding MemoryEditor.IsUnlimitedSpiritsEnabled, Mode=OneWay}"
+                                                 IsChecked="{Binding MemoryEditor.IsUnlimitedHeroesEnabled, Mode=OneWay}"
                                                  Style="{StaticResource MaterialDesignSwitchToggleButton}"
-                                                 Command="{Binding MemoryEditor.ToggleUnlimitedSpiritsCommand}"/>
+                                                 Command="{Binding MemoryEditor.ToggleUnlimitedHeroesCommand}"/>
                                 </Grid>
                             </Border>
 

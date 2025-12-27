@@ -80,4 +80,12 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.Models
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
+
+    public class PassiveInfo
+    {
+        public string Name { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public int PassiveId { get; set; }
+        public string Type { get; set; } = string.Empty; // "Normal", "Hero", or "Fabled"
+    }
 }

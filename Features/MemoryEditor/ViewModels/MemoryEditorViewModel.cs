@@ -44,7 +44,7 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
         private bool _isSpiritsUnderMaintenance = true;
         private bool _isBeansUnderMaintenance = true;
         private bool _isVictoryItemsUnderMaintenance = true;
-        private bool _isPassiveValuesUnderMaintenance = true;
+        private bool _isPassiveValuesUnderMaintenance = false;
 
         // Individual maintenance flags for toggle options
         private bool _isFreezeItemsUnderMaintenance = false;
@@ -52,7 +52,9 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
         private bool _isStoreMultiplierUnderMaintenance = false;
         private bool _isFreezeSpiritsUnderMaintenance = false;
         private bool _isIncrementSpiritsUnderMaintenance = false;
-        private bool _isUnlimitedHeroesUnderMaintenance = true;
+        private bool _isUnlimitedHeroesUnderMaintenance = false;
+        private bool _isUnlimitedHeroesEnabled = false;
+        private bool _isFreeBuySpiritMarketEnabled = false;
         private bool _isPlayerLevelUnderMaintenance = false;
 
         // Passive value tracking
@@ -60,6 +62,7 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
         private string _passiveCurrentValue = "N/A";
         private string _passiveNewValue = "";
         private bool _hasPassiveValue = false;
+        private PassiveInfo? _selectedPassive = null;
 
         private const long STAR_FREEZE_ADDRESS = 0xDA2FEC;
 
@@ -164,6 +167,8 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
             ToggleSpiritIncrementCommand = new RelayCommand(ToggleSpiritIncrement, CanToggleSpiritIncrement);
             ToggleStoreItemMultiplierCommand = new RelayCommand(ToggleStoreItemMultiplier, CanToggleStoreItemMultiplier);
             ToggleUnlimitedSpiritsCommand = new RelayCommand(ToggleUnlimitedSpirits, CanToggleUnlimitedSpirits);
+            ToggleUnlimitedHeroesCommand = new RelayCommand(ToggleUnlimitedHeroes, CanToggleUnlimitedHeroes);
+            ToggleFreeBuySpiritMarketCommand = new RelayCommand(ToggleFreeBuySpiritMarket, CanToggleFreeBuySpiritMarket);
             TogglePassiveValueEditingCommand = new RelayCommand(TogglePassiveValueEditing, CanTogglePassiveValueEditing);
             AddSpiritsCommand = new RelayCommand(AddSpiritsValue, CanAddSpirits);
             AddBeansCommand = new RelayCommand(AddBeansValue, CanAddBeans);
@@ -469,6 +474,21 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
 
         public ObservableCollection<ItemInfo> WorkingItems { get; }
 
+        public PassiveInfo? SelectedPassive
+        {
+            get => _selectedPassive;
+            set
+            {
+                _selectedPassive = value;
+                OnPropertyChanged();
+                // When a passive is selected from dropdown, load its value
+                if (_selectedPassive != null)
+                {
+                    LoadSelectedPassiveValue();
+                }
+            }
+        }
+
         public MemoryValue? SelectedValue
         {
             get => _selectedValue;
@@ -556,6 +576,8 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
         public ICommand ToggleSpiritIncrementCommand { get; }
         public ICommand ToggleStoreItemMultiplierCommand { get; }
         public ICommand ToggleUnlimitedSpiritsCommand { get; }
+        public ICommand ToggleUnlimitedHeroesCommand { get; }
+        public ICommand ToggleFreeBuySpiritMarketCommand { get; }
         public ICommand TogglePassiveValueEditingCommand { get; }
         public ICommand AddSpiritsCommand { get; }
         public ICommand AddBeansCommand { get; }
@@ -809,6 +831,26 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
             set
             {
                 _isUnlimitedHeroesUnderMaintenance = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public bool IsUnlimitedHeroesEnabled
+        {
+            get => _isUnlimitedHeroesEnabled;
+            set
+            {
+                _isUnlimitedHeroesEnabled = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public bool IsFreeBuySpiritMarketEnabled
+        {
+            get => _isFreeBuySpiritMarketEnabled;
+            set
+            {
+                _isFreeBuySpiritMarketEnabled = value;
                 OnPropertyChanged();
             }
         }
@@ -1562,6 +1604,178 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
             }
         }
 
+        private bool CanToggleUnlimitedHeroes(object? parameter)
+        {
+            return IsAttached;
+        }
+
+        private void ToggleUnlimitedHeroes(object? parameter)
+        {
+            if (!IsAttached)
+                return;
+
+            try
+            {
+                bool success;
+
+                if (!IsUnlimitedHeroesEnabled)
+                {
+                    success = _memoryService.InjectUnlimitedHeroes();
+
+                    if (success)
+                    {
+                        IsUnlimitedHeroesEnabled = true;
+                        StatusMessage = "Unlimited Heroes enabled - you can now have up to 5 heroes in your team dock!";
+                        MessageBox.Show(
+                            "Unlimited Heroes has been enabled.\n\n" +
+                            "You can now add up to 5 hero characters to your team dock instead of the normal limit of 2.\n\n" +
+                            "This will remain active until you disable it or restart the game.",
+                            "Unlimited Heroes Enabled",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Information);
+                    }
+                    else
+                    {
+                        StatusMessage = "Failed to enable unlimited heroes";
+                        MessageBox.Show(
+                            "Failed to enable unlimited heroes.\n\n" +
+                            "Make sure the game is running.",
+                            "Enable Failed",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Error);
+                    }
+                }
+                else
+                {
+                    success = _memoryService.RemoveUnlimitedHeroes();
+
+                    if (success)
+                    {
+                        IsUnlimitedHeroesEnabled = false;
+                        StatusMessage = "Unlimited Heroes disabled - normal team dock limit (2 heroes) restored";
+                    }
+                    else
+                    {
+                        StatusMessage = "Failed to disable unlimited heroes";
+                        MessageBox.Show(
+                            "Failed to disable unlimited heroes.",
+                            "Disable Failed",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Error);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Error toggling unlimited heroes: {ex.Message}";
+                MessageBox.Show(
+                    $"Error occurred while toggling unlimited heroes:\n\n{ex.Message}",
+                    "Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
+
+        private bool CanToggleFreeBuySpiritMarket(object? parameter)
+        {
+            return IsAttached;
+        }
+
+        private void ToggleFreeBuySpiritMarket(object? parameter)
+        {
+            if (!IsAttached)
+                return;
+
+            try
+            {
+                bool success;
+
+                if (!IsFreeBuySpiritMarketEnabled)
+                {
+                    success = _memoryService.InjectFreeBuySpiritMarket();
+
+                    if (success)
+                    {
+                        IsFreeBuySpiritMarketEnabled = true;
+                        StatusMessage = "Free Buy Spirit Market enabled - spirits now cost 0 and quantity set to 999!";
+
+                        // Ask if user wants to enable Store Item Multiplier (x2457)
+                        var multiplierResult = MessageBox.Show(
+                            "Free Buy Spirit Market has been enabled!\n\n" +
+                            "Do you also want to activate the Store Item Multiplier (x2457)?\n\n" +
+                            "⚠️ IMPORTANT: This multiplier only works for:\n" +
+                            "  • Items\n" +
+                            "  • Hissatsus\n" +
+                            "  • Kenshin\n\n" +
+                            "❌ Does NOT work for spirits!\n\n" +
+                            "Click YES to enable multiplier, or NO to skip.",
+                            "Enable Store Item Multiplier?",
+                            MessageBoxButton.YesNo,
+                            MessageBoxImage.Question);
+
+                        if (multiplierResult == MessageBoxResult.Yes)
+                        {
+                            // Enable Store Item Multiplier
+                            if (!IsStoreItemMultiplierEnabled)
+                            {
+                                ToggleStoreItemMultiplier(null);
+                            }
+                        }
+
+                        MessageBox.Show(
+                            "Free Buy Spirit Market has been enabled.\n\n" +
+                            "Spirit Market Features:\n" +
+                            "• All spirits cost 0 (free)\n" +
+                            "• Spirit quantity automatically set to 999\n" +
+                            "• Player level set to 99 for purchases\n" +
+                            "• Works in Spirit Market and Atrium of the Untamed\n\n" +
+                            "This will remain active until you disable it or restart the game.",
+                            "Free Buy Spirit Market Enabled",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Information);
+                    }
+                    else
+                    {
+                        StatusMessage = "Failed to enable Free Buy Spirit Market";
+                        MessageBox.Show(
+                            "Failed to enable Free Buy Spirit Market.\n\n" +
+                            "Make sure the game is running.",
+                            "Enable Failed",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Error);
+                    }
+                }
+                else
+                {
+                    success = _memoryService.RemoveFreeBuySpiritMarket();
+
+                    if (success)
+                    {
+                        IsFreeBuySpiritMarketEnabled = false;
+                        StatusMessage = "Free Buy Spirit Market disabled - normal spirit costs restored";
+                    }
+                    else
+                    {
+                        StatusMessage = "Failed to disable Free Buy Spirit Market";
+                        MessageBox.Show(
+                            "Failed to disable Free Buy Spirit Market.",
+                            "Disable Failed",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Error);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Error toggling Free Buy Spirit Market: {ex.Message}";
+                MessageBox.Show(
+                    $"Error occurred while toggling Free Buy Spirit Market:\n\n{ex.Message}",
+                    "Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
+
         private bool CanAddSpirits(object? parameter)
         {
             return IsAttached;
@@ -1756,6 +1970,30 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
         private bool CanApplyPassiveValue(object? parameter)
         {
             return IsAttached && HasPassiveValue && !string.IsNullOrEmpty(PassiveNewValue);
+        }
+
+        private void LoadSelectedPassiveValue()
+        {
+            if (_selectedPassive == null || !IsPassiveValueEditingEnabled || !IsAttached)
+                return;
+
+            try
+            {
+                // This is a placeholder - in a full implementation, you would:
+                // 1. Look up the passive value from game memory based on PassiveId
+                // 2. Read the current value
+                // 3. Update PassiveValueType, PassiveCurrentValue, and HasPassiveValue
+
+                // For now, just show that a passive was selected
+                PassiveValueType = _selectedPassive.Type == "Normal" ? "DWord" : "Float";
+                PassiveCurrentValue = "0"; // Placeholder - would read from memory
+                HasPassiveValue = true;
+                StatusMessage = $"Selected passive: {_selectedPassive.Name}";
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Error loading passive value: {ex.Message}";
+            }
         }
 
         private void ApplyPassiveValue(object? parameter)
