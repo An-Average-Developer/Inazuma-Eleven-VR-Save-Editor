@@ -433,9 +433,9 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.Services
             try
             {
                 // Inject at all three item purchase locations (InjectAtAddress will throw detailed exceptions on failure)
-                InjectAtAddress(0x221AD5, 7, ref _storeItemMultiplierCodeCave1); // First - Hissatsus and Kenshins (return to 221ADC)
-                InjectAtAddress(0x220A95, 5, ref _storeItemMultiplierCodeCave2); // Second - Items unless boots and kizuna items (return to 220A9A)
-                InjectAtAddress(0x220DD5, 5, ref _storeItemMultiplierCodeCave3); // Third - Boots and kizuna items (return to 220DDA)
+                InjectAtAddress(0x221CE5, 7, ref _storeItemMultiplierCodeCave1); // First - Hissatsus and Kenshins (return to 221CEC)
+                InjectAtAddress(0x220CA5, 5, ref _storeItemMultiplierCodeCave2); // Second - Items unless boots and kizuna items (return to 220CAA)
+                InjectAtAddress(0x220FE5, 5, ref _storeItemMultiplierCodeCave3); // Third - Boots and kizuna items (return to 220FEA)
 
                 return true;
             }
@@ -456,13 +456,13 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.Services
             try
             {
                 // Restore original bytes at all three locations (5 bytes each)
-                byte[] originalBytes1 = new byte[] { 0x89, 0x4E, 0x10, 0x8B, 0xC3 }; // nie.exe+221AD5: mov [rsi+10],ecx; mov eax,ebx
-                byte[] originalBytes2 = new byte[] { 0x89, 0x4E, 0x10, 0x8B, 0xC3 }; // nie.exe+220A95: mov [rsi+10],ecx; mov eax,ebx
-                byte[] originalBytes3 = new byte[] { 0x89, 0x4E, 0x10, 0x8B, 0xC3 }; // nie.exe+220DD5: mov [rsi+10],ecx; mov eax,ebx
+                byte[] originalBytes1 = new byte[] { 0x89, 0x4E, 0x10, 0x8B, 0xC3 }; // nie.exe+221CE5: mov [rsi+10],ecx; mov eax,ebx
+                byte[] originalBytes2 = new byte[] { 0x89, 0x4E, 0x10, 0x8B, 0xC3 }; // nie.exe+220CA5: mov [rsi+10],ecx; mov eax,ebx
+                byte[] originalBytes3 = new byte[] { 0x89, 0x4E, 0x10, 0x8B, 0xC3 }; // nie.exe+220FE5: mov [rsi+10],ecx; mov eax,ebx
 
-                bool success1 = WriteBytes(0x221AD5, originalBytes1);
-                bool success2 = WriteBytes(0x220A95, originalBytes2);
-                bool success3 = WriteBytes(0x220DD5, originalBytes3);
+                bool success1 = WriteBytes(0x221CE5, originalBytes1);
+                bool success2 = WriteBytes(0x220CA5, originalBytes2);
+                bool success3 = WriteBytes(0x220FE5, originalBytes3);
 
                 // Free allocated memory
                 if (_storeItemMultiplierCodeCave1 != IntPtr.Zero)
@@ -732,7 +732,7 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.Services
                 if (_heroSpiritIncrementCodeCave != IntPtr.Zero)
                 {
                     // Use the known offset since it's already hooked
-                    IntPtr heroesAddress = new IntPtr(_moduleBase.ToInt64() + 0xCF178A);
+                    IntPtr heroesAddress = new IntPtr(_moduleBase.ToInt64() + 0xCF1F3A);
 
                     // Restore 5 bytes: the original 4-byte mov instruction + the next byte
                     byte[] heroesOriginal = new byte[] { 0x66, 0x89, 0x68, 0x0C, 0x48 };
@@ -749,7 +749,7 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.Services
                 if (_eliteSpiritIncrementCodeCave != IntPtr.Zero)
                 {
                     // Use the known offset since it's already hooked
-                    IntPtr eliteAddress = new IntPtr(_moduleBase.ToInt64() + 0xCF1687);
+                    IntPtr eliteAddress = new IntPtr(_moduleBase.ToInt64() + 0xCF1E37);
 
                     // Restore 6 bytes: the original mov instruction
                     byte[] eliteOriginal = new byte[] { 0x66, 0x41, 0x89, 0x6C, 0x78, 0x10 };

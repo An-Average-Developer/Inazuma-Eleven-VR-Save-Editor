@@ -61,12 +61,12 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
         private string _passiveNewValue = "";
         private bool _hasPassiveValue = false;
 
-        private const long STAR_FREEZE_ADDRESS = 0xDA226C;
+        private const long STAR_FREEZE_ADDRESS = 0xDA2FEC;
 
-        private const long FLOWER_INCREMENT_ADDRESS = 0xDA2266;
+        private const long FLOWER_INCREMENT_ADDRESS = 0xDA2FE6;
 
-        private const long SPIRIT_FREEZE_ADDRESS = 0xCF178A;
-        private const long ELITE_SPIRIT_FREEZE_ADDRESS = 0xCF1687;
+        private const long SPIRIT_FREEZE_ADDRESS = 0xCF1F3A;
+        private const long ELITE_SPIRIT_FREEZE_ADDRESS = 0xCF1E37;
 
         private static readonly byte[] FREEZE_BYTES = new byte[] { 0x90, 0x90, 0x90 };
         private static readonly byte[] ORIGINAL_BYTES = new byte[] { 0x89, 0x50, 0x10 };
