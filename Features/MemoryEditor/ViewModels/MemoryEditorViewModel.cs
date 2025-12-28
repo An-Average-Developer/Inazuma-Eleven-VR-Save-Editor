@@ -66,7 +66,7 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
 
         private const long STAR_FREEZE_ADDRESS = 0xDA2FEC;
 
-        private const long FLOWER_INCREMENT_ADDRESS = 0xDA2FE6;
+        private const long FLOWER_INCREMENT_ADDRESS = 0xDA2FE4;
 
         private const long SPIRIT_FREEZE_ADDRESS = 0xCF1F3A;
         private const long ELITE_SPIRIT_FREEZE_ADDRESS = 0xCF1E37;
@@ -1237,36 +1237,12 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
 
                 if (!IsFlowersIncrementEnabled)
                 {
-                    // Check if Spirit features are active
-                    if (IsSpiritsFrozen || IsSpiritIncrementEnabled)
-                    {
-                        IsFlowersIncrementEnabled = false; // Ensure toggle stays OFF
-                        MessageBox.Show(
-                            "Cannot activate Increment Items on Use while Freeze Spirits or Increment Spirits is active.\n\n" +
-                            "Please disable those features first to avoid conflicts.",
-                            "Feature Conflict",
-                            MessageBoxButton.OK,
-                            MessageBoxImage.Warning);
-                        return;
-                    }
-
                     success = _memoryService.WriteBytes(FLOWER_INCREMENT_ADDRESS, FLOWER_INCREMENT_BYTES);
 
                     if (success)
                     {
                         IsFlowersIncrementEnabled = true;
                         StatusMessage = "Flower increment enabled - flowers will increase when buying!";
-
-                        // Show important warning about spirits menu
-                        MessageBox.Show(
-                            "⚠️ IMPORTANT WARNING ⚠️\n\n" +
-                            "If you want to enter the Spirits menu:\n" +
-                            "1. RESTART THE GAME\n" +
-                            "2. DO NOT ACTIVATE THIS OPTION THE NEXT TIME\n\n" +
-                            "Otherwise the game will crash when entering the Spirits menu!",
-                            "Spirits Menu Warning",
-                            MessageBoxButton.OK,
-                            MessageBoxImage.Warning);
                     }
                     else
                     {
@@ -1331,7 +1307,7 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
 
         private bool CanToggleSpiritsFreeze(object? parameter)
         {
-            return IsAttached && !IsFlowersIncrementEnabled && !IsSpiritIncrementEnabled;
+            return IsAttached && !IsSpiritIncrementEnabled;
         }
 
         private void ToggleSpiritsFreeze(object? parameter)
@@ -1399,7 +1375,7 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
 
         private bool CanToggleSpiritIncrement(object? parameter)
         {
-            return IsAttached && !IsFlowersIncrementEnabled && !IsSpiritsFrozen;
+            return IsAttached && !IsSpiritsFrozen;
         }
 
         private void ToggleSpiritIncrement(object? parameter)
