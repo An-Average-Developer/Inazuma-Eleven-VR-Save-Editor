@@ -19,6 +19,7 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
         private readonly MemoryEditorService _memoryService;
         private readonly UnlimitedSpiritsService _unlimitedSpiritsService;
         private readonly PlayerLevelService _playerLevelService;
+        private readonly CustomPassivesService _customPassivesService;
         private readonly DispatcherTimer _updateTimer;
         private readonly DispatcherTimer _autoAttachTimer;
         private MemoryValue? _selectedValue;
@@ -64,6 +65,14 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
         private bool _hasPassiveValue = false;
         private PassiveInfo? _selectedPassive = null;
 
+        // Custom Passives
+        private string _customPassive1 = "";
+        private string _customPassive2 = "";
+        private string _customPassive3 = "";
+        private string _customPassive4 = "";
+        private string _customPassive5 = "";
+        private bool _isCustomPassivesUnderMaintenance = false;
+
         private const long STAR_FREEZE_ADDRESS = 0xDA2FEC;
 
         private const long FLOWER_INCREMENT_ADDRESS = 0xDA2FE4;
@@ -89,6 +98,7 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
             _memoryService = new MemoryEditorService();
             _unlimitedSpiritsService = new UnlimitedSpiritsService();
             _playerLevelService = new PlayerLevelService();
+            _customPassivesService = new CustomPassivesService();
 
             WorkingItems = new ObservableCollection<ItemInfo>
             {
@@ -179,7 +189,7 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
                 var result = MessageBox.Show(
                     "⚠️ IMPORTANT WARNING ⚠️\n\n" +
                     "• Passive values you edit will affect ALL players who use this passive\n" +
-                    "• Passive values will reset to default after restarting the game\n" +
+                    "• Passive values will reset to default after restarting the game\n" +  
                     "• Use this feature carefully\n\n" +
                     "Do you want to continue?",
                     "Passive Values Warning",
@@ -203,6 +213,13 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
             ToggleAllSpiritCardsCommand = new RelayCommand(ToggleAllSpiritCards, CanToggleAllSpiritCards);
             TogglePlayerLevelCommand = new RelayCommand(TogglePlayerLevel, CanTogglePlayerLevel);
             ApplyPlayerLevelCommand = new RelayCommand(ApplyPlayerLevel, CanApplyPlayerLevel);
+            SelectCustomPassivesEditorCommand = new RelayCommand(() =>
+            {
+                SelectedTool = "custompassives";
+                SelectedValue = null;
+            });
+            ApplyCustomPassivesCommand = new RelayCommand(ApplyCustomPassives, CanApplyCustomPassives);
+            ClearCustomPassivesCommand = new RelayCommand(ClearCustomPassives);
 
             MemoryValues = new ObservableCollection<MemoryValue>
             {
@@ -414,6 +431,181 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
                 new SpiritCardInfo { Name = "Zanark Avalonic", Variant = "Red", SpiritId = 0xA70E177A }
             };
 
+            // Initialize AllPassiveIds collection with both normal and hero passives
+            AllPassiveIds = new ObservableCollection<PassiveIdInfo>
+            {
+                new PassiveIdInfo { Id = "3A2BCAF4", Name = "Passive 01 (Type 1)" },
+                new PassiveIdInfo { Id = "3E305FFD", Name = "Passive 01 (Type 2)" },
+                new PassiveIdInfo { Id = "A3229B4E", Name = "Passive 02 (Type 1)" },
+                new PassiveIdInfo { Id = "2C85F013", Name = "Passive 02 (Type 2)" },
+                new PassiveIdInfo { Id = "D425ABD8", Name = "Passive 03 (Type 1)" },
+                new PassiveIdInfo { Id = "94399776", Name = "Passive 03 (Type 2)" },
+                new PassiveIdInfo { Id = "09EEAFCF", Name = "Passive 04 (Type 1)" },
+                new PassiveIdInfo { Id = "4A413E7B", Name = "Passive 04 (Type 2)" },
+                new PassiveIdInfo { Id = "3D460EED", Name = "Passive 05 (Type 1)" },
+                new PassiveIdInfo { Id = "B152C8AA", Name = "Passive 05 (Type 2)" },
+                new PassiveIdInfo { Id = "A44F5F57", Name = "Passive 06 (Type 1)" },
+                new PassiveIdInfo { Id = "A3E76744", Name = "Passive 06 (Type 2)" },
+                new PassiveIdInfo { Id = "D3486FC1", Name = "Passive 07 (Type 1)" },
+                new PassiveIdInfo { Id = "1B5B0021", Name = "Passive 07 (Type 2)" },
+                new PassiveIdInfo { Id = "43F77250", Name = "Passive 08 (Type 1)" },
+                new PassiveIdInfo { Id = "43381077", Name = "Passive 08 (Type 2)" },
+                new PassiveIdInfo { Id = "34F042C6", Name = "Passive 09 (Type 1)" },
+                new PassiveIdInfo { Id = "FB847712", Name = "Passive 09 (Type 2)" },
+                new PassiveIdInfo { Id = "5437CB23", Name = "Passive 10 (Type 1)" },
+                new PassiveIdInfo { Id = "BBEC1128", Name = "Passive 10 (Type 2)" },
+                new PassiveIdInfo { Id = "2330FBB5", Name = "Passive 11 (Type 1)" },
+                new PassiveIdInfo { Id = "0350764D", Name = "Passive 11 (Type 2)" },
+                new PassiveIdInfo { Id = "BA39AA0F", Name = "Passive 14 (Type 1)" },
+                new PassiveIdInfo { Id = "11E5D9A3", Name = "Passive 14 (Type 2)" },
+                new PassiveIdInfo { Id = "A959BEC6", Name = "Passive 15 (Type 1)" },
+                new PassiveIdInfo { Id = "CD3E9A99", Name = "Passive 15 (Type 2)" },
+                new PassiveIdInfo { Id = "535A0F3A", Name = "Passive 16 (Type 1)" },
+                new PassiveIdInfo { Id = "348E867F", Name = "Passive 16 (Type 2)" },
+                new PassiveIdInfo { Id = "245D3FAC", Name = "Passive 17 (Type 1)" },
+                new PassiveIdInfo { Id = "8C32E11A", Name = "Passive 17 (Type 2)" },
+                new PassiveIdInfo { Id = "BD546E16", Name = "Passive 18 (Type 1)" },
+                new PassiveIdInfo { Id = "9E874EF4", Name = "Passive 18 (Type 2)" },
+                new PassiveIdInfo { Id = "CA535E80", Name = "Passive 19 (Type 1)" },
+                new PassiveIdInfo { Id = "263B2991", Name = "Passive 19 (Type 2)" },
+                new PassiveIdInfo { Id = "5AEC4311", Name = "Passive 20 (Type 1)" },
+                new PassiveIdInfo { Id = "7E5839C7", Name = "Passive 20 (Type 2)" },
+                new PassiveIdInfo { Id = "2DEB7387", Name = "Passive 21 (Type 1)" },
+                new PassiveIdInfo { Id = "7F1A98E0", Name = "Passive 21 (Type 2)" },
+                new PassiveIdInfo { Id = "081DA876", Name = "Passive 22 (Type 1)" },
+                new PassiveIdInfo { Id = "9114F9CC", Name = "Passive 22 (Type 2)" },
+                new PassiveIdInfo { Id = "E613C95A", Name = "Passive 23 (Type 1)" },
+                new PassiveIdInfo { Id = "78775CF9", Name = "Passive 23 (Type 2)" },
+                new PassiveIdInfo { Id = "96793DD5", Name = "Passive 24 (Type 1)" },
+                new PassiveIdInfo { Id = "0F706C6F", Name = "Passive 24 (Type 2)" },
+                new PassiveIdInfo { Id = "E17E0D43", Name = "Passive 25 (Type 1)" },
+                new PassiveIdInfo { Id = "71C110D2", Name = "Passive 25 (Type 2)" },
+                new PassiveIdInfo { Id = "06C62044", Name = "Passive 26 (Type 1)" },
+                new PassiveIdInfo { Id = "6601A9A1", Name = "Passive 26 (Type 2)" },
+                new PassiveIdInfo { Id = "11069937", Name = "Passive 27 (Type 1)" },
+                new PassiveIdInfo { Id = "880FC88D", Name = "Passive 27 (Type 2)" },
+                new PassiveIdInfo { Id = "FF08F81B", Name = "Passive 28 (Type 1)" },
+                new PassiveIdInfo { Id = "616C6DB8", Name = "Passive 28 (Type 2)" },
+                new PassiveIdInfo { Id = "166B5D2E", Name = "Passive 29 (Type 1)" },
+                new PassiveIdInfo { Id = "8F620C94", Name = "Passive 29 (Type 2)" },
+                new PassiveIdInfo { Id = "F8653C02", Name = "Passive 30 (Type 1)" },
+                new PassiveIdInfo { Id = "5CFB7AF1", Name = "Passive 30 (Type 2)" },
+                new PassiveIdInfo { Id = "68DA2193", Name = "Passive 31 (Type 1)" },
+                new PassiveIdInfo { Id = "1FDD1105", Name = "Passive 31 (Type 2)" },
+                new PassiveIdInfo { Id = "29403F66", Name = "Passive 32 (Type 1)" },
+                new PassiveIdInfo { Id = "5E470FF0", Name = "Passive 32 (Type 2)" },
+                new PassiveIdInfo { Id = "C74E5E4A", Name = "Passive 33 (Type 1)" },
+                new PassiveIdInfo { Id = "B0496EDC", Name = "Passive 33 (Type 2)" },
+                new PassiveIdInfo { Id = "2E2DFB7F", Name = "Passive 34 (Type 1)" },
+                new PassiveIdInfo { Id = "FC6E090F", Name = "Passive 34 (Type 2)" },
+                new PassiveIdInfo { Id = "592ACBE9", Name = "Passive 35 (Type 1)" },
+                new PassiveIdInfo { Id = "C0239A53", Name = "Passive 35 (Type 2)" },
+                new PassiveIdInfo { Id = "279BB754", Name = "Passive 36 (Type 1)" },
+                new PassiveIdInfo { Id = "B724AAC5", Name = "Passive 36 (Type 2)" },
+                new PassiveIdInfo { Id = "509C87C2", Name = "Passive 37 (Type 1)" },
+                new PassiveIdInfo { Id = "0E04D1D2", Name = "Passive 37 (Type 2)" },
+                new PassiveIdInfo { Id = "305B0E27", Name = "Passive 38" },
+                new PassiveIdInfo { Id = "475C3EB1", Name = "Passive 39" },
+                new PassiveIdInfo { Id = "A9525F9D", Name = "Passive 40 (Type 1)" },
+                new PassiveIdInfo { Id = "DE556F0B", Name = "Passive 40 (Type 2)" },
+                new PassiveIdInfo { Id = "3736CA3E", Name = "Passive 41 (Type 1)" },
+                new PassiveIdInfo { Id = "4031FAA8", Name = "Passive 41 (Type 2)" },
+                new PassiveIdInfo { Id = "AE3F9B84", Name = "Passive 42 (Type 1)" },
+                new PassiveIdInfo { Id = "D938AB12", Name = "Passive 42 (Type 2)" },
+                new PassiveIdInfo { Id = "4987B683", Name = "Passive 43 (Type 1)" },
+                new PassiveIdInfo { Id = "3E808615", Name = "Passive 43 (Type 2)" },
+                new PassiveIdInfo { Id = "1B765DE4", Name = "Passive 44 (Type 1)" },
+                new PassiveIdInfo { Id = "6C716D72", Name = "Passive 44 (Type 2)" },
+                new PassiveIdInfo { Id = "F5783CC8", Name = "Passive 45 (Type 1)" },
+                new PassiveIdInfo { Id = "827F0C5E", Name = "Passive 45 (Type 2)" },
+                new PassiveIdInfo { Id = "6B1CA96B", Name = "Passive 46 (Type 1)" },
+                new PassiveIdInfo { Id = "1C1B99FD", Name = "Passive 46 (Type 2)" },
+                new PassiveIdInfo { Id = "8512C847", Name = "Passive 47 (Type 1)" },
+                new PassiveIdInfo { Id = "F215F8D1", Name = "Passive 47 (Type 2)" },
+                new PassiveIdInfo { Id = "62AAE540", Name = "Passive 48 (Type 1)" },
+                new PassiveIdInfo { Id = "15ADD5D6", Name = "Passive 48 (Type 2)" },
+                new PassiveIdInfo { Id = "026D6CA5", Name = "Passive 49 (Type 1)" },
+                new PassiveIdInfo { Id = "756A5C33", Name = "Passive 49 (Type 2)" },
+                new PassiveIdInfo { Id = "9B643D1F", Name = "Passive 50 (Type 1)" },
+                new PassiveIdInfo { Id = "EC630D89", Name = "Passive 50 (Type 2)" },
+                new PassiveIdInfo { Id = "0500A8BC", Name = "Passive 51 (Type 1)" },
+                new PassiveIdInfo { Id = "7207982A", Name = "Passive 51 (Type 2)" },
+                new PassiveIdInfo { Id = "EB0EC990", Name = "Passive 52 (Type 1)" },
+                new PassiveIdInfo { Id = "9C09F906", Name = "Passive 52 (Type 2)" },
+                new PassiveIdInfo { Id = "7BB1D401", Name = "Passive 53 (Type 1)" },
+                new PassiveIdInfo { Id = "0CB6E497", Name = "Passive 53 (Type 2)" },
+                new PassiveIdInfo { Id = "F2F240FC", Name = "Passive 54 (Type 1)" },
+                new PassiveIdInfo { Id = "85F5706A", Name = "Passive 54 (Type 2)" },
+                new PassiveIdInfo { Id = "6BFB1146", Name = "Passive 55 (Type 1)" },
+                new PassiveIdInfo { Id = "1CFC21D0", Name = "Passive 55 (Type 2)" },
+                new PassiveIdInfo { Id = "8298B473", Name = "Passive 56" },
+                new PassiveIdInfo { Id = "F59F84E5", Name = "Passive 57 (Type 1)" },
+                new PassiveIdInfo { Id = "6C96D55F", Name = "Passive 57 (Type 2)" },
+                new PassiveIdInfo { Id = "1B91E5C9", Name = "Passive 58 (Type 1)" },
+                new PassiveIdInfo { Id = "8B2EF858", Name = "Passive 58 (Type 2)" },
+                new PassiveIdInfo { Id = "FC29C8CE", Name = "Passive 59 (Type 1)" },
+                new PassiveIdInfo { Id = "9CEE412B", Name = "Passive 59 (Type 2)" },
+                new PassiveIdInfo { Id = "EBE971BD", Name = "Passive 60 (Type 1)" },
+                new PassiveIdInfo { Id = "72E02007", Name = "Passive 60 (Type 2)" },
+                new PassiveIdInfo { Id = "05E71091", Name = "Passive 61 (Type 1)" },
+                new PassiveIdInfo { Id = "9B838532", Name = "Passive 61 (Type 2)" },
+                new PassiveIdInfo { Id = "EC84B5A4", Name = "Passive 62 (Type 1)" },
+                new PassiveIdInfo { Id = "758DE41E", Name = "Passive 62 (Type 2)" },
+                new PassiveIdInfo { Id = "028AD488", Name = "Passive 63 (Type 1)" },
+                new PassiveIdInfo { Id = "9235C919", Name = "Passive 63 (Type 2)" },
+                new PassiveIdInfo { Id = "E532F98F", Name = "Passive 64 (Type 1)" },
+                new PassiveIdInfo { Id = "4CEE9055", Name = "Passive 64 (Type 2)" },
+                new PassiveIdInfo { Id = "3BE9A0C3", Name = "Passive 65 (Type 1)" },
+                new PassiveIdInfo { Id = "A2E0F179", Name = "Passive 65 (Type 2)" },
+                new PassiveIdInfo { Id = "D5E7C1EF", Name = "Passive 66 (Type 1)" },
+                new PassiveIdInfo { Id = "4B83544C", Name = "Passive 66 (Type 2)" },
+                new PassiveIdInfo { Id = "3C8464DA", Name = "Passive 67 (Type 1)" },
+                new PassiveIdInfo { Id = "A58D3560", Name = "Passive 67 (Type 2)" },
+                new PassiveIdInfo { Id = "D28A05F6", Name = "Passive 68 (Type 1)" },
+                new PassiveIdInfo { Id = "42351867", Name = "Passive 68 (Type 2)" },
+                new PassiveIdInfo { Id = "353228F1", Name = "Passive 69 (Type 1)" },
+                new PassiveIdInfo { Id = "55F5A114", Name = "Passive 69 (Type 2)" },
+                new PassiveIdInfo { Id = "5C2AF11A", Name = "Hero Passive 01" },
+                new PassiveIdInfo { Id = "6BF40128", Name = "Hero Passive 04" },
+                new PassiveIdInfo { Id = "2122BE90", Name = "Hero Passive 08 (Type 1)" },
+                new PassiveIdInfo { Id = "2894F2BB", Name = "Hero Passive 08 (Type 2)" },
+                new PassiveIdInfo { Id = "999ED9F5", Name = "Hero Passive 09" },
+                new PassiveIdInfo { Id = "EE284FFD", Name = "Hero Passive 17" },
+                new PassiveIdInfo { Id = "FC9DE013", Name = "Hero Passive 18" },
+                new PassiveIdInfo { Id = "1C429720", Name = "Hero Passive 20" },
+                new PassiveIdInfo { Id = "845A23F9", Name = "Hero Passive 21" },
+                new PassiveIdInfo { Id = "6A5442D5", Name = "Hero Passive 22" },
+                new PassiveIdInfo { Id = "6D3986CC", Name = "Hero Passive 24" },
+                new PassiveIdInfo { Id = "8A81ABCB", Name = "Hero Passive 25" },
+                new PassiveIdInfo { Id = "9D4112B8", Name = "Hero Passive 26" },
+                new PassiveIdInfo { Id = "734F7394", Name = "Hero Passive 27" },
+                new PassiveIdInfo { Id = "9A2CD6A1", Name = "Hero Passive 28" },
+                new PassiveIdInfo { Id = "3EE1D416", Name = "Hero Passive 30" },
+                new PassiveIdInfo { Id = "939A9A8A", Name = "Hero Passive 31 (Type 1)" },
+                new PassiveIdInfo { Id = "E49DAA1C", Name = "Hero Passive 31 (Type 2)" },
+                new PassiveIdInfo { Id = "A507B4E9", Name = "Hero Passive 32" },
+                new PassiveIdInfo { Id = "9E74A7E8", Name = "Hero Passive 34" },
+                new PassiveIdInfo { Id = "6C1E7F35", Name = "Hero Passive 37" },
+                new PassiveIdInfo { Id = "5212E484", Name = "Hero Passive 40" },
+                new PassiveIdInfo { Id = "BB7141B1", Name = "Hero Passive 41" },
+                new PassiveIdInfo { Id = "793FB747", Name = "Hero Passive 45 (Type 1)" },
+                new PassiveIdInfo { Id = "0E64FCA7", Name = "Hero Passive 45 (Type 2)" },
+                new PassiveIdInfo { Id = "905C1272", Name = "Hero Passive 46 (Type 1)" },
+                new PassiveIdInfo { Id = "2B0FA37B", Name = "Hero Passive 46 (Type 2)" },
+                new PassiveIdInfo { Id = "EEED6ECF", Name = "Hero Passive 48 (Type 1)" },
+                new PassiveIdInfo { Id = "99EA5E59", Name = "Hero Passive 48 (Type 2)" },
+                new PassiveIdInfo { Id = "80F16F18", Name = "Hero Passive 53" },
+                new PassiveIdInfo { Id = "E7BC9AC9", Name = "Hero Passive 55" },
+                new PassiveIdInfo { Id = "0EDF3FFC", Name = "Hero Passive 57" },
+                new PassiveIdInfo { Id = "706E4341", Name = "Hero Passive 58" },
+                new PassiveIdInfo { Id = "67AEFA32", Name = "Hero Passive 59" },
+                new PassiveIdInfo { Id = "1E724296", Name = "Hero Passive 64 (Type 1)" },
+                new PassiveIdInfo { Id = "B7AE2B4C", Name = "Hero Passive 64 (Type 2)" },
+                new PassiveIdInfo { Id = "1FBC8477", Name = "Hero Passive 67" },
+                new PassiveIdInfo { Id = "FF63F344", Name = "Hero Passive 68" },
+                new PassiveIdInfo { Id = "07B7F21B", Name = "Hero Passive 69" }
+            };
+
             _updateTimer = new DispatcherTimer
             {
                 Interval = TimeSpan.FromSeconds(1)
@@ -473,6 +665,71 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
         public ObservableCollection<SpiritCardInfo> SpiritCardsCollection { get; }
 
         public ObservableCollection<ItemInfo> WorkingItems { get; }
+
+        public ObservableCollection<PassiveIdInfo> AllPassiveIds { get; }
+
+        public string CustomPassive1
+        {
+            get => _customPassive1;
+            set
+            {
+                _customPassive1 = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public string CustomPassive2
+        {
+            get => _customPassive2;
+            set
+            {
+                _customPassive2 = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public string CustomPassive3
+        {
+            get => _customPassive3;
+            set
+            {
+                _customPassive3 = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public string CustomPassive4
+        {
+            get => _customPassive4;
+            set
+            {
+                _customPassive4 = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public string CustomPassive5
+        {
+            get => _customPassive5;
+            set
+            {
+                _customPassive5 = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public bool IsCustomPassivesEnabled => !IsCustomPassivesUnderMaintenance;
+
+        public bool IsCustomPassivesUnderMaintenance
+        {
+            get => _isCustomPassivesUnderMaintenance;
+            set
+            {
+                _isCustomPassivesUnderMaintenance = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(IsCustomPassivesEnabled));
+            }
+        }
 
         public PassiveInfo? SelectedPassive
         {
@@ -590,6 +847,9 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
         public ICommand ToggleAllSpiritCardsCommand { get; }
         public ICommand TogglePlayerLevelCommand { get; }
         public ICommand ApplyPlayerLevelCommand { get; }
+        public ICommand SelectCustomPassivesEditorCommand { get; }
+        public ICommand ApplyCustomPassivesCommand { get; }
+        public ICommand ClearCustomPassivesCommand { get; }
 
         public bool IsStarsFrozen
         {
@@ -939,6 +1199,30 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
 
                     RefreshValues(null);
 
+                    // Enable custom passives tracking if on custom passives screen
+                    if (SelectedTool == "custompassives")
+                    {
+                        try
+                        {
+                            // Attach and enable tracking for custom passives
+                            if (_customPassivesService.AttachToProcess())
+                            {
+                                _customPassivesService.EnableTracking();
+
+                                // Wait a moment for the game to trigger the hook and populate current values
+                                await System.Threading.Tasks.Task.Delay(1000);
+
+                                // Refresh current passive values into the dropdowns
+                                RefreshCustomPassives();
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            // Don't fail the whole attach if custom passives fails
+                            StatusMessage = $"Custom passives tracking error: {ex.Message}";
+                        }
+                    }
+
                     if (AutoRefresh)
                     {
                         _updateTimer.Start();
@@ -968,6 +1252,7 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
                 _memoryService.DetachFromProcess();
                 _unlimitedSpiritsService.DetachFromProcess();
                 _playerLevelService.DetachFromProcess();
+                _customPassivesService.DetachFromProcess();
                 IsAttached = false;
                 _lastKnownGoodTicketValue = 0;
                 IsStarsFrozen = false;
@@ -2346,6 +2631,151 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
                     "Error",
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
+            }
+        }
+
+        private bool CanApplyCustomPassives(object? parameter)
+        {
+            return IsAttached;
+        }
+
+        private void RefreshCustomPassives()
+        {
+            try
+            {
+                // Read current passives from the tracking array
+                string[] currentPassives = _customPassivesService.GetCurrentPassives();
+
+                // Update dropdown selections with current values
+                // Only update if a value is actually present (non-empty)
+                if (!string.IsNullOrEmpty(currentPassives[0]))
+                    CustomPassive1 = currentPassives[0];
+
+                if (!string.IsNullOrEmpty(currentPassives[1]))
+                    CustomPassive2 = currentPassives[1];
+
+                if (!string.IsNullOrEmpty(currentPassives[2]))
+                    CustomPassive3 = currentPassives[2];
+
+                if (!string.IsNullOrEmpty(currentPassives[3]))
+                    CustomPassive4 = currentPassives[3];
+
+                if (!string.IsNullOrEmpty(currentPassives[4]))
+                    CustomPassive5 = currentPassives[4];
+
+                StatusMessage = "Current passives loaded";
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Error refreshing passives: {ex.Message}";
+            }
+        }
+
+        private void ApplyCustomPassives(object? parameter)
+        {
+            if (!IsAttached)
+                return;
+
+            try
+            {
+                // Collect the 5 passive IDs
+                string[] passiveIds = new string[]
+                {
+                    CustomPassive1 ?? "",
+                    CustomPassive2 ?? "",
+                    CustomPassive3 ?? "",
+                    CustomPassive4 ?? "",
+                    CustomPassive5 ?? ""
+                };
+
+                // Check if at least one passive is selected
+                if (passiveIds.All(string.IsNullOrEmpty))
+                {
+                    MessageBox.Show(
+                        "Please select at least one passive before applying.",
+                        "No Passives Selected",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
+                    return;
+                }
+
+                // Attach to process if not already attached
+                if (!_customPassivesService.IsEnabled)
+                {
+                    if (!_customPassivesService.AttachToProcess())
+                    {
+                        throw new Exception("Failed to attach to game process");
+                    }
+                }
+
+                // Apply custom passives
+                bool success = _customPassivesService.ApplyCustomPassives(passiveIds);
+
+                if (success)
+                {
+                    MessageBox.Show(
+                        "Custom passives configured successfully!\n\n" +
+                        "Your selected passives will be applied when you:\n" +
+                        "• Open the Abilearn Board in the game\n" +
+                        "• Hover over a player with passives\n\n" +
+                        "Make sure to close and reopen the Abilearn Board to see the changes.",
+                        "Custom Passives Applied",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+
+                    StatusMessage = "Custom passives applied successfully";
+
+                    // Clear dropdown selections after applying
+                    CustomPassive1 = "";
+                    CustomPassive2 = "";
+                    CustomPassive3 = "";
+                    CustomPassive4 = "";
+                    CustomPassive5 = "";
+                }
+                else
+                {
+                    throw new Exception("Failed to apply custom passives");
+                }
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Error applying custom passives: {ex.Message}";
+                MessageBox.Show(
+                    $"Error occurred while applying custom passives:\n\n{ex.Message}",
+                    "Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
+
+        private void ClearCustomPassives(object? parameter)
+        {
+            try
+            {
+                // Clear all custom passive selections
+                CustomPassive1 = "";
+                CustomPassive2 = "";
+                CustomPassive3 = "";
+                CustomPassive4 = "";
+                CustomPassive5 = "";
+
+                // If service is enabled, apply empty passives to clear memory
+                if (_customPassivesService.IsEnabled)
+                {
+                    string[] emptyPassives = new string[] { "", "", "", "", "" };
+                    _customPassivesService.ApplyCustomPassives(emptyPassives);
+                }
+
+                StatusMessage = "Custom passives cleared";
+                MessageBox.Show(
+                    "All custom passives have been cleared.\n\nYou can now select new passives for a different player.",
+                    "Custom Passives Cleared",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Error clearing custom passives: {ex.Message}";
             }
         }
 

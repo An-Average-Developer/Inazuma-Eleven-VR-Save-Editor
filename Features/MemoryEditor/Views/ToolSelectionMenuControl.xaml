@@ -126,6 +126,63 @@
                     </Grid>
                 </Border>
 
+                <!-- Skip Story Toggle (Always Visible) -->
+                <Border Background="{DynamicResource MaterialDesignDivider}"
+                       CornerRadius="8"
+                       Margin="0,10,0,0">
+                    <StackPanel Margin="15">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <materialDesign:PackIcon Grid.Column="0"
+                                   Kind="BookOpenPageVariant"
+                                   Width="32"
+                                   Height="32"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,15,0"/>
+
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock Text="Skip Story"
+                                         FontSize="16"
+                                         FontWeight="Bold"/>
+                                <TextBlock Text="Skip the missions from the story and finish the match in the first half if you win"
+                                         FontSize="11"
+                                         Opacity="0.7"
+                                         Margin="0,3,0,0"
+                                         TextWrapping="Wrap"/>
+                            </StackPanel>
+
+                            <Button Grid.Column="2"
+                                    Style="{StaticResource MaterialDesignIconButton}"
+                                    ToolTip="Credits and Information"
+                                    VerticalAlignment="Center"
+                                    Margin="0,0,10,0"
+                                    Click="SkipStoryInfo_Click">
+                                <materialDesign:PackIcon Kind="InformationOutline"
+                                                       Width="24"
+                                                       Height="24"/>
+                            </Button>
+
+                            <ToggleButton Grid.Column="3"
+                                        IsChecked="{Binding IsSkipStoryEnabled, Mode=OneWay}"
+                                        Style="{StaticResource MaterialDesignSwitchToggleButton}"
+                                        Command="{Binding ToggleSkipStoryCommand}"
+                                        VerticalAlignment="Center"/>
+                        </Grid>
+
+                        <TextBlock Text="⚠ Restart the game when enabling or disabling this option. You can toggle this with the game closed."
+                                 FontSize="10"
+                                 Opacity="0.6"
+                                 Margin="47,8,0,0"
+                                 TextWrapping="Wrap"/>
+                    </StackPanel>
+                </Border>
+
                                 <!-- Collapsible Sections: 2 per row -->
                 <Grid Margin="0,10,0,0"
                       Visibility="{Binding MemoryEditor.IsAttached, Converter={StaticResource BooleanToVisibilityConverter}}">
@@ -1210,6 +1267,92 @@
                     </Border>
                     </Grid>
                 </materialDesign:Card>
+
+                <!-- Custom Passives Editor Cards - Side by Side -->
+                <WrapPanel Orientation="Horizontal" Margin="10,0,0,0">
+                    <!-- Custom Passives - Normal Players Card -->
+                    <materialDesign:Card Style="{StaticResource CardStyle}"
+                                       Padding="16,12,16,12"
+                                       Width="180"
+                                       MinHeight="170"
+                                       Margin="0,0,10,0"
+                                       HorizontalAlignment="Left"
+                                       VerticalAlignment="Top"
+                                       Cursor="Hand"
+                                       MouseLeftButtonUp="CustomPassivesEditorCard_Click"
+                                       IsEnabled="{Binding MemoryEditor.IsCustomPassivesEnabled}">
+                        <Grid>
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <Image Source="/Resources/Cards/Pasivas.png"
+                                   Width="48"
+                                   Height="48"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,0,0,8"
+                                   RenderOptions.BitmapScalingMode="HighQuality"/>
+
+                            <TextBlock Text="Custom Passives"
+                                     FontSize="15"
+                                     FontWeight="SemiBold"
+                                     HorizontalAlignment="Center"
+                                     Margin="0,0,0,4"/>
+
+                            <TextBlock Text="Normal Players (BETA)"
+                                     FontSize="11"
+                                     Opacity="0.6"
+                                     TextWrapping="Wrap"
+                                     TextAlignment="Center"
+                                     Margin="8,0,8,8"/>
+
+                            <Button Command="{Binding MemoryEditor.SelectCustomPassivesEditorCommand}"
+                                  Style="{StaticResource MaterialDesignRaisedButton}"
+                                  Height="28"
+                                  Padding="12,0"
+                                  Margin="0,0,0,0"
+                                  Background="{DynamicResource SecondaryHueMidBrush}"
+                                  Foreground="Black">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="ChevronRight"
+                                                           Width="14"
+                                                           Height="14"
+                                                           VerticalAlignment="Center"
+                                                           Margin="0,0,4,0"/>
+                                    <TextBlock Text="Open"
+                                             FontSize="11"
+                                             VerticalAlignment="Center"
+                                             FontWeight="Medium"/>
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+
+                        <!-- Maintenance Overlay -->
+                        <Border Background="#CC808080"
+                               CornerRadius="4"
+                               Visibility="{Binding MemoryEditor.IsCustomPassivesUnderMaintenance, Converter={StaticResource BooleanToVisibilityConverter}}"
+                               IsHitTestVisible="True">
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <materialDesign:PackIcon Kind="Lock"
+                                                       Width="48"
+                                                       Height="48"
+                                                       Foreground="White"
+                                                       HorizontalAlignment="Center"
+                                                       Opacity="0.9"/>
+                                <TextBlock Text="UNDER"
+                                         FontSize="12"
+                                         FontWeight="Bold"
+                                         Foreground="White"
+                                         HorizontalAlignment="Center"
+                                         Margin="0,8,0,0"/>
+                                <TextBlock Text="MAINTENANCE"
+                                         FontSize="11"
+                                         FontWeight="Bold"
+                                         Foreground="White"
+                                         HorizontalAlignment="Center"
+                                         Margin="0,2,0,0"/>
+                            </StackPanel>
+                        </Border>
+                        </Grid>
+                    </materialDesign:Card>
+                </WrapPanel>
             </StackPanel>
         </materialDesign:Card>
     </Grid>

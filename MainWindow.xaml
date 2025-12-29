@@ -7,7 +7,7 @@
         xmlns:updatesViews="clr-namespace:InazumaElevenVRSaveEditor.Features.Updates.Views"
         Title="Inazuma Eleven VR - Save Editor"
         Height="1000"
-        Width="1275"
+        Width="1450"
         WindowStartupLocation="CenterScreen"
         WindowStyle="None"
         ResizeMode="NoResize"
@@ -306,6 +306,11 @@
                         <!-- Passive Values Editor View -->
                         <memoryEditorViews:PassiveValuesEditorControl
                             Visibility="{Binding MemoryEditor.SelectedTool, Converter={StaticResource EqualToVisibilityConverter}, ConverterParameter=passivevalues}"
+                            DataContext="{Binding}"/>
+
+                        <!-- Custom Passives Editor View -->
+                        <memoryEditorViews:CustomPassivesEditorControl
+                            Visibility="{Binding MemoryEditor.SelectedTool, Converter={StaticResource EqualToVisibilityConverter}, ConverterParameter=custompassives}"
                             DataContext="{Binding}"/>
                     </Grid>
                 </TabItem>

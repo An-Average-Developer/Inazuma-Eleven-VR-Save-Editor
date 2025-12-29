@@ -38,6 +38,7 @@ namespace InazumaElevenVRSaveEditor.ViewModels
         private UpdateInfo? _currentUpdateInfo;
         private bool _showingInstallationView = false;
         private string _changelog = string.Empty;
+        private bool _isSkipStoryEnabled = false;
 
         public MainViewModel()
         {
@@ -47,12 +48,16 @@ namespace InazumaElevenVRSaveEditor.ViewModels
             _currentVersion = AppVersion.GetDisplayVersion();
             OnPropertyChanged(nameof(CurrentVersion));
 
+            // Load Skip Story state from settings
+            _isSkipStoryEnabled = SettingsService.GetSkipStoryEnabled();
+
             CheckForUpdatesCommand = new RelayCommand(async () => await CheckForUpdatesAsync());
             DownloadUpdateCommand = new RelayCommand(async () => await DownloadUpdateAsync(), () => IsUpdateAvailable && !IsDownloading);
             OpenGitHubCommand = new RelayCommand(() => _updateService.OpenGitHubPage());
             ShowInstallationViewCommand = new RelayCommand(() => ShowInstallationView(), () => IsUpdateAvailable);
             CancelInstallationCommand = new RelayCommand(() => CancelInstallation());
             AcceptInstallationCommand = new RelayCommand(async () => await AcceptInstallationAsync(), () => !IsDownloading);
+            ToggleSkipStoryCommand = new RelayCommand(() => ToggleSkipStory());
 
             _ = InitializeAsync();
         }
@@ -90,6 +95,7 @@ namespace InazumaElevenVRSaveEditor.ViewModels
         public ICommand ShowInstallationViewCommand { get; }
         public ICommand CancelInstallationCommand { get; }
         public ICommand AcceptInstallationCommand { get; }
+        public ICommand ToggleSkipStoryCommand { get; }
 
         public string CurrentVersion
         {
@@ -193,6 +199,12 @@ namespace InazumaElevenVRSaveEditor.ViewModels
         {
             get => _changelog;
             set => SetProperty(ref _changelog, value);
+        }
+
+        public bool IsSkipStoryEnabled
+        {
+            get => _isSkipStoryEnabled;
+            set => SetProperty(ref _isSkipStoryEnabled, value);
         }
 
         private async Task InitializeAsync()
@@ -456,6 +468,65 @@ namespace InazumaElevenVRSaveEditor.ViewModels
                 IsDownloading = false;
                 DownloadProgress = 0;
                 DownloadProgressText = string.Empty;
+            }
+        }
+
+        private void ToggleSkipStory()
+        {
+            bool newState = !IsSkipStoryEnabled;
+            bool success;
+
+            if (newState)
+            {
+                // Enable Skip Story
+                success = Common.Services.SkipStoryService.EnableSkipStory();
+                if (success)
+                {
+                    IsSkipStoryEnabled = true;
+                    SettingsService.SaveSkipStoryEnabled(true);
+                    MessageBox.Show(
+                        "Skip Story has been enabled successfully!\n\n" +
+                        "Note: In some matches where you lose by a large margin, this may fail. " +
+                        "If this happens, disable this option, restart the game, and play the match normally.",
+                        "Skip Story Enabled",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+                }
+                else
+                {
+                    MessageBox.Show(
+                        "Failed to enable Skip Story.\n\n" +
+                        "Make sure:\n" +
+                        "1. SkipStory.zip is in the Resources folder\n" +
+                        "2. The project has been rebuilt (Build > Rebuild Solution)\n" +
+                        "3. Check the Output window for detailed error messages",
+                        "Error",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error);
+                }
+            }
+            else
+            {
+                // Disable Skip Story
+                success = Common.Services.SkipStoryService.DisableSkipStory();
+                if (success)
+                {
+                    IsSkipStoryEnabled = false;
+                    SettingsService.SaveSkipStoryEnabled(false);
+                    MessageBox.Show(
+                        "Skip Story has been disabled successfully!",
+                        "Skip Story Disabled",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+                }
+                else
+                {
+                    MessageBox.Show(
+                        "Failed to disable Skip Story.",
+                        "Error",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error);
+                }
             }
         }
     }

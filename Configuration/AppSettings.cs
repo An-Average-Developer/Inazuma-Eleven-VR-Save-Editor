@@ -8,6 +8,7 @@ namespace InazumaElevenVRSaveEditor.Configuration
     {
         public string? ModsDirectory { get; set; }
         public bool ShowLoadingScreen { get; set; } = true;
+        public bool SkipStoryEnabled { get; set; } = false;
     }
 
     public static class SettingsService
@@ -80,6 +81,19 @@ namespace InazumaElevenVRSaveEditor.Configuration
         {
             var settings = LoadSettings() ?? new AppSettings();
             settings.ShowLoadingScreen = showLoadingScreen;
+            SaveSettings(settings);
+        }
+
+        public static bool GetSkipStoryEnabled()
+        {
+            var settings = LoadSettings();
+            return settings?.SkipStoryEnabled ?? false;
+        }
+
+        public static void SaveSkipStoryEnabled(bool skipStoryEnabled)
+        {
+            var settings = LoadSettings() ?? new AppSettings();
+            settings.SkipStoryEnabled = skipStoryEnabled;
             SaveSettings(settings);
         }
     }
