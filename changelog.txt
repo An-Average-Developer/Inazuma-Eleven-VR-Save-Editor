@@ -1,3 +1,3 @@
 1.4.0
-- Added SkipStory Mod
+- Added SkipStory Mod (does not require the Mod Manager)
 - Added Custom Passives Option
