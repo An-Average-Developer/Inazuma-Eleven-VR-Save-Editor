@@ -1,3 +1,3 @@
-1.4.0
-- Added SkipStory Mod (does not require the Mod Manager) (Game must be on disk C)
-- Added Custom Passives Option
+1.4.1
+- Added some changes and improvements to the GUI
+- Added a clear warning message informing users that the application is completely free
