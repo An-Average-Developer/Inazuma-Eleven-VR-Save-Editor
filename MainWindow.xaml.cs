@@ -31,6 +31,7 @@ namespace InazumaElevenVRSaveEditor
         private double _currentProgress = 0;
         private double _targetProgress = 0;
 
+
         public MainWindow()
         {
             InitializeComponent();
@@ -318,14 +319,18 @@ namespace InazumaElevenVRSaveEditor
             // Start loading screen animations
             StartLoadingAnimations();
 
-            // Simulate loading process - longer delays to see text better
-            await Task.Delay(600);
-            UpdateLoadingProgress(30, "Loading resources...");
-            await Task.Delay(800);
-            UpdateLoadingProgress(60, "Initializing...");
-            await Task.Delay(800);
-            UpdateLoadingProgress(100, "Ready!");
+            // Simulate loading process - longer delays to see warning message
+            await Task.Delay(1200);
+            UpdateLoadingProgress(20, "Loading resources...");
+            await Task.Delay(1500);
+            UpdateLoadingProgress(45, "Initializing components...");
+            await Task.Delay(1500);
+            UpdateLoadingProgress(70, "Loading data...");
+            await Task.Delay(1500);
+            UpdateLoadingProgress(90, "Finalizing...");
             await Task.Delay(1000);
+            UpdateLoadingProgress(100, "Ready!");
+            await Task.Delay(1200);
 
             // Complete loading and transition to main content
             await CompleteLoading();
@@ -404,7 +409,9 @@ namespace InazumaElevenVRSaveEditor
                     if (_targetProgress - _currentProgress < 0.5)
                         _currentProgress = _targetProgress;
 
-                    LoadingProgressBar.Width = (ActualWidth * 0.6) * (_currentProgress / 100.0);
+                    // Calculate width based on available space (MaxWidth=700, Margin=50 on each side)
+                    var maxBarWidth = Math.Min(700, ActualWidth - 100);
+                    LoadingProgressBar.Width = maxBarWidth * (_currentProgress / 100.0);
                 }
             };
             _progressTimer.Start();
@@ -495,6 +502,257 @@ namespace InazumaElevenVRSaveEditor
                 {
                     ViewModel.ShowInstallationViewCommand.Execute(null);
                 }
+            }
+        }
+
+        private void Hyperlink_RequestNavigate(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
+        {
+            // Open the hyperlink in the default browser
+            try
+            {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = e.Uri.AbsoluteUri,
+                    UseShellExecute = true
+                });
+                e.Handled = true;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Failed to open hyperlink: {ex.Message}");
+            }
+        }
+
+        private void GameBananaButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = "https://gamebanana.com/tools/21299",
+                    UseShellExecute = true
+                });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Failed to open GameBanana link: {ex.Message}");
+            }
+        }
+
+        private void KoFiButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = "https://ko-fi.com/an_average_developer",
+                    UseShellExecute = true
+                });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Failed to open Ko-Fi link: {ex.Message}");
+            }
+        }
+
+        private void DevButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Toggle popup - close if already open, open if closed
+            if (DevInfoPopup.IsOpen)
+            {
+                ClosePopupWithAnimation();
+            }
+            else
+            {
+                DevInfoPopup.IsOpen = true;
+            }
+        }
+
+        private void InstagramButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = "https://www.instagram.com/agoosto__/",
+                    UseShellExecute = true
+                });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Failed to open Instagram link: {ex.Message}");
+            }
+        }
+
+        private void DiscordButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = "https://discord.com/users/799291140896587797",
+                    UseShellExecute = true
+                });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Failed to open Discord link: {ex.Message}");
+            }
+        }
+
+        private void CloseDevPopup_Click(object sender, RoutedEventArgs e)
+        {
+            ClosePopupWithAnimation();
+        }
+
+        private void PopupBackground_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            // Close popup with animation when clicking outside
+            ClosePopupWithAnimation();
+        }
+
+        private bool isClosingWithAnimation = false;
+
+        private void ClosePopupWithAnimation()
+        {
+            if (isClosingWithAnimation || !DevInfoPopup.IsOpen) return;
+
+            isClosingWithAnimation = true;
+
+            try
+            {
+                if (PopupScale == null || PopupTranslate == null || PopupBorder == null)
+                {
+                    DevInfoPopup.IsOpen = false;
+                    isClosingWithAnimation = false;
+                    return;
+                }
+
+                // Reverse animation - from center back to bottom
+                var scaleXAnimation = new DoubleAnimation
+                {
+                    From = 1.0,
+                    To = 0.01,
+                    Duration = TimeSpan.FromMilliseconds(500),
+                    EasingFunction = new PowerEase { Power = 2, EasingMode = EasingMode.EaseIn }
+                };
+
+                var scaleYAnimation = new DoubleAnimation
+                {
+                    From = 1.0,
+                    To = 0.01,
+                    Duration = TimeSpan.FromMilliseconds(500),
+                    EasingFunction = new PowerEase { Power = 2, EasingMode = EasingMode.EaseIn }
+                };
+
+                var translateYAnimation = new DoubleAnimation
+                {
+                    From = 0,
+                    To = -500,
+                    Duration = TimeSpan.FromMilliseconds(500),
+                    EasingFunction = new PowerEase { Power = 2, EasingMode = EasingMode.EaseIn }
+                };
+
+                // When animation completes, close the popup
+                translateYAnimation.Completed += (s, e) =>
+                {
+                    DevInfoPopup.IsOpen = false;
+                    isClosingWithAnimation = false;
+                };
+
+                PopupScale.BeginAnimation(ScaleTransform.ScaleXProperty, scaleXAnimation);
+                PopupScale.BeginAnimation(ScaleTransform.ScaleYProperty, scaleYAnimation);
+                PopupTranslate.BeginAnimation(TranslateTransform.YProperty, translateYAnimation);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Failed to close popup with animation: {ex.Message}");
+                DevInfoPopup.IsOpen = false;
+                isClosingWithAnimation = false;
+            }
+        }
+
+        private void DevInfoPopup_Opened(object sender, EventArgs e)
+        {
+            try
+            {
+                if (PopupScale == null || PopupTranslate == null || PopupBorder == null) return;
+
+                // Try NEGATIVE Y to start from bottom (coordinate system might be inverted)
+                double startY = -500; // Large negative value to test
+
+                System.Diagnostics.Debug.WriteLine($"Window Height: {ActualHeight}, Starting Y: {startY}");
+
+                // FORCE reset to initial position
+                PopupScale.BeginAnimation(ScaleTransform.ScaleXProperty, null);
+                PopupScale.BeginAnimation(ScaleTransform.ScaleYProperty, null);
+                PopupTranslate.BeginAnimation(TranslateTransform.YProperty, null);
+
+                PopupScale.ScaleX = 0.01;
+                PopupScale.ScaleY = 0.01;
+                PopupTranslate.Y = startY;
+                PopupBorder.Opacity = 1;
+
+                // Small delay to ensure reset takes effect
+                Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    // Animate like paper shooting out from bottom - fast and bouncy
+                    var scaleXAnimation = new DoubleAnimation
+                    {
+                        From = 0.01,
+                        To = 1.0,
+                        Duration = TimeSpan.FromMilliseconds(800),
+                        EasingFunction = new BackEase { Amplitude = 0.5, EasingMode = EasingMode.EaseOut }
+                    };
+
+                    var scaleYAnimation = new DoubleAnimation
+                    {
+                        From = 0.01,
+                        To = 1.0,
+                        Duration = TimeSpan.FromMilliseconds(800),
+                        EasingFunction = new BackEase { Amplitude = 0.5, EasingMode = EasingMode.EaseOut }
+                    };
+
+                    var translateYAnimation = new DoubleAnimation
+                    {
+                        From = startY,
+                        To = 0,
+                        Duration = TimeSpan.FromMilliseconds(800),
+                        EasingFunction = new PowerEase { Power = 2, EasingMode = EasingMode.EaseOut }
+                    };
+
+                    System.Diagnostics.Debug.WriteLine("Starting animation...");
+                    PopupScale.BeginAnimation(ScaleTransform.ScaleXProperty, scaleXAnimation);
+                    PopupScale.BeginAnimation(ScaleTransform.ScaleYProperty, scaleYAnimation);
+                    PopupTranslate.BeginAnimation(TranslateTransform.YProperty, translateYAnimation);
+                }), System.Windows.Threading.DispatcherPriority.Loaded);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Failed to animate popup: {ex.Message}");
+            }
+        }
+
+        private void DevInfoPopup_Closed(object sender, EventArgs e)
+        {
+            try
+            {
+                if (PopupScale == null || PopupTranslate == null || PopupBorder == null) return;
+
+                // Clear all animations
+                PopupScale.BeginAnimation(ScaleTransform.ScaleXProperty, null);
+                PopupScale.BeginAnimation(ScaleTransform.ScaleYProperty, null);
+                PopupTranslate.BeginAnimation(TranslateTransform.YProperty, null);
+
+                // Reset to initial state with negative Y
+                PopupScale.ScaleX = 0.01;
+                PopupScale.ScaleY = 0.01;
+                PopupTranslate.Y = -500;
+                PopupBorder.Opacity = 1;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Failed to reset popup: {ex.Message}");
             }
         }
     }

@@ -8,7 +8,7 @@
     <UseWPF>true</UseWPF>
     <AssemblyName>InazumaElevenVRSaveEditor</AssemblyName>
     <RootNamespace>InazumaElevenVRSaveEditor</RootNamespace>
-    <Version>1.4.0</Version>
+    <Version>1.4.1</Version>
     <Authors>An Average Developer</Authors>
     <Product>Inazuma Eleven VR Save Editor</Product>
     <Description>A simple save editor for Inazuma Eleven VR</Description>
@@ -51,6 +51,11 @@
     <Resource Include="Resources\Beans\Strength.png" />
     <Resource Include="Resources\Beans\Technique.png" />
     <Resource Include="Resources\Beans\Unshakable.png" />
+    <Resource Include="Resources\Logos\Ko-Fi.png" />
+    <Resource Include="Resources\Logos\Gamebanana.png" />
+    <Resource Include="Resources\Logos\Dev.png" />
+    <Resource Include="Resources\Logos\Instagram.png" />
+    <Resource Include="Resources\Logos\Discord.png" />
   </ItemGroup>
 
 </Project>

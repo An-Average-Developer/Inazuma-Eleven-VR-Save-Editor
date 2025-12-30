@@ -55,7 +55,9 @@
 
                 <Grid>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="2*"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
@@ -63,7 +65,7 @@
                     </Grid.RowDefinitions>
 
                     <!-- Animated Card Image Area -->
-                    <Viewbox Grid.Row="1" Width="150" Height="150" Margin="0,0,0,30">
+                    <Viewbox Grid.Row="1" Width="120" Height="120" Margin="0,0,0,20">
                         <Image x:Name="LoadingCardImage"
                               Stretch="Uniform"
                               RenderTransformOrigin="0.5,0.5">
@@ -86,22 +88,22 @@
                     <!-- Loading Text -->
                     <TextBlock Grid.Row="2"
                               Text="INAZUMA ELEVEN VR - SAVE EDITOR"
-                              FontSize="26"
+                              FontSize="24"
                               FontWeight="Bold"
                               Foreground="White"
                               HorizontalAlignment="Center"
                               Margin="0,0,0,15"/>
 
                     <!-- Progress Bar -->
-                    <Grid Grid.Row="3" Margin="100,0" MaxWidth="600">
-                        <Border Height="12"
+                    <Grid Grid.Row="3" Margin="50,0" MaxWidth="700">
+                        <Border Height="14"
                                Background="#22FFFFFF"
-                               CornerRadius="6"/>
+                               CornerRadius="7"/>
                         <Border x:Name="LoadingProgressBar"
-                               Height="12"
+                               Height="14"
                                Width="0"
                                HorizontalAlignment="Left"
-                               CornerRadius="6">
+                               CornerRadius="7">
                             <Border.Background>
                                 <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
                                     <GradientStop Color="#FFD700" Offset="0"/>
@@ -122,11 +124,60 @@
                     <TextBlock x:Name="LoadingStatusText"
                               Grid.Row="4"
                               Text="Initializing..."
-                              FontSize="14"
+                              FontSize="13"
                               Foreground="#AAFFFFFF"
                               HorizontalAlignment="Center"
-                              VerticalAlignment="Top"
-                              Margin="0,20,0,0"/>
+                              Margin="0,12,0,0"/>
+
+                    <!-- Warning Message -->
+                    <Border Grid.Row="5"
+                           Background="#40DC143C"
+                           BorderBrush="#FFDC143C"
+                           BorderThickness="2"
+                           CornerRadius="8"
+                           Padding="15,12"
+                           Margin="30,20,30,0"
+                           HorizontalAlignment="Center"
+                           MaxWidth="850">
+                        <StackPanel HorizontalAlignment="Center">
+                            <!-- Line 1: Icon + WARNING -->
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,4">
+                                <materialDesign:PackIcon Kind="AlertCircle"
+                                                       Width="26"
+                                                       Height="26"
+                                                       Foreground="#FFFF4444"
+                                                       VerticalAlignment="Center"
+                                                       Margin="0,0,8,0"/>
+                                <TextBlock FontSize="16" FontWeight="Bold" VerticalAlignment="Center">
+                                    <Run Text="WARNING" Foreground="#FFFF4444"/>
+                                </TextBlock>
+                            </StackPanel>
+
+                            <!-- Line 2 -->
+                            <TextBlock FontSize="14" FontWeight="SemiBold" TextWrapping="Wrap"
+                                      TextAlignment="Center" Margin="0,2,0,0">
+                                <Run Text="This application is completely free." Foreground="#FFFF4444"/>
+                            </TextBlock>
+
+                            <!-- Line 3 -->
+                            <TextBlock FontSize="14" FontWeight="SemiBold" TextWrapping="Wrap"
+                                      TextAlignment="Center" Margin="0,2,0,0">
+                                <Run Text="If you paid for it, you were scammed." Foreground="#FFFF4444"/>
+                            </TextBlock>
+
+                            <!-- Line 4 -->
+                            <TextBlock FontSize="14" FontWeight="SemiBold" TextWrapping="Wrap"
+                                      TextAlignment="Center" Margin="0,2,0,0">
+                                <Run Text="Download the original version " Foreground="#FFFF4444"/>
+                                <Hyperlink NavigateUri="https://gamebanana.com/tools/21299"
+                                          RequestNavigate="Hyperlink_RequestNavigate"
+                                          Foreground="#FF66B3FF"
+                                          TextDecorations="Underline">
+                                    <Run Text="HERE"/>
+                                </Hyperlink>
+                            </TextBlock>
+                        </StackPanel>
+                    </Border>
                 </Grid>
             </Grid>
 
@@ -144,7 +195,7 @@
             </Grid>
 
             <!-- Main Content Container -->
-            <Grid x:Name="MainContent" Grid.RowSpan="3">
+            <Grid x:Name="MainContent" Grid.RowSpan="3" ClipToBounds="False">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
@@ -186,6 +237,61 @@
                            HorizontalAlignment="Right"
                            VerticalAlignment="Center"
                            Margin="0,0,16,0">
+                    <!-- Dev Info Button -->
+                    <Button x:Name="DevButton"
+                            Style="{StaticResource MaterialDesignFloatingActionButton}"
+                            ToolTip="About the Developer"
+                            Click="DevButton_Click"
+                            Margin="5,0"
+                            Width="50"
+                            Height="50"
+                            Background="Transparent"
+                            BorderBrush="White"
+                            BorderThickness="2"
+                            Padding="0">
+                        <Button.Clip>
+                            <EllipseGeometry Center="25,25" RadiusX="23" RadiusY="23"/>
+                        </Button.Clip>
+                        <Image Source="pack://application:,,,/Resources/Logos/Dev.png"
+                               Stretch="UniformToFill"
+                               Width="50"
+                               Height="50"/>
+                    </Button>
+
+                    <!-- GameBanana Logo Button -->
+                    <Button x:Name="GameBananaButton"
+                            Style="{StaticResource MaterialDesignFloatingActionButton}"
+                            ToolTip="Download from GameBanana"
+                            Click="GameBananaButton_Click"
+                            Margin="5,0"
+                            Width="50"
+                            Height="50"
+                            Background="Transparent"
+                            BorderBrush="White"
+                            BorderThickness="2">
+                        <Image Source="pack://application:,,,/Resources/Logos/Gamebanana.png"
+                               Stretch="Uniform"
+                               Width="40"
+                               Height="40"/>
+                    </Button>
+
+                    <!-- Ko-Fi Logo Button -->
+                    <Button x:Name="KoFiButton"
+                            Style="{StaticResource MaterialDesignFloatingActionButton}"
+                            ToolTip="Support on Ko-Fi"
+                            Click="KoFiButton_Click"
+                            Margin="5,0"
+                            Width="50"
+                            Height="50"
+                            Background="Transparent"
+                            BorderBrush="White"
+                            BorderThickness="2">
+                        <Image Source="pack://application:,,,/Resources/Logos/Ko-Fi.png"
+                               Stretch="Uniform"
+                               Width="40"
+                               Height="40"/>
+                    </Button>
+
                     <Button x:Name="SettingsButton"
                             Style="{StaticResource MaterialDesignFloatingActionButton}"
                             ToolTip="Settings"
@@ -240,6 +346,112 @@
                                      Style="{StaticResource MaterialDesignCheckBox}"/>
                         </StackPanel>
                     </Border>
+                </Popup>
+
+                <!-- Developer Info Popup -->
+                <Popup x:Name="DevInfoPopup"
+                       Placement="Center"
+                       AllowsTransparency="True"
+                       StaysOpen="True"
+                       Opened="DevInfoPopup_Opened"
+                       Closed="DevInfoPopup_Closed">
+                    <Grid>
+                        <!-- Background overlay to capture clicks outside -->
+                        <Rectangle Fill="Transparent"
+                                  Width="10000"
+                                  Height="10000"
+                                  MouseDown="PopupBackground_MouseDown"/>
+
+                        <Border x:Name="PopupBorder"
+                                Background="{DynamicResource MaterialDesignPaper}"
+                                BorderBrush="Gray"
+                                BorderThickness="4"
+                                CornerRadius="12"
+                                Padding="30"
+                                materialDesign:ElevationAssist.Elevation="Dp16"
+                                MinWidth="400"
+                                Opacity="1"
+                                RenderTransformOrigin="0.5,0.5"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center">
+                            <Border.RenderTransform>
+                                <TransformGroup>
+                                    <ScaleTransform x:Name="PopupScale" ScaleX="0.01" ScaleY="0.01"/>
+                                    <TranslateTransform x:Name="PopupTranslate" X="0" Y="-500"/>
+                                </TransformGroup>
+                            </Border.RenderTransform>
+                        <StackPanel HorizontalAlignment="Center">
+                            <!-- Dev Image (Circular) -->
+                            <Ellipse Width="120" Height="120" Margin="0,0,0,20">
+                                <Ellipse.Fill>
+                                    <ImageBrush ImageSource="pack://application:,,,/Resources/Logos/Dev.png" Stretch="UniformToFill"/>
+                                </Ellipse.Fill>
+                            </Ellipse>
+
+                            <!-- Title Text -->
+                            <TextBlock FontSize="16"
+                                      FontWeight="SemiBold"
+                                      TextAlignment="Center"
+                                      TextWrapping="Wrap"
+                                      Margin="0,0,0,10">
+                                <Run Text="This tool is created by "/>
+                                <Hyperlink NavigateUri="https://gamebanana.com/members/4911517"
+                                          RequestNavigate="Hyperlink_RequestNavigate"
+                                          Foreground="{DynamicResource PrimaryHueMidBrush}"
+                                          TextDecorations="Underline">
+                                    <Run Text="An Average Developer" FontWeight="Bold"/>
+                                </Hyperlink>
+                            </TextBlock>
+
+                            <!-- Find Me Text -->
+                            <TextBlock Text="You can find me here:"
+                                      FontSize="14"
+                                      FontWeight="Medium"
+                                      TextAlignment="Center"
+                                      Margin="0,10,0,15"/>
+
+                            <!-- Social Media Links -->
+                            <StackPanel Orientation="Horizontal"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,0,0,10">
+                                <!-- Instagram Button -->
+                                <Button Click="InstagramButton_Click"
+                                       Margin="10,0"
+                                       Width="60"
+                                       Height="60"
+                                       Cursor="Hand"
+                                       Style="{StaticResource MaterialDesignFloatingActionButton}"
+                                       ToolTip="Instagram: @agoosto__">
+                                    <Image Source="pack://application:,,,/Resources/Logos/Instagram.png"
+                                          Stretch="Uniform"
+                                          Width="45"
+                                          Height="45"/>
+                                </Button>
+
+                                <!-- Discord Button -->
+                                <Button Click="DiscordButton_Click"
+                                       Margin="10,0"
+                                       Width="60"
+                                       Height="60"
+                                       Cursor="Hand"
+                                       Style="{StaticResource MaterialDesignFloatingActionButton}"
+                                       ToolTip="Discord">
+                                    <Image Source="pack://application:,,,/Resources/Logos/Discord.png"
+                                          Stretch="Uniform"
+                                          Width="45"
+                                          Height="45"/>
+                                </Button>
+                            </StackPanel>
+
+                            <!-- Close Button -->
+                            <Button Content="Close"
+                                   Click="CloseDevPopup_Click"
+                                   Margin="0,15,0,0"
+                                   Style="{StaticResource MaterialDesignFlatButton}"
+                                   HorizontalAlignment="Center"/>
+                        </StackPanel>
+                        </Border>
+                    </Grid>
                 </Popup>
             </Grid>
 

@@ -147,7 +147,7 @@
                                    Margin="0,0,15,0"/>
 
                             <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                <TextBlock Text="Skip Story"
+                                <TextBlock Text="Skip Story (Chronicle Mode)"
                                          FontSize="16"
                                          FontWeight="Bold"/>
                                 <TextBlock Text="Skip the missions from the story and finish the match in the first half if you win"
