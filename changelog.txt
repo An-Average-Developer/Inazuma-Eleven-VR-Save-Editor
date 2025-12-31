@@ -1,3 +1,2 @@
-1.4.1
-- Added some changes and improvements to the GUI
-- Added a clear warning message informing users that the application is completely free
+1.4.2
+- Fixed the system to add Spirits
