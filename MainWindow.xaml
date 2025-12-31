@@ -6,6 +6,7 @@
         xmlns:memoryEditorViews="clr-namespace:InazumaElevenVRSaveEditor.Features.MemoryEditor.Views"
         xmlns:updatesViews="clr-namespace:InazumaElevenVRSaveEditor.Features.Updates.Views"
         Title="Inazuma Eleven VR - Save Editor"
+        Icon="pack://application:,,,/icon.ico"
         Height="1000"
         Width="1450"
         WindowStartupLocation="CenterScreen"

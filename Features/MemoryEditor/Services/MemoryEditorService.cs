@@ -1119,10 +1119,10 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.Services
 
             try
             {
-                // AOB scan for "49 8B 07 49 8B CF FF" pattern from the Cheat Engine script
-                // Full pattern: 49 8B 07 49 8B CF FF * * 45 * * 44
-                byte[] aobPattern = new byte[] { 0x49, 0x8B, 0x07, 0x49, 0x8B, 0xCF, 0xFF, 0x00, 0x00, 0x45, 0x00, 0x00, 0x44 };
-                byte[] aobMask = new byte[] { 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1 };
+                // AOB scan for the pattern from CE script: 49 8B 04 24 49 8B CC FF 50 30 * * * 44 8B
+                // Pattern matches: mov rax,[r12]; mov rcx,r12; call qword ptr [rax+30]; ...; mov r13d,eax
+                byte[] aobPattern = new byte[] { 0x49, 0x8B, 0x04, 0x24, 0x49, 0x8B, 0xCC, 0xFF, 0x50, 0x30, 0x00, 0x00, 0x00, 0x44, 0x8B };
+                byte[] aobMask = new byte[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1 };
 
                 _spiritCardHookAddress = AOBScan(aobPattern, aobMask);
 
@@ -1181,8 +1181,8 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.Services
                 // Write the full injection code based on Cheat Engine script
                 List<byte> injectionCode = new List<byte>();
 
-                // cmp [r15+8],1
-                injectionCode.AddRange(new byte[] { 0x49, 0x83, 0x7F, 0x08, 0x01 });
+                // cmp dword ptr [r12+8],1
+                injectionCode.AddRange(new byte[] { 0x41, 0x83, 0x7C, 0x24, 0x08, 0x01 });
 
                 // jne code (will patch offset later)
                 int jneCodeOffset = injectionCode.Count;
@@ -1289,12 +1289,12 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.Services
                 injectionCode.AddRange(codeArray);
 
                 // Original code
-                injectionCode.AddRange(new byte[] { 0x49, 0x8B, 0x07 }); // mov rax,[r15]
-                injectionCode.AddRange(new byte[] { 0x49, 0x8B, 0xCF }); // mov rcx,r15
+                injectionCode.AddRange(new byte[] { 0x49, 0x8B, 0x04, 0x24 }); // mov rax,[r12]
+                injectionCode.AddRange(new byte[] { 0x49, 0x8B, 0xCC }); // mov rcx,r12
 
                 // Jump back to original code
                 injectionCode.Add(0xE9); // jmp
-                IntPtr returnAddress = new IntPtr(_spiritCardHookAddress.ToInt64() + 6);
+                IntPtr returnAddress = new IntPtr(_spiritCardHookAddress.ToInt64() + 7);
                 long jmpOffset = returnAddress.ToInt64() - (_spiritCardInjectionCodeCave.ToInt64() + injectionCode.Count + 4);
                 injectionCode.AddRange(BitConverter.GetBytes((int)jmpOffset));
 
@@ -1336,11 +1336,11 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.Services
                 // mov r9d,1
                 injectionCode.AddRange(new byte[] { 0x41, 0xB9, 0x01, 0x00, 0x00, 0x00 });
 
-                // mov rcx,r15
-                injectionCode.AddRange(new byte[] { 0x49, 0x8B, 0xCF });
+                // mov rcx,r12
+                injectionCode.AddRange(new byte[] { 0x49, 0x8B, 0xCC });
 
-                // mov rax,[r15]
-                injectionCode.AddRange(new byte[] { 0x49, 0x8B, 0x07 });
+                // mov rax,[r12]
+                injectionCode.AddRange(new byte[] { 0x49, 0x8B, 0x04, 0x24 });
 
                 // call qword ptr [rax+20]
                 injectionCode.AddRange(new byte[] { 0xFF, 0x50, 0x20 });
@@ -1372,14 +1372,15 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.Services
 
                 // Create hook at the injection point
                 long jmpToCodeCave = _spiritCardInjectionCodeCave.ToInt64() - (_spiritCardHookAddress.ToInt64() + 5);
-                byte[] hookBytes = new byte[6];
+                byte[] hookBytes = new byte[7];
                 hookBytes[0] = 0xE9; // jmp
                 byte[] hookOffsetBytes = BitConverter.GetBytes((int)jmpToCodeCave);
                 Array.Copy(hookOffsetBytes, 0, hookBytes, 1, 4);
                 hookBytes[5] = 0x90; // nop
+                hookBytes[6] = 0x90; // nop
 
                 uint oldProtect;
-                if (!VirtualProtectEx(_processHandle, _spiritCardHookAddress, 6, PAGE_EXECUTE_READWRITE, out oldProtect))
+                if (!VirtualProtectEx(_processHandle, _spiritCardHookAddress, 7, PAGE_EXECUTE_READWRITE, out oldProtect))
                 {
                     VirtualFreeEx(_processHandle, _spiritCardInjectionCodeCave, 0, MEM_RELEASE);
                     _spiritCardInjectionCodeCave = IntPtr.Zero;
@@ -1387,7 +1388,7 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.Services
                 }
 
                 bool hookSuccess = WriteProcessMemory(_processHandle, _spiritCardHookAddress, hookBytes, hookBytes.Length, out _);
-                VirtualProtectEx(_processHandle, _spiritCardHookAddress, 6, oldProtect, out _);
+                VirtualProtectEx(_processHandle, _spiritCardHookAddress, 7, oldProtect, out _);
 
                 if (!hookSuccess)
                 {
@@ -1428,8 +1429,8 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.Services
 
                 if (_spiritCardHookAddress != IntPtr.Zero)
                 {
-                    // Restore original bytes: 49 8B 07 49 8B CF
-                    byte[] originalBytes = new byte[] { 0x49, 0x8B, 0x07, 0x49, 0x8B, 0xCF };
+                    // Restore original bytes: 49 8B 04 24 49 8B CC
+                    byte[] originalBytes = new byte[] { 0x49, 0x8B, 0x04, 0x24, 0x49, 0x8B, 0xCC };
                     uint oldProtect;
                     VirtualProtectEx(_processHandle, _spiritCardHookAddress, (uint)originalBytes.Length, PAGE_EXECUTE_READWRITE, out oldProtect);
                     success = WriteProcessMemory(_processHandle, _spiritCardHookAddress, originalBytes, originalBytes.Length, out _);
