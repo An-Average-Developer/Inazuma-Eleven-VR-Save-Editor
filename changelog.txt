@@ -1,6 +1,2 @@
-1.5.0
-- Improved UI
-- Added Tutorials
-- Added Free Items shop
-- Fixed the Increment Spirits on Use, now works with all the spirits
-- Fixed Custom Passives option
+1.5.1
+- Fixed Tutorial and CT files not found
