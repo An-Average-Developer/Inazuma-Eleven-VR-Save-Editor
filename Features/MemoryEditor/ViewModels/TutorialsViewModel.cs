@@ -165,35 +165,57 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
         {
             try
             {
-                // Get the base directory of the application
-                string baseDir = AppDomain.CurrentDomain.BaseDirectory;
-                string tutorialsPath = Path.Combine(baseDir, "Resources", "Tutorials", featureName);
-
-                if (!Directory.Exists(tutorialsPath))
-                {
-                    // Try to create the directory
-                    Directory.CreateDirectory(tutorialsPath);
-                    UpdateNoVideosVisibility();
-                    return;
-                }
-
                 // Supported video formats
                 string[] videoExtensions = { ".mp4", ".avi", ".mkv", ".mov", ".wmv", ".flv", ".webm" };
 
-                var videoFilesList = Directory.GetFiles(tutorialsPath)
-                    .Where(f => videoExtensions.Contains(Path.GetExtension(f).ToLower()))
-                    .Select(f => new VideoFile
-                    {
-                        FilePath = f,
-                        FileName = Path.GetFileNameWithoutExtension(f),
-                        FileSize = GetFileSizeString(f),
-                        Thumbnail = GenerateThumbnail(f)
-                    })
-                    .OrderBy(v => v.FileName)
+                // Create temp directory for extracted videos
+                string tempDir = Path.Combine(Path.GetTempPath(), "InazumaElevenVR", "Tutorials", featureName);
+                Directory.CreateDirectory(tempDir);
+
+                // Get embedded resources matching the feature name
+                var assembly = System.Reflection.Assembly.GetExecutingAssembly();
+                string resourcePrefix = $"InazumaElevenVRSaveEditor.Resources.Tutorials.{featureName.Replace(" ", "_")}.";
+
+                var resourceNames = assembly.GetManifestResourceNames()
+                    .Where(r => r.StartsWith(resourcePrefix, StringComparison.OrdinalIgnoreCase))
+                    .Where(r => videoExtensions.Any(ext => r.EndsWith(ext, StringComparison.OrdinalIgnoreCase)))
                     .ToList();
 
+                var videoFilesList = new System.Collections.Generic.List<VideoFile>();
+
+                foreach (var resourceName in resourceNames)
+                {
+                    // Extract filename from resource name (remove prefix and get the rest)
+                    string fileName = resourceName.Substring(resourcePrefix.Length);
+                    // Replace underscores back to spaces for display, but keep extension
+                    string displayName = Path.GetFileNameWithoutExtension(fileName).Replace("_", " ");
+                    string extension = Path.GetExtension(fileName);
+
+                    // Extract to temp file
+                    string tempFilePath = Path.Combine(tempDir, displayName + extension);
+
+                    using (Stream? stream = assembly.GetManifestResourceStream(resourceName))
+                    {
+                        if (stream != null)
+                        {
+                            using (FileStream fileStream = File.Create(tempFilePath))
+                            {
+                                stream.CopyTo(fileStream);
+                            }
+
+                            videoFilesList.Add(new VideoFile
+                            {
+                                FilePath = tempFilePath,
+                                FileName = displayName,
+                                FileSize = GetFileSizeString(tempFilePath),
+                                Thumbnail = GenerateThumbnail(tempFilePath)
+                            });
+                        }
+                    }
+                }
+
                 VideoFiles.Clear();
-                foreach (var video in videoFilesList)
+                foreach (var video in videoFilesList.OrderBy(v => v.FileName))
                 {
                     VideoFiles.Add(video);
                 }

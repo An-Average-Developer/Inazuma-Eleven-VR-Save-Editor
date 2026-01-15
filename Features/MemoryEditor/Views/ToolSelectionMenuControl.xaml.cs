@@ -259,32 +259,21 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.Views
 
         private void ShowTutorialSteps()
         {
-            string baseDir = AppDomain.CurrentDomain.BaseDirectory;
             string[] tutorialImages = { "1.png", "2.png", "3.png" };
 
             for (int i = 0; i < tutorialImages.Length; i++)
             {
-                string imagePath = Path.Combine(baseDir, "Resources", "Cheat Engine", tutorialImages[i]);
+                // Use pack URI to load embedded resource images
+                string imageUri = $"pack://application:,,,/Resources/Cheat Engine/{tutorialImages[i]}";
 
-                if (File.Exists(imagePath))
+                try
                 {
-                    try
-                    {
-                        ShowImageWindow(imagePath, i + 1, tutorialImages.Length);
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show(
-                            $"Error showing step {i + 1}:\n\n{ex.Message}",
-                            "Error",
-                            MessageBoxButton.OK,
-                            MessageBoxImage.Error);
-                    }
+                    ShowImageWindow(imageUri, i + 1, tutorialImages.Length);
                 }
-                else
+                catch (Exception ex)
                 {
                     MessageBox.Show(
-                        $"Tutorial image not found:\n{imagePath}",
+                        $"Error showing step {i + 1}:\n\n{ex.Message}",
                         "Error",
                         MessageBoxButton.OK,
                         MessageBoxImage.Error);
@@ -394,17 +383,28 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.Views
         {
             try
             {
-                string baseDir = AppDomain.CurrentDomain.BaseDirectory;
-                string ctFilePath = Path.Combine(baseDir, "Resources", "Custom Passives.CT");
+                // Extract embedded resource to temp file
+                string tempDir = Path.Combine(Path.GetTempPath(), "InazumaElevenVR");
+                Directory.CreateDirectory(tempDir);
+                string ctFilePath = Path.Combine(tempDir, "Custom Passives.CT");
 
-                if (!File.Exists(ctFilePath))
+                var assembly = System.Reflection.Assembly.GetExecutingAssembly();
+                using (Stream? stream = assembly.GetManifestResourceStream("InazumaElevenVRSaveEditor.Resources.Custom Passives.CT"))
                 {
-                    MessageBox.Show(
-                        "Custom Passives.CT file not found in Resources folder.",
-                        "Error",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Error);
-                    return;
+                    if (stream == null)
+                    {
+                        MessageBox.Show(
+                            "Custom Passives.CT embedded resource not found.",
+                            "Error",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Error);
+                        return;
+                    }
+
+                    using (FileStream fileStream = File.Create(ctFilePath))
+                    {
+                        stream.CopyTo(fileStream);
+                    }
                 }
 
                 // Open the .CT file with default program (Cheat Engine if installed)
@@ -428,27 +428,37 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.Views
         {
             try
             {
-                string baseDir = AppDomain.CurrentDomain.BaseDirectory;
-                string zipPath = Path.Combine(baseDir, "Resources", "CheatEngineInstaller.zip");
-
-                if (!File.Exists(zipPath))
-                {
-                    MessageBox.Show(
-                        "CheatEngineInstaller.zip not found in Resources folder.",
-                        "Error",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Error);
-                    return false;
-                }
-
                 // Create temp directory
                 string tempDir = Path.Combine(Path.GetTempPath(), "CheatEngineInstaller_" + Guid.NewGuid().ToString());
                 Directory.CreateDirectory(tempDir);
+                string zipPath = Path.Combine(tempDir, "CheatEngineInstaller.zip");
+
+                // Extract embedded resource to temp file
+                var assembly = System.Reflection.Assembly.GetExecutingAssembly();
+                using (Stream? stream = assembly.GetManifestResourceStream("InazumaElevenVRSaveEditor.Resources.CheatEngineInstaller.zip"))
+                {
+                    if (stream == null)
+                    {
+                        MessageBox.Show(
+                            "CheatEngineInstaller.zip embedded resource not found.",
+                            "Error",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Error);
+                        return false;
+                    }
+
+                    using (FileStream fileStream = File.Create(zipPath))
+                    {
+                        stream.CopyTo(fileStream);
+                    }
+                }
 
                 try
                 {
                     // Extract zip
-                    ZipFile.ExtractToDirectory(zipPath, tempDir);
+                    string extractDir = Path.Combine(tempDir, "extracted");
+                    Directory.CreateDirectory(extractDir);
+                    ZipFile.ExtractToDirectory(zipPath, extractDir);
 
                     // Find installer executable
                     string[] installerFiles = Directory.GetFiles(tempDir, "*.exe", SearchOption.AllDirectories);
