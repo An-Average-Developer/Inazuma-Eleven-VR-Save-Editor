@@ -1,2 +1,6 @@
-1.4.2
-- Fixed the system to add Spirits
+1.5.0
+- Improved UI
+- Added Tutorials
+- Added Free Items shop
+- Fixed the Increment Spirits on Use, now works with all the spirits
+- Fixed Custom Passives option
