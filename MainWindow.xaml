@@ -8,7 +8,7 @@
         Title="Inazuma Eleven VR - Save Editor"
         Icon="pack://application:,,,/icon.ico"
         Height="1000"
-        Width="1450"
+        Width="1475"
         WindowStartupLocation="CenterScreen"
         WindowStyle="None"
         ResizeMode="NoResize"
@@ -521,10 +521,10 @@
                             Visibility="{Binding MemoryEditor.SelectedTool, Converter={StaticResource EqualToVisibilityConverter}, ConverterParameter=passivevalues}"
                             DataContext="{Binding}"/>
 
-                        <!-- Custom Passives Editor View -->
-                        <memoryEditorViews:CustomPassivesEditorControl
-                            Visibility="{Binding MemoryEditor.SelectedTool, Converter={StaticResource EqualToVisibilityConverter}, ConverterParameter=custompassives}"
-                            DataContext="{Binding}"/>
+                        <!-- Tutorials View -->
+                        <ContentControl Visibility="{Binding MemoryEditor.SelectedTool, Converter={StaticResource EqualToVisibilityConverter}, ConverterParameter=tutorials}">
+                            <memoryEditorViews:TutorialsControl DataContext="{Binding MemoryEditor.TutorialsViewModel}"/>
+                        </ContentControl>
                     </Grid>
                 </TabItem>
 

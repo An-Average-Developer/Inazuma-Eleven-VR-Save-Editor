@@ -60,6 +60,9 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.Services
         private IntPtr _freeBuySpiritMarketHookAddress = IntPtr.Zero; // First hook address
         private IntPtr _freeBuySpiritMarketLvHookAddress = IntPtr.Zero; // Second hook address (level)
         private IntPtr _cfFBspiritmarketSpQuanAddress = IntPtr.Zero; // Spirit quantity address
+        private IntPtr _freeBuyShopCodeCave = IntPtr.Zero; // For Free Buy Shop injection
+        private IntPtr _freeBuyShopHookAddress = IntPtr.Zero; // Hook address for Free Buy Shop
+        private IntPtr _cfFreeBuyShopTokenQuanAddress = IntPtr.Zero; // Token quantity address
 
         public bool IsAttached => _isAttached;
 
@@ -567,20 +570,8 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.Services
                     throw new Exception("Failed to find Heroes Spirits AOB pattern");
                 }
 
-                // Elite Spirits: DISABLED - needs more work
-                // byte[] eliteAOB = new byte[] { 0x66, 0x41, 0x89, 0x6C, 0x78, 0x10 };
-                // IntPtr eliteAddress = AOBScan(eliteAOB, null);
-
-                // if (eliteAddress == IntPtr.Zero)
-                // {
-                //     throw new Exception("Failed to find Elite Spirits AOB pattern");
-                // }
-
                 // Inject Heroes Spirits (5 bytes to replace for jmp instruction)
-                InjectSpiritAtAddress(heroesAddress, 5, true, ref _heroSpiritIncrementCodeCave);
-
-                // Inject Elite Spirits (DISABLED)
-                // InjectSpiritAtAddress(eliteAddress, 6, false, ref _eliteSpiritIncrementCodeCave);
+                InjectHeroSpiritAtAddress(heroesAddress, 5, ref _heroSpiritIncrementCodeCave);
 
                 return true;
             }
@@ -591,7 +582,37 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.Services
             }
         }
 
-        private bool InjectSpiritAtAddress(IntPtr address, int bytesToReplace, bool isHeroSpirit, ref IntPtr codeCave)
+        public bool InjectEliteSpiritIncrement()
+        {
+            if (!_isAttached || _processHandle == IntPtr.Zero)
+            {
+                throw new InvalidOperationException("Not attached to process");
+            }
+
+            try
+            {
+                // Elite Spirits: AOB scan for "66 41 89 6C 78 10 E9" (includes first byte of next instruction for uniqueness)
+                byte[] eliteAOB = new byte[] { 0x66, 0x41, 0x89, 0x6C, 0x78, 0x10, 0xE9 };
+                IntPtr eliteAddress = AOBScan(eliteAOB, null);
+
+                if (eliteAddress == IntPtr.Zero)
+                {
+                    throw new Exception("Failed to find Elite Spirits AOB pattern");
+                }
+
+                // Inject Elite Spirits (6 bytes to replace for jmp instruction - only replaces the mov instruction)
+                InjectEliteSpiritAtAddress(eliteAddress, 6, ref _eliteSpiritIncrementCodeCave);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                RemoveEliteSpiritIncrement();
+                throw new Exception($"Elite Spirit increment injection failed: {ex.Message}", ex);
+            }
+        }
+
+        private bool InjectHeroSpiritAtAddress(IntPtr address, int bytesToReplace, ref IntPtr codeCave)
         {
             try
             {
@@ -639,28 +660,128 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.Services
                 }
 
                 // Build injected code
-                byte[] injectedCode;
-                int jmpOffsetPos;
+                // Heroes: add bp, 2; mov [rax+0C],bp; jmp to original destination
+                byte[] injectedCode = new byte[13];
+                injectedCode[0] = 0x66; injectedCode[1] = 0x83; injectedCode[2] = 0xC5; injectedCode[3] = 0x02; // add bp, 2
+                injectedCode[4] = 0x66; injectedCode[5] = 0x89; injectedCode[6] = 0x68; injectedCode[7] = 0x0C; // mov [rax+0C],bp
+                injectedCode[8] = 0xE9; // jmp (offset will be calculated)
+                int jmpOffsetPos = 9;
 
-                if (isHeroSpirit)
+                // Calculate jump back to continue execution after the replaced bytes
+                IntPtr originalDestination = new IntPtr(address.ToInt64() + bytesToReplace);
+                long jmpOffset = originalDestination.ToInt64() - (codeCave.ToInt64() + injectedCode.Length);
+
+                byte[] offsetBytes = BitConverter.GetBytes((int)jmpOffset);
+                Array.Copy(offsetBytes, 0, injectedCode, jmpOffsetPos, 4);
+
+                // Write injected code to code cave
+                if (!WriteProcessMemory(_processHandle, codeCave, injectedCode, injectedCode.Length, out _))
                 {
-                    // Heroes: add bp, 2; mov [rax+0C],bp; jmp to original destination
-                    injectedCode = new byte[13];
-                    injectedCode[0] = 0x66; injectedCode[1] = 0x83; injectedCode[2] = 0xC5; injectedCode[3] = 0x02; // add bp, 2
-                    injectedCode[4] = 0x66; injectedCode[5] = 0x89; injectedCode[6] = 0x68; injectedCode[7] = 0x0C; // mov [rax+0C],bp
-                    injectedCode[8] = 0xE9; // jmp (offset will be calculated)
-                    jmpOffsetPos = 9;
+                    VirtualFreeEx(_processHandle, codeCave, 0, MEM_RELEASE);
+                    codeCave = IntPtr.Zero;
+                    throw new Exception($"Failed to write injected code");
                 }
-                else
+
+                // Create hook: replace original bytes with jump to code cave
+                long jmpToCodeCave = codeCave.ToInt64() - (address.ToInt64() + 5);
+                byte[] hookBytes = new byte[bytesToReplace];
+                hookBytes[0] = 0xE9; // jmp opcode
+                byte[] hookOffsetBytes = BitConverter.GetBytes((int)jmpToCodeCave);
+                Array.Copy(hookOffsetBytes, 0, hookBytes, 1, 4);
+
+                // Fill remaining bytes with NOPs if needed
+                for (int i = 5; i < bytesToReplace; i++)
                 {
-                    // Elite: add bp, 2; mov [r8+rdi*2+10],bp; jmp back
-                    injectedCode = new byte[15];
-                    injectedCode[0] = 0x66; injectedCode[1] = 0x83; injectedCode[2] = 0xC5; injectedCode[3] = 0x02; // add bp, 2
-                    injectedCode[4] = 0x66; injectedCode[5] = 0x41; injectedCode[6] = 0x89; injectedCode[7] = 0x6C;
-                    injectedCode[8] = 0x78; injectedCode[9] = 0x10; // mov [r8+rdi*2+10],bp
-                    injectedCode[10] = 0xE9; // jmp (offset will be calculated)
-                    jmpOffsetPos = 11;
+                    hookBytes[i] = 0x90; // NOP
                 }
+
+                // Change memory protection and write hook
+                uint oldProtect;
+                if (!VirtualProtectEx(_processHandle, address, (uint)bytesToReplace, PAGE_EXECUTE_READWRITE, out oldProtect))
+                {
+                    VirtualFreeEx(_processHandle, codeCave, 0, MEM_RELEASE);
+                    codeCave = IntPtr.Zero;
+                    throw new Exception("Failed to change memory protection");
+                }
+
+                bool hookSuccess = WriteProcessMemory(_processHandle, address, hookBytes, hookBytes.Length, out _);
+                VirtualProtectEx(_processHandle, address, (uint)bytesToReplace, oldProtect, out _);
+
+                if (!hookSuccess)
+                {
+                    VirtualFreeEx(_processHandle, codeCave, 0, MEM_RELEASE);
+                    codeCave = IntPtr.Zero;
+                    throw new Exception("Failed to write hook");
+                }
+
+                return true;
+            }
+            catch (Exception)
+            {
+                if (codeCave != IntPtr.Zero)
+                {
+                    VirtualFreeEx(_processHandle, codeCave, 0, MEM_RELEASE);
+                    codeCave = IntPtr.Zero;
+                }
+                throw;
+            }
+        }
+
+        private bool InjectEliteSpiritAtAddress(IntPtr address, int bytesToReplace, ref IntPtr codeCave)
+        {
+            try
+            {
+                // Try multiple allocation attempts at different offsets to find memory within ±2GB range
+                long[] offsets = { 0x10000000, 0x20000000, 0x30000000, -0x10000000, -0x20000000, 0x05000000, 0x01000000 };
+
+                foreach (long offset in offsets)
+                {
+                    IntPtr preferredAddress = new IntPtr(_moduleBase.ToInt64() + offset);
+                    codeCave = VirtualAllocEx(_processHandle, preferredAddress, 2048, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+
+                    if (codeCave != IntPtr.Zero)
+                    {
+                        long distance = codeCave.ToInt64() - address.ToInt64();
+                        if (Math.Abs(distance) <= 0x7FFFFFFF)
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            VirtualFreeEx(_processHandle, codeCave, 0, MEM_RELEASE);
+                            codeCave = IntPtr.Zero;
+                        }
+                    }
+                }
+
+                if (codeCave == IntPtr.Zero)
+                {
+                    codeCave = VirtualAllocEx(_processHandle, IntPtr.Zero, 2048, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+
+                    if (codeCave != IntPtr.Zero)
+                    {
+                        long distance = codeCave.ToInt64() - address.ToInt64();
+                        if (Math.Abs(distance) > 0x7FFFFFFF)
+                        {
+                            VirtualFreeEx(_processHandle, codeCave, 0, MEM_RELEASE);
+                            codeCave = IntPtr.Zero;
+                        }
+                    }
+                }
+
+                if (codeCave == IntPtr.Zero)
+                {
+                    throw new Exception($"Failed to allocate memory within ±2GB range");
+                }
+
+                // Build injected code
+                // Elite: add bp, 2; mov [r8+rdi*2+10],bp; jmp to original destination
+                byte[] injectedCode = new byte[15];
+                injectedCode[0] = 0x66; injectedCode[1] = 0x83; injectedCode[2] = 0xC5; injectedCode[3] = 0x02; // add bp, 2
+                injectedCode[4] = 0x66; injectedCode[5] = 0x41; injectedCode[6] = 0x89; injectedCode[7] = 0x6C;
+                injectedCode[8] = 0x78; injectedCode[9] = 0x10; // mov [r8+rdi*2+10],bp
+                injectedCode[10] = 0xE9; // jmp (offset will be calculated)
+                int jmpOffsetPos = 11;
 
                 // Calculate jump back to continue execution after the replaced bytes
                 IntPtr originalDestination = new IntPtr(address.ToInt64() + bytesToReplace);
@@ -731,9 +852,6 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.Services
 
             try
             {
-                bool success1 = true;
-                bool success2 = true;
-
                 // Restore Heroes Spirits original bytes
                 if (_heroSpiritIncrementCodeCave != IntPtr.Zero)
                 {
@@ -744,13 +862,32 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.Services
                     byte[] heroesOriginal = new byte[] { 0x66, 0x89, 0x68, 0x0C, 0x48 };
                     uint oldProtect;
                     VirtualProtectEx(_processHandle, heroesAddress, (uint)heroesOriginal.Length, PAGE_EXECUTE_READWRITE, out oldProtect);
-                    success1 = WriteProcessMemory(_processHandle, heroesAddress, heroesOriginal, heroesOriginal.Length, out _);
+                    bool success = WriteProcessMemory(_processHandle, heroesAddress, heroesOriginal, heroesOriginal.Length, out _);
                     VirtualProtectEx(_processHandle, heroesAddress, (uint)heroesOriginal.Length, oldProtect, out _);
 
                     VirtualFreeEx(_processHandle, _heroSpiritIncrementCodeCave, 0, MEM_RELEASE);
                     _heroSpiritIncrementCodeCave = IntPtr.Zero;
+
+                    return success;
                 }
 
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        public bool RemoveEliteSpiritIncrement()
+        {
+            if (!_isAttached || _processHandle == IntPtr.Zero)
+            {
+                throw new InvalidOperationException("Not attached to process");
+            }
+
+            try
+            {
                 // Restore Elite Spirits original bytes
                 if (_eliteSpiritIncrementCodeCave != IntPtr.Zero)
                 {
@@ -761,14 +898,16 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.Services
                     byte[] eliteOriginal = new byte[] { 0x66, 0x41, 0x89, 0x6C, 0x78, 0x10 };
                     uint oldProtect;
                     VirtualProtectEx(_processHandle, eliteAddress, (uint)eliteOriginal.Length, PAGE_EXECUTE_READWRITE, out oldProtect);
-                    success2 = WriteProcessMemory(_processHandle, eliteAddress, eliteOriginal, eliteOriginal.Length, out _);
+                    bool success = WriteProcessMemory(_processHandle, eliteAddress, eliteOriginal, eliteOriginal.Length, out _);
                     VirtualProtectEx(_processHandle, eliteAddress, (uint)eliteOriginal.Length, oldProtect, out _);
 
                     VirtualFreeEx(_processHandle, _eliteSpiritIncrementCodeCave, 0, MEM_RELEASE);
                     _eliteSpiritIncrementCodeCave = IntPtr.Zero;
+
+                    return success;
                 }
 
-                return success1 && success2;
+                return true;
             }
             catch (Exception)
             {
@@ -1975,6 +2114,181 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.Services
                 }
 
                 _cfFBspiritmarketSpQuanAddress = IntPtr.Zero;
+
+                return success;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        public bool InjectFreeBuyShop()
+        {
+            if (!_isAttached || _processHandle == IntPtr.Zero)
+            {
+                throw new InvalidOperationException("Not attached to process");
+            }
+
+            try
+            {
+                // AOB scan for: "4C 8B 7C 24 ?? 8B ?? 4C 8B 64"
+                byte[] aobPattern = new byte[] { 0x4C, 0x8B, 0x7C, 0x24, 0x00, 0x8B, 0x00, 0x4C, 0x8B, 0x64 };
+                byte[] aobMask = new byte[] { 1, 1, 1, 1, 0, 1, 0, 1, 1, 1 };
+                _freeBuyShopHookAddress = AOBScan(aobPattern, aobMask);
+
+                if (_freeBuyShopHookAddress == IntPtr.Zero)
+                {
+                    throw new Exception("Failed to find Free Buy Shop AOB pattern.\n\nMake sure the game is running.");
+                }
+
+                // Allocate code cave
+                long[] offsets = { 0x10000000, 0x20000000, 0x30000000, -0x10000000, -0x20000000, 0x05000000, 0x01000000 };
+
+                foreach (long offset in offsets)
+                {
+                    IntPtr preferredAddress = new IntPtr(_moduleBase.ToInt64() + offset);
+                    _freeBuyShopCodeCave = VirtualAllocEx(_processHandle, preferredAddress, 4096, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+
+                    if (_freeBuyShopCodeCave != IntPtr.Zero)
+                    {
+                        long distance = _freeBuyShopCodeCave.ToInt64() - _freeBuyShopHookAddress.ToInt64();
+                        if (Math.Abs(distance) <= 0x7FFFFFFF)
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            VirtualFreeEx(_processHandle, _freeBuyShopCodeCave, 0, MEM_RELEASE);
+                            _freeBuyShopCodeCave = IntPtr.Zero;
+                        }
+                    }
+                }
+
+                if (_freeBuyShopCodeCave == IntPtr.Zero)
+                {
+                    throw new Exception("Failed to allocate memory for Free Buy Shop");
+                }
+
+                // Build the injection code
+                List<byte> injectedCode = new List<byte>();
+
+                // Original bytes: 4C 8B 7C 24 ?? (mov r15,[rsp+??])
+                // Read the 5th byte from the original location
+                byte[] originalBytes = new byte[5];
+                ReadProcessMemory(_processHandle, _freeBuyShopHookAddress, originalBytes, 5, out _);
+                injectedCode.AddRange(originalBytes); // Add original 5 bytes
+
+                // cmp r15d,0Bh
+                injectedCode.AddRange(new byte[] { 0x41, 0x83, 0xFF, 0x0B });
+                // jne code
+                injectedCode.AddRange(new byte[] { 0x75, 0x0A }); // jne +10 bytes
+
+                // mov eax,[cfFreeBuyTokenQuan]
+                injectedCode.AddRange(new byte[] { 0x8B, 0x05 });
+                int movEaxOffsetPosition = injectedCode.Count; // Remember where to patch the offset
+                injectedCode.AddRange(new byte[] { 0x00, 0x00, 0x00, 0x00 }); // Placeholder for offset
+
+                // code:
+                // jmp return
+                injectedCode.Add(0xE9);
+                IntPtr returnAddress = new IntPtr(_freeBuyShopHookAddress.ToInt64() + 5);
+                long jmpReturnDist = returnAddress.ToInt64() - (_freeBuyShopCodeCave.ToInt64() + injectedCode.Count + 4);
+                injectedCode.AddRange(BitConverter.GetBytes((int)jmpReturnDist));
+
+                // Set cfFreeBuyTokenQuan address right after the code
+                _cfFreeBuyShopTokenQuanAddress = new IntPtr(_freeBuyShopCodeCave.ToInt64() + injectedCode.Count);
+
+                // Now calculate and patch the mov eax offset
+                byte[] codeArray = injectedCode.ToArray();
+                long movEaxInstructionEnd = _freeBuyShopCodeCave.ToInt64() + movEaxOffsetPosition + 4;
+                int cfQuanOffset = (int)(_cfFreeBuyShopTokenQuanAddress.ToInt64() - movEaxInstructionEnd);
+                byte[] offsetBytes = BitConverter.GetBytes(cfQuanOffset);
+                Array.Copy(offsetBytes, 0, codeArray, movEaxOffsetPosition, 4);
+                injectedCode = new List<byte>(codeArray);
+
+                // Add the quantity value (999) to the end of the code
+                injectedCode.AddRange(BitConverter.GetBytes((int)999));
+
+                // Write injected code + data
+                if (!WriteProcessMemory(_processHandle, _freeBuyShopCodeCave, injectedCode.ToArray(), injectedCode.Count, out _))
+                {
+                    VirtualFreeEx(_processHandle, _freeBuyShopCodeCave, 0, MEM_RELEASE);
+                    _freeBuyShopCodeCave = IntPtr.Zero;
+                    throw new Exception("Failed to write Free Buy Shop injection code");
+                }
+
+                // Create hook
+                long jmpToCodeCave = _freeBuyShopCodeCave.ToInt64() - (_freeBuyShopHookAddress.ToInt64() + 5);
+                byte[] hookBytes = new byte[5];
+                hookBytes[0] = 0xE9; // jmp
+                byte[] hookOffsetBytes = BitConverter.GetBytes((int)jmpToCodeCave);
+                Array.Copy(hookOffsetBytes, 0, hookBytes, 1, 4);
+
+                uint oldProtect;
+                if (!VirtualProtectEx(_processHandle, _freeBuyShopHookAddress, 5, PAGE_EXECUTE_READWRITE, out oldProtect))
+                {
+                    VirtualFreeEx(_processHandle, _freeBuyShopCodeCave, 0, MEM_RELEASE);
+                    _freeBuyShopCodeCave = IntPtr.Zero;
+                    throw new Exception("Failed to change memory protection");
+                }
+
+                bool hookSuccess = WriteProcessMemory(_processHandle, _freeBuyShopHookAddress, hookBytes, hookBytes.Length, out _);
+                VirtualProtectEx(_processHandle, _freeBuyShopHookAddress, 5, oldProtect, out _);
+
+                if (!hookSuccess)
+                {
+                    VirtualFreeEx(_processHandle, _freeBuyShopCodeCave, 0, MEM_RELEASE);
+                    _freeBuyShopCodeCave = IntPtr.Zero;
+                    throw new Exception("Failed to write hook");
+                }
+
+                return true;
+            }
+            catch (Exception)
+            {
+                if (_freeBuyShopCodeCave != IntPtr.Zero)
+                {
+                    VirtualFreeEx(_processHandle, _freeBuyShopCodeCave, 0, MEM_RELEASE);
+                    _freeBuyShopCodeCave = IntPtr.Zero;
+                }
+                throw;
+            }
+        }
+
+        public bool RemoveFreeBuyShop()
+        {
+            if (!_isAttached || _processHandle == IntPtr.Zero)
+            {
+                throw new InvalidOperationException("Not attached to process");
+            }
+
+            try
+            {
+                bool success = true;
+
+                if (_freeBuyShopHookAddress != IntPtr.Zero)
+                {
+                    // Restore original bytes
+                    byte[] originalBytes = new byte[5];
+                    // Read the original bytes we saved at the start of our code cave
+                    ReadProcessMemory(_processHandle, _freeBuyShopCodeCave, originalBytes, 5, out _);
+
+                    uint oldProtect;
+                    VirtualProtectEx(_processHandle, _freeBuyShopHookAddress, 5, PAGE_EXECUTE_READWRITE, out oldProtect);
+                    success = WriteProcessMemory(_processHandle, _freeBuyShopHookAddress, originalBytes, originalBytes.Length, out _);
+                    VirtualProtectEx(_processHandle, _freeBuyShopHookAddress, 5, oldProtect, out _);
+
+                    _freeBuyShopHookAddress = IntPtr.Zero;
+                }
+
+                if (_freeBuyShopCodeCave != IntPtr.Zero)
+                {
+                    VirtualFreeEx(_processHandle, _freeBuyShopCodeCave, 0, MEM_RELEASE);
+                    _freeBuyShopCodeCave = IntPtr.Zero;
+                }
+
+                _cfFreeBuyShopTokenQuanAddress = IntPtr.Zero;
 
                 return success;
             }

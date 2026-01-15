@@ -8,7 +8,7 @@
     <UseWPF>true</UseWPF>
     <AssemblyName>InazumaElevenVRSaveEditor</AssemblyName>
     <RootNamespace>InazumaElevenVRSaveEditor</RootNamespace>
-    <Version>1.4.2</Version>
+    <Version>1.5.0</Version>
     <Authors>An Average Developer</Authors>
     <Product>Inazuma Eleven VR Save Editor</Product>
     <Description>A simple save editor for Inazuma Eleven VR</Description>
@@ -57,6 +57,28 @@
     <Resource Include="Resources\Logos\Dev.png" />
     <Resource Include="Resources\Logos\Instagram.png" />
     <Resource Include="Resources\Logos\Discord.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Tutorial Videos - Copy to output directory -->
+    <Content Include="Resources\Tutorials\**\*.*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+
+    <!-- Custom Passives CT file -->
+    <Content Include="Resources\Custom Passives.CT">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+
+    <!-- Cheat Engine Tutorial Images -->
+    <Content Include="Resources\Cheat Engine\*.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+
+    <!-- Cheat Engine Installer -->
+    <Content Include="Resources\CheatEngineInstaller.zip">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
 </Project>

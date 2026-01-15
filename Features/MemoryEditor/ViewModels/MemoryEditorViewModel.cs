@@ -32,6 +32,7 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
         private bool _isFlowersIncrementEnabled = false;
         private bool _isSpiritsFrozen = false;
         private bool _isSpiritIncrementEnabled = false;
+        private bool _isEliteSpiritIncrementEnabled = false;
         private bool _isStoreItemMultiplierEnabled = false;
         private bool _isPassiveValueEditingEnabled = false;
         private bool _isUnlimitedSpiritsEnabled = false;
@@ -56,6 +57,8 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
         private bool _isUnlimitedHeroesUnderMaintenance = false;
         private bool _isUnlimitedHeroesEnabled = false;
         private bool _isFreeBuySpiritMarketEnabled = false;
+        private bool _isFreeBuyShopEnabled = false;
+        private bool _isFreeBuyShopUnderMaintenance = false;
         private bool _isPlayerLevelUnderMaintenance = false;
 
         // Passive value tracking
@@ -72,6 +75,10 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
         private string _customPassive4 = "";
         private string _customPassive5 = "";
         private bool _isCustomPassivesUnderMaintenance = false;
+
+        // Tutorials
+        private TutorialsViewModel? _tutorialsViewModel;
+        private string _currentTutorialFeature = "";
 
         private const long STAR_FREEZE_ADDRESS = 0xDA2FEC;
 
@@ -175,10 +182,12 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
             RestartGameCommand = new RelayCommand(RestartGame, CanRestartGame);
             ToggleSpiritsFreezeCommand = new RelayCommand(ToggleSpiritsFreeze, CanToggleSpiritsFreeze);
             ToggleSpiritIncrementCommand = new RelayCommand(ToggleSpiritIncrement, CanToggleSpiritIncrement);
+            ToggleEliteSpiritIncrementCommand = new RelayCommand(ToggleEliteSpiritIncrement, CanToggleEliteSpiritIncrement);
             ToggleStoreItemMultiplierCommand = new RelayCommand(ToggleStoreItemMultiplier, CanToggleStoreItemMultiplier);
             ToggleUnlimitedSpiritsCommand = new RelayCommand(ToggleUnlimitedSpirits, CanToggleUnlimitedSpirits);
             ToggleUnlimitedHeroesCommand = new RelayCommand(ToggleUnlimitedHeroes, CanToggleUnlimitedHeroes);
             ToggleFreeBuySpiritMarketCommand = new RelayCommand(ToggleFreeBuySpiritMarket, CanToggleFreeBuySpiritMarket);
+            ToggleFreeBuyShopCommand = new RelayCommand(ToggleFreeBuyShop, CanToggleFreeBuyShop);
             TogglePassiveValueEditingCommand = new RelayCommand(TogglePassiveValueEditing, CanTogglePassiveValueEditing);
             AddSpiritsCommand = new RelayCommand(AddSpiritsValue, CanAddSpirits);
             AddBeansCommand = new RelayCommand(AddBeansValue, CanAddBeans);
@@ -220,6 +229,7 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
             });
             ApplyCustomPassivesCommand = new RelayCommand(ApplyCustomPassives, CanApplyCustomPassives);
             ClearCustomPassivesCommand = new RelayCommand(ClearCustomPassives);
+            OpenTutorialsCommand = new RelayCommand(OpenTutorials);
 
             MemoryValues = new ObservableCollection<MemoryValue>
             {
@@ -799,6 +809,7 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
                 ((RelayCommand)ToggleFlowersIncrementCommand).RaiseCanExecuteChanged();
                 ((RelayCommand)ToggleSpiritsFreezeCommand).RaiseCanExecuteChanged();
                 ((RelayCommand)ToggleSpiritIncrementCommand).RaiseCanExecuteChanged();
+                ((RelayCommand)ToggleEliteSpiritIncrementCommand).RaiseCanExecuteChanged();
                 ((RelayCommand)ToggleStoreItemMultiplierCommand).RaiseCanExecuteChanged();
                 ((RelayCommand)ToggleUnlimitedSpiritsCommand).RaiseCanExecuteChanged();
             }
@@ -843,6 +854,16 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
             }
         }
 
+        public TutorialsViewModel? TutorialsViewModel
+        {
+            get => _tutorialsViewModel;
+            set
+            {
+                _tutorialsViewModel = value;
+                OnPropertyChanged();
+            }
+        }
+
         public ICommand AttachToProcessCommand { get; }
         public ICommand DetachFromProcessCommand { get; }
         public ICommand RefreshValuesCommand { get; }
@@ -858,10 +879,12 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
         public ICommand RestartGameCommand { get; }
         public ICommand ToggleSpiritsFreezeCommand { get; }
         public ICommand ToggleSpiritIncrementCommand { get; }
+        public ICommand ToggleEliteSpiritIncrementCommand { get; }
         public ICommand ToggleStoreItemMultiplierCommand { get; }
         public ICommand ToggleUnlimitedSpiritsCommand { get; }
         public ICommand ToggleUnlimitedHeroesCommand { get; }
         public ICommand ToggleFreeBuySpiritMarketCommand { get; }
+        public ICommand ToggleFreeBuyShopCommand { get; }
         public ICommand TogglePassiveValueEditingCommand { get; }
         public ICommand AddSpiritsCommand { get; }
         public ICommand AddBeansCommand { get; }
@@ -877,6 +900,7 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
         public ICommand SelectCustomPassivesEditorCommand { get; }
         public ICommand ApplyCustomPassivesCommand { get; }
         public ICommand ClearCustomPassivesCommand { get; }
+        public ICommand OpenTutorialsCommand { get; }
 
         public bool IsStarsFrozen
         {
@@ -911,6 +935,7 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
                 OnPropertyChanged();
                 ((RelayCommand)ToggleSpiritsFreezeCommand).RaiseCanExecuteChanged();
                 ((RelayCommand)ToggleSpiritIncrementCommand).RaiseCanExecuteChanged();
+                ((RelayCommand)ToggleEliteSpiritIncrementCommand).RaiseCanExecuteChanged();
             }
         }
 
@@ -921,6 +946,20 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
             {
                 _isSpiritIncrementEnabled = value;
                 OnPropertyChanged();
+                ((RelayCommand)ToggleSpiritIncrementCommand).RaiseCanExecuteChanged();
+                ((RelayCommand)ToggleSpiritsFreezeCommand).RaiseCanExecuteChanged();
+                ((RelayCommand)ToggleEliteSpiritIncrementCommand).RaiseCanExecuteChanged();
+            }
+        }
+
+        public bool IsEliteSpiritIncrementEnabled
+        {
+            get => _isEliteSpiritIncrementEnabled;
+            set
+            {
+                _isEliteSpiritIncrementEnabled = value;
+                OnPropertyChanged();
+                ((RelayCommand)ToggleEliteSpiritIncrementCommand).RaiseCanExecuteChanged();
                 ((RelayCommand)ToggleSpiritIncrementCommand).RaiseCanExecuteChanged();
                 ((RelayCommand)ToggleSpiritsFreezeCommand).RaiseCanExecuteChanged();
             }
@@ -1138,6 +1177,26 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
             set
             {
                 _isFreeBuySpiritMarketEnabled = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public bool IsFreeBuyShopEnabled
+        {
+            get => _isFreeBuyShopEnabled;
+            set
+            {
+                _isFreeBuyShopEnabled = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public bool IsFreeBuyShopUnderMaintenance
+        {
+            get => _isFreeBuyShopUnderMaintenance;
+            set
+            {
+                _isFreeBuyShopUnderMaintenance = value;
                 OnPropertyChanged();
             }
         }
@@ -1619,7 +1678,7 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
 
         private bool CanToggleSpiritsFreeze(object? parameter)
         {
-            return IsAttached && !IsSpiritIncrementEnabled;
+            return IsAttached && !IsSpiritIncrementEnabled && !IsEliteSpiritIncrementEnabled;
         }
 
         private void ToggleSpiritsFreeze(object? parameter)
@@ -1687,7 +1746,7 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
 
         private bool CanToggleSpiritIncrement(object? parameter)
         {
-            return IsAttached && !IsSpiritsFrozen;
+            return IsAttached && !IsSpiritsFrozen && !IsEliteSpiritIncrementEnabled;
         }
 
         private void ToggleSpiritIncrement(object? parameter)
@@ -1706,13 +1765,13 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
                     if (success)
                     {
                         IsSpiritIncrementEnabled = true;
-                        StatusMessage = "Spirit increment enabled - spirits will increase by 2 when used!";
+                        StatusMessage = "Hero spirit increment enabled - hero spirits will increase by 2 when used!";
                     }
                     else
                     {
-                        StatusMessage = "Failed to enable spirit increment";
+                        StatusMessage = "Failed to enable hero spirit increment";
                         MessageBox.Show(
-                            "Failed to enable spirit increment. Make sure the game is running and you are attached to the process.",
+                            "Failed to enable hero spirit increment. Make sure the game is running and you are attached to the process.",
                             "Enable Failed",
                             MessageBoxButton.OK,
                             MessageBoxImage.Error);
@@ -1725,13 +1784,13 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
                     if (success)
                     {
                         IsSpiritIncrementEnabled = false;
-                        StatusMessage = "Spirit increment disabled - normal spirit behavior restored";
+                        StatusMessage = "Hero spirit increment disabled - normal hero spirit behavior restored";
                     }
                     else
                     {
-                        StatusMessage = "Failed to disable spirit increment";
+                        StatusMessage = "Failed to disable hero spirit increment";
                         MessageBox.Show(
-                            "Failed to disable spirit increment.",
+                            "Failed to disable hero spirit increment.",
                             "Disable Failed",
                             MessageBoxButton.OK,
                             MessageBoxImage.Error);
@@ -1740,9 +1799,73 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
             }
             catch (Exception ex)
             {
-                StatusMessage = $"Error toggling spirit increment: {ex.Message}";
+                StatusMessage = $"Error toggling hero spirit increment: {ex.Message}";
                 MessageBox.Show(
-                    $"Error occurred while toggling spirit increment:\n\n{ex.Message}",
+                    $"Error occurred while toggling hero spirit increment:\n\n{ex.Message}",
+                    "Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
+
+        private bool CanToggleEliteSpiritIncrement(object? parameter)
+        {
+            return IsAttached && !IsSpiritsFrozen && !IsSpiritIncrementEnabled;
+        }
+
+        private void ToggleEliteSpiritIncrement(object? parameter)
+        {
+            if (!IsAttached)
+                return;
+
+            try
+            {
+                bool success;
+
+                if (!IsEliteSpiritIncrementEnabled)
+                {
+                    success = _memoryService.InjectEliteSpiritIncrement();
+
+                    if (success)
+                    {
+                        IsEliteSpiritIncrementEnabled = true;
+                        StatusMessage = "Elite spirit increment enabled - elite spirits will increase by 2 when used!";
+                    }
+                    else
+                    {
+                        StatusMessage = "Failed to enable elite spirit increment";
+                        MessageBox.Show(
+                            "Failed to enable elite spirit increment. Make sure the game is running and you are attached to the process.",
+                            "Enable Failed",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Error);
+                    }
+                }
+                else
+                {
+                    success = _memoryService.RemoveEliteSpiritIncrement();
+
+                    if (success)
+                    {
+                        IsEliteSpiritIncrementEnabled = false;
+                        StatusMessage = "Elite spirit increment disabled - normal elite spirit behavior restored";
+                    }
+                    else
+                    {
+                        StatusMessage = "Failed to disable elite spirit increment";
+                        MessageBox.Show(
+                            "Failed to disable elite spirit increment.",
+                            "Disable Failed",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Error);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Error toggling elite spirit increment: {ex.Message}";
+                MessageBox.Show(
+                    $"Error occurred while toggling elite spirit increment:\n\n{ex.Message}",
                     "Error",
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
@@ -2058,6 +2181,82 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
                 StatusMessage = $"Error toggling Free Buy Spirit Market: {ex.Message}";
                 MessageBox.Show(
                     $"Error occurred while toggling Free Buy Spirit Market:\n\n{ex.Message}",
+                    "Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
+
+        private bool CanToggleFreeBuyShop(object? parameter)
+        {
+            return IsAttached;
+        }
+
+        private void ToggleFreeBuyShop(object? parameter)
+        {
+            if (!IsAttached)
+                return;
+
+            try
+            {
+                bool success;
+
+                if (!IsFreeBuyShopEnabled)
+                {
+                    success = _memoryService.InjectFreeBuyShop();
+
+                    if (success)
+                    {
+                        IsFreeBuyShopEnabled = true;
+                        StatusMessage = "Free Buy Shop enabled - items now cost 0 (Token quantity set to 999)!";
+
+                        MessageBox.Show(
+                            "Free Buy Shop has been enabled.\n\n" +
+                            "Shop Features:\n" +
+                            "• All store items cost 0 (free)\n" +
+                            "• Token quantity automatically set to 999\n" +
+                            "• Works for regular store/shop (not Spirit Market)\n\n" +
+                            "This will remain active until you disable it or restart the game.",
+                            "Free Buy Shop Enabled",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Information);
+                    }
+                    else
+                    {
+                        StatusMessage = "Failed to enable Free Buy Shop";
+                        MessageBox.Show(
+                            "Failed to enable Free Buy Shop.\n\n" +
+                            "Make sure the game is running.",
+                            "Enable Failed",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Error);
+                    }
+                }
+                else
+                {
+                    success = _memoryService.RemoveFreeBuyShop();
+
+                    if (success)
+                    {
+                        IsFreeBuyShopEnabled = false;
+                        StatusMessage = "Free Buy Shop disabled - normal shop costs restored";
+                    }
+                    else
+                    {
+                        StatusMessage = "Failed to disable Free Buy Shop";
+                        MessageBox.Show(
+                            "Failed to disable Free Buy Shop.",
+                            "Disable Failed",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Error);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Error toggling Free Buy Shop: {ex.Message}";
+                MessageBox.Show(
+                    $"Error occurred while toggling Free Buy Shop:\n\n{ex.Message}",
                     "Error",
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
@@ -2803,6 +3002,21 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
             catch (Exception ex)
             {
                 StatusMessage = $"Error clearing custom passives: {ex.Message}";
+            }
+        }
+
+        private void OpenTutorials(object? parameter)
+        {
+            if (parameter is string featureName)
+            {
+                _currentTutorialFeature = featureName;
+                TutorialsViewModel = new TutorialsViewModel(featureName, () =>
+                {
+                    // Close action - go back to menu
+                    SelectedTool = "menu";
+                    TutorialsViewModel = null;
+                });
+                SelectedTool = "tutorials";
             }
         }
 

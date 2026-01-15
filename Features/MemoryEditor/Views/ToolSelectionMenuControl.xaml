@@ -182,1102 +182,973 @@
                                  TextWrapping="Wrap"/>
                     </StackPanel>
                 </Border>
-
-                                <!-- Collapsible Sections: 2 per row -->
-                <Grid Margin="0,10,0,0"
-                      Visibility="{Binding MemoryEditor.IsAttached, Converter={StaticResource BooleanToVisibilityConverter}}">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="10"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-
-                    <!-- ITEMS Section (Top Left) -->
-                    <Border Grid.Row="0" Grid.Column="0"
-                           Background="#4CAF50"
-                           CornerRadius="8"
-                           VerticalAlignment="Top">
-                    <Expander Background="Transparent"
-                             IsExpanded="False">
-                        <Expander.Header>
-                            <Grid Margin="5">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <materialDesign:PackIcon Grid.Column="0"
-                                                       Kind="Package"
-                                                       Width="24"
-                                                       Height="24"
-                                                       VerticalAlignment="Center"
-                                                       Margin="0,0,12,0"
-                                                       Foreground="White"/>
-                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                    <TextBlock Text="ITEMS"
-                                             FontSize="15"
-                                             FontWeight="Bold"
-                                             Foreground="White"/>
-                                    <TextBlock Text="Search cheats for items"
-                                             FontSize="10"
-                                             Foreground="White"
-                                             Opacity="0.9"/>
-                                </StackPanel>
-                            </Grid>
-                        </Expander.Header>
-                        <StackPanel Margin="10" Background="Transparent">
-                            <!-- Freeze Items -->
-                            <Grid Margin="0,0,0,8">
-                            <Border Background="#4CAF50"
-                                   Style="{StaticResource OptionBorderHoverStyle}">
-                                <Grid Margin="12">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                    </Grid.ColumnDefinitions>
-                                    <materialDesign:PackIcon Grid.Column="0"
-                                                           Kind="Snowflake"
-                                                           Width="20"
-                                                           Height="20"
-                                                           VerticalAlignment="Center"
-                                                           Margin="0,0,10,0"
-                                                           Foreground="White"/>
-                                    <TextBlock Grid.Column="1"
-                                             Text="Freeze Items"
-                                             FontSize="13"
-                                             FontWeight="SemiBold"
-                                             Foreground="White"
-                                             VerticalAlignment="Center"/>
-                                    <ToggleButton Grid.Column="2"
-                                                 IsChecked="{Binding MemoryEditor.IsStarsFrozen, Mode=OneWay}"
-                                                 Style="{StaticResource MaterialDesignSwitchToggleButton}"
-                                                 Command="{Binding MemoryEditor.ToggleStarsFreezeCommand}"/>
-                                </Grid>
-                            </Border>
-
-                            <!-- Maintenance Overlay -->
-                            <Border Background="#CC808080"
-                                   CornerRadius="5"
-                                   Visibility="{Binding MemoryEditor.IsFreezeItemsUnderMaintenance, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                   IsHitTestVisible="True">
-                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="5">
-                                    <materialDesign:PackIcon Kind="Lock"
-                                                           Width="18"
-                                                           Height="18"
-                                                           Foreground="White"
-                                                           HorizontalAlignment="Center"
-                                                           Opacity="0.9"/>
-                                    <TextBlock Text="MAINTENANCE"
-                                             FontSize="8"
-                                             FontWeight="Bold"
-                                             Foreground="White"
-                                             HorizontalAlignment="Center"
-                                             Margin="0,3,0,0"/>
-                                </StackPanel>
-                            </Border>
-                            </Grid>
-
-                            <!-- Increment Items -->
-                            <StackPanel Margin="0,0,0,8">
-                            <Border Background="#FF9800"
-                                   Style="{StaticResource OptionBorderHoverStyle}">
-                                <Grid Margin="12">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                    </Grid.ColumnDefinitions>
-                                    <materialDesign:PackIcon Grid.Column="0"
-                                                           Kind="TrendingUp"
-                                                           Width="20"
-                                                           Height="20"
-                                                           VerticalAlignment="Center"
-                                                           Margin="0,0,10,0"
-                                                           Foreground="White"/>
-                                    <TextBlock Grid.Column="1"
-                                             Text="Increment Items on Use"
-                                             FontSize="13"
-                                             FontWeight="SemiBold"
-                                             Foreground="White"
-                                             VerticalAlignment="Center"/>
-                                    <ToggleButton Grid.Column="2"
-                                                 IsChecked="{Binding MemoryEditor.IsFlowersIncrementEnabled, Mode=OneWay}"
-                                                 Style="{StaticResource MaterialDesignSwitchToggleButton}"
-                                                 Command="{Binding MemoryEditor.ToggleFlowersIncrementCommand}"/>
-                                </Grid>
-                            </Border>
-
-                            <!-- Maintenance Overlay -->
-                            <Border Background="#CC808080"
-                                   CornerRadius="5"
-                                   Visibility="{Binding MemoryEditor.IsIncrementItemsUnderMaintenance, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                   IsHitTestVisible="True">
-                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="5">
-                                    <materialDesign:PackIcon Kind="Lock"
-                                                           Width="18"
-                                                           Height="18"
-                                                           Foreground="White"
-                                                           HorizontalAlignment="Center"
-                                                           Opacity="0.9"/>
-                                    <TextBlock Text="MAINTENANCE"
-                                             FontSize="8"
-                                             FontWeight="Bold"
-                                             Foreground="White"
-                                             HorizontalAlignment="Center"
-                                             Margin="0,3,0,0"/>
-                                </StackPanel>
-                            </Border>
-                            </StackPanel>
-
-                            <!-- Store Item Multiplier -->
-                            <Grid>
-                            <Border Background="#F44336"
-                                   Style="{StaticResource OptionBorderHoverStyle}">
-                                <Grid Margin="12">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                    </Grid.ColumnDefinitions>
-                                    <materialDesign:PackIcon Grid.Column="0"
-                                                           Kind="Multiplication"
-                                                           Width="20"
-                                                           Height="20"
-                                                           VerticalAlignment="Center"
-                                                           Margin="0,0,10,0"
-                                                           Foreground="White"/>
-                                    <TextBlock Grid.Column="1"
-                                             Text="Store Item Multiplier x2457"
-                                             FontSize="13"
-                                             FontWeight="SemiBold"
-                                             Foreground="White"
-                                             VerticalAlignment="Center"/>
-                                    <ToggleButton Grid.Column="2"
-                                                 IsChecked="{Binding MemoryEditor.IsStoreItemMultiplierEnabled, Mode=OneWay}"
-                                                 Style="{StaticResource MaterialDesignSwitchToggleButton}"
-                                                 Command="{Binding MemoryEditor.ToggleStoreItemMultiplierCommand}"/>
-                                </Grid>
-                            </Border>
-
-                            <!-- Maintenance Overlay -->
-                            <Border Background="#CC808080"
-                                   CornerRadius="5"
-                                   Visibility="{Binding MemoryEditor.IsStoreMultiplierUnderMaintenance, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                   IsHitTestVisible="True">
-                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="5">
-                                    <materialDesign:PackIcon Kind="Lock"
-                                                           Width="18"
-                                                           Height="18"
-                                                           Foreground="White"
-                                                           HorizontalAlignment="Center"
-                                                           Opacity="0.9"/>
-                                    <TextBlock Text="MAINTENANCE"
-                                             FontSize="8"
-                                             FontWeight="Bold"
-                                             Foreground="White"
-                                             HorizontalAlignment="Center"
-                                             Margin="0,3,0,0"/>
-                                </StackPanel>
-                            </Border>
-                            </Grid>
-                        </StackPanel>
-                    </Expander>
-                    </Border>
-
-                    <!-- SPIRITS Section (Top Right) -->
-                    <Border Grid.Row="0" Grid.Column="2"
-                           Background="#9C27B0"
-                           CornerRadius="8"
-                           VerticalAlignment="Top">
-                    <Expander Background="Transparent"
-                             IsExpanded="False">
-                        <Expander.Header>
-                            <Grid Margin="5">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <materialDesign:PackIcon Grid.Column="0"
-                                                       Kind="AutoFix"
-                                                       Width="24"
-                                                       Height="24"
-                                                       VerticalAlignment="Center"
-                                                       Margin="0,0,12,0"
-                                                       Foreground="White"/>
-                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                    <TextBlock Text="SPIRITS"
-                                             FontSize="15"
-                                             FontWeight="Bold"
-                                             Foreground="White"/>
-                                    <TextBlock Text="Search cheats for spirits"
-                                             FontSize="10"
-                                             Foreground="White"
-                                             Opacity="0.9"/>
-                                </StackPanel>
-                            </Grid>
-                        </Expander.Header>
-                        <StackPanel Margin="10" Background="Transparent">
-                            <!-- Freeze Spirits -->
-                            <Grid Margin="0,0,0,8">
-                            <Border Background="#9C27B0"
-                                   Style="{StaticResource OptionBorderHoverStyle}">
-                                <Grid Margin="12">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                    </Grid.ColumnDefinitions>
-                                    <materialDesign:PackIcon Grid.Column="0"
-                                                           Kind="Snowflake"
-                                                           Width="20"
-                                                           Height="20"
-                                                           VerticalAlignment="Center"
-                                                           Margin="0,0,10,0"
-                                                           Foreground="White"/>
-                                    <TextBlock Grid.Column="1"
-                                             Text="Freeze Spirits"
-                                             FontSize="13"
-                                             FontWeight="SemiBold"
-                                             Foreground="White"
-                                             VerticalAlignment="Center"/>
-                                    <ToggleButton Grid.Column="2"
-                                                 IsChecked="{Binding MemoryEditor.IsSpiritsFrozen, Mode=OneWay}"
-                                                 Style="{StaticResource MaterialDesignSwitchToggleButton}"
-                                                 Command="{Binding MemoryEditor.ToggleSpiritsFreezeCommand}"/>
-                                </Grid>
-                            </Border>
-
-                            <!-- Maintenance Overlay -->
-                            <Border Background="#CC808080"
-                                   CornerRadius="5"
-                                   Visibility="{Binding MemoryEditor.IsFreezeSpiritsUnderMaintenance, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                   IsHitTestVisible="True">
-                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="5">
-                                    <materialDesign:PackIcon Kind="Lock"
-                                                           Width="18"
-                                                           Height="18"
-                                                           Foreground="White"
-                                                           HorizontalAlignment="Center"
-                                                           Opacity="0.9"/>
-                                    <TextBlock Text="MAINTENANCE"
-                                             FontSize="8"
-                                             FontWeight="Bold"
-                                             Foreground="White"
-                                             HorizontalAlignment="Center"
-                                             Margin="0,3,0,0"/>
-                                </StackPanel>
-                            </Border>
-                            </Grid>
-
-                            <!-- Increment Spirits -->
-                            <Grid>
-                            <Border Background="#2196F3"
-                                   Style="{StaticResource OptionBorderHoverStyle}">
-                                <Grid Margin="12">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                    </Grid.ColumnDefinitions>
-                                    <materialDesign:PackIcon Grid.Column="0"
-                                                           Kind="PlusCircle"
-                                                           Width="20"
-                                                           Height="20"
-                                                           VerticalAlignment="Center"
-                                                           Margin="0,0,10,0"
-                                                           Foreground="White"/>
-                                    <TextBlock Grid.Column="1"
-                                             Text="Increment Spirits on Use (ONLY HERO AND FABLED SPIRITS)"
-                                             FontSize="13"
-                                             FontWeight="SemiBold"
-                                             Foreground="White"
-                                             VerticalAlignment="Center"/>
-                                    <ToggleButton Grid.Column="2"
-                                                 IsChecked="{Binding MemoryEditor.IsSpiritIncrementEnabled, Mode=OneWay}"
-                                                 Style="{StaticResource MaterialDesignSwitchToggleButton}"
-                                                 Command="{Binding MemoryEditor.ToggleSpiritIncrementCommand}"/>
-                                </Grid>
-                            </Border>
-
-                            <!-- Maintenance Overlay -->
-                            <Border Background="#CC808080"
-                                   CornerRadius="5"
-                                   Visibility="{Binding MemoryEditor.IsIncrementSpiritsUnderMaintenance, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                   IsHitTestVisible="True">
-                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="5">
-                                    <materialDesign:PackIcon Kind="Lock"
-                                                           Width="18"
-                                                           Height="18"
-                                                           Foreground="White"
-                                                           HorizontalAlignment="Center"
-                                                           Opacity="0.9"/>
-                                    <TextBlock Text="MAINTENANCE"
-                                             FontSize="8"
-                                             FontWeight="Bold"
-                                             Foreground="White"
-                                             HorizontalAlignment="Center"
-                                             Margin="0,3,0,0"/>
-                                </StackPanel>
-                            </Border>
-                            </Grid>
-                        </StackPanel>
-                    </Expander>
-                    </Border>
-
-                    <!-- SPIRIT MARKET Section (Middle Right) -->
-                    <Border Grid.Row="1" Grid.Column="2"
-                           Background="#4CAF50"
-                           CornerRadius="8"
-                           Margin="0,10,0,0"
-                           VerticalAlignment="Top">
-                    <Expander Background="Transparent"
-                             IsExpanded="False">
-                        <Expander.Header>
-                            <Grid Margin="5">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <materialDesign:PackIcon Grid.Column="0"
-                                                       Kind="ShoppingOutline"
-                                                       Width="24"
-                                                       Height="24"
-                                                       VerticalAlignment="Center"
-                                                       Margin="0,0,12,0"
-                                                       Foreground="White"/>
-                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                    <TextBlock Text="SPIRIT MARKET"
-                                             FontSize="15"
-                                             FontWeight="Bold"
-                                             Foreground="White"/>
-                                    <TextBlock Text="Free spirit purchases and quantity boost"
-                                             FontSize="10"
-                                             Foreground="White"
-                                             Opacity="0.9"/>
-                                </StackPanel>
-                            </Grid>
-                        </Expander.Header>
-                        <StackPanel Margin="10" Background="Transparent">
-                            <!-- Free Buy Spirit Market -->
-                            <Grid Margin="0,0,0,8">
-                            <Border Background="#4CAF50"
-                                   Style="{StaticResource OptionBorderHoverStyle}">
-                                <Grid Margin="12">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                    </Grid.ColumnDefinitions>
-                                    <materialDesign:PackIcon Grid.Column="0"
-                                                           Kind="CurrencyUsd"
-                                                           Width="20"
-                                                           Height="20"
-                                                           VerticalAlignment="Center"
-                                                           Margin="0,0,10,0"
-                                                           Foreground="White"/>
-                                    <TextBlock Grid.Column="1"
-                                             Text="Free Buy Spirit Market"
-                                             FontSize="13"
-                                             FontWeight="SemiBold"
-                                             Foreground="White"
-                                             VerticalAlignment="Center"/>
-                                    <ToggleButton Grid.Column="2"
-                                                 IsChecked="{Binding MemoryEditor.IsFreeBuySpiritMarketEnabled, Mode=OneWay}"
-                                                 Style="{StaticResource MaterialDesignSwitchToggleButton}"
-                                                 Command="{Binding MemoryEditor.ToggleFreeBuySpiritMarketCommand}"/>
-                                </Grid>
-                            </Border>
-                            </Grid>
-                        </StackPanel>
-                    </Expander>
-                    </Border>
-
-                    <!-- TEAM BUILDER Section (Bottom Left) -->
-                    <Border Grid.Row="1" Grid.Column="0"
-                           Background="#FFC107"
-                           CornerRadius="8"
-                           Margin="0,10,0,0"
-                           VerticalAlignment="Top">
-                    <Expander Background="Transparent"
-                             IsExpanded="False">
-                        <Expander.Header>
-                            <Grid Margin="5">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <materialDesign:PackIcon Grid.Column="0"
-                                                       Kind="AccountGroup"
-                                                       Width="24"
-                                                       Height="24"
-                                                       VerticalAlignment="Center"
-                                                       Margin="0,0,12,0"
-                                                       Foreground="White"/>
-                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                    <TextBlock Text="TEAM BUILDER"
-                                             FontSize="15"
-                                             FontWeight="Bold"
-                                             Foreground="White"/>
-                                    <TextBlock Text="Team configuration cheats"
-                                             FontSize="10"
-                                             Foreground="White"
-                                             Opacity="0.9"/>
-                                </StackPanel>
-                            </Grid>
-                        </Expander.Header>
-                        <StackPanel Margin="10" Background="Transparent">
-                            <!-- Unlimited Heroes -->
-                            <Grid Margin="0,0,0,8">
-                            <Border Background="#FFC107"
-                                   Style="{StaticResource OptionBorderHoverStyle}">
-                                <Grid Margin="12">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                    </Grid.ColumnDefinitions>
-                                    <materialDesign:PackIcon Grid.Column="0"
-                                                           Kind="AccountGroup"
-                                                           Width="20"
-                                                           Height="20"
-                                                           VerticalAlignment="Center"
-                                                           Margin="0,0,10,0"
-                                                           Foreground="White"/>
-                                    <TextBlock Grid.Column="1"
-                                             Text="Unlimited Heroes in Team"
-                                             FontSize="13"
-                                             FontWeight="SemiBold"
-                                             Foreground="White"
-                                             VerticalAlignment="Center"/>
-                                    <ToggleButton Grid.Column="2"
-                                                 IsChecked="{Binding MemoryEditor.IsUnlimitedHeroesEnabled, Mode=OneWay}"
-                                                 Style="{StaticResource MaterialDesignSwitchToggleButton}"
-                                                 Command="{Binding MemoryEditor.ToggleUnlimitedHeroesCommand}"/>
-                                </Grid>
-                            </Border>
-
-                            <!-- Maintenance Overlay -->
-                            <Border Background="#CC808080"
-                                   CornerRadius="5"
-                                   Visibility="{Binding MemoryEditor.IsUnlimitedHeroesUnderMaintenance, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                   IsHitTestVisible="True">
-                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="5">
-                                    <materialDesign:PackIcon Kind="Lock"
-                                                           Width="18"
-                                                           Height="18"
-                                                           Foreground="White"
-                                                           HorizontalAlignment="Center"
-                                                           Opacity="0.9"/>
-                                    <TextBlock Text="MAINTENANCE"
-                                             FontSize="8"
-                                             FontWeight="Bold"
-                                             Foreground="White"
-                                             HorizontalAlignment="Center"
-                                             Margin="0,3,0,0"/>
-                                </StackPanel>
-                            </Border>
-                            </Grid>
-
-                            <!-- Player Level -->
-                            <Grid>
-                            <Border Background="#4CAF50" Margin="0,8,0,0"
-                                   Style="{StaticResource OptionBorderHoverStyle}">
-                                <StackPanel Margin="12">
-                                    <!-- Toggle Row -->
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto"/>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                        </Grid.ColumnDefinitions>
-                                        <materialDesign:PackIcon Grid.Column="0"
-                                                               Kind="Star"
-                                                               Width="20"
-                                                               Height="20"
-                                                               VerticalAlignment="Center"
-                                                               Margin="0,0,10,0"
-                                                               Foreground="White"/>
-                                        <TextBlock Grid.Column="1"
-                                                 Text="Player Level"
-                                                 FontSize="13"
-                                                 FontWeight="SemiBold"
-                                                 Foreground="White"
-                                                 VerticalAlignment="Center"/>
-                                        <ToggleButton Grid.Column="2"
-                                                     IsChecked="{Binding MemoryEditor.IsPlayerLevelEnabled, Mode=OneWay}"
-                                                     Style="{StaticResource MaterialDesignSwitchToggleButton}"
-                                                     Command="{Binding MemoryEditor.TogglePlayerLevelCommand}"/>
-                                    </Grid>
-
-                                    <!-- Input Row (visible when enabled) -->
-                                    <Grid Margin="0,8,0,0"
-                                         Visibility="{Binding MemoryEditor.ShowPlayerLevelInput, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                        </Grid.ColumnDefinitions>
-                                        <TextBox Grid.Column="0"
-                                                Text="{Binding MemoryEditor.PlayerLevelInput, UpdateSourceTrigger=PropertyChanged}"
-                                                materialDesign:HintAssist.Hint="Level (1-99)"
-                                                Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                                                Foreground="White"
-                                                Margin="0,0,8,0"
-                                                MaxLength="2"
-                                                VerticalAlignment="Center"/>
-                                        <Button Grid.Column="1"
-                                               Content="Apply"
-                                               Style="{StaticResource MaterialDesignRaisedButton}"
-                                               Background="White"
-                                               Foreground="#4CAF50"
-                                               Command="{Binding MemoryEditor.ApplyPlayerLevelCommand}"
-                                               Padding="16,6"/>
-                                    </Grid>
-                                </StackPanel>
-                            </Border>
-
-                            <!-- Maintenance Overlay -->
-                            <Border Background="#CC808080"
-                                   CornerRadius="5"
-                                   Margin="0,8,0,0"
-                                   Visibility="{Binding MemoryEditor.IsPlayerLevelUnderMaintenance, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                   IsHitTestVisible="True">
-                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="5">
-                                    <materialDesign:PackIcon Kind="Lock"
-                                                           Width="18"
-                                                           Height="18"
-                                                           Foreground="White"
-                                                           HorizontalAlignment="Center"
-                                                           Opacity="0.9"/>
-                                    <TextBlock Text="MAINTENANCE"
-                                             FontSize="8"
-                                             FontWeight="Bold"
-                                             Foreground="White"
-                                             HorizontalAlignment="Center"
-                                             Margin="0,3,0,0"/>
-                                </StackPanel>
-                            </Border>
-                            </Grid>
-                        </StackPanel>
-                    </Expander>
-                    </Border>
-                </Grid></StackPanel>
+            </StackPanel>
         </materialDesign:Card>
 
-        <!-- Tool Selection Cards - IsEnabled="{Binding MemoryEditor.IsNotUnderMaintenance}" --> 
-        <materialDesign:Card Grid.Row="1" Style="{StaticResource CardStyle}" Margin="-10,-10,0,0" VerticalAlignment="Top" Background="Transparent">
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Top">
-                <!-- Star Editor Card -->
-                <materialDesign:Card Style="{StaticResource CardStyle}"
-                                   Margin="0"
-                                   Padding="16,12,16,12"
-                                   Width="180"
-                                   MinHeight="170"
-                                   HorizontalAlignment="Left"
-                                   VerticalAlignment="Top"
-                                   Cursor="Hand"
-                                   MouseLeftButtonUp="TicketEditorCard_Click"
-                                   IsEnabled="{Binding MemoryEditor.IsStarsEnabled}">
-                    <Grid>
-                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                        <Image Source="/Resources/Cards/Stars.png"
-                               Width="48"
-                               Height="48"
-                               HorizontalAlignment="Center"
-                               Margin="0,0,0,8"
-                               RenderOptions.BitmapScalingMode="HighQuality"/>
+        <!-- Tool Selection Cards with ScrollViewer -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel Margin="0,10,0,0">
 
-                        <TextBlock Text="Stars"
-                                 FontSize="15"
-                                 FontWeight="SemiBold"
-                                 HorizontalAlignment="Center"
-                                 Margin="0,0,0,4"/>
+                <!-- ITEMS SECTION -->
+                <TextBlock Text="ITEMS"
+                          FontSize="18"
+                          FontWeight="Bold"
+                          Margin="0,0,0,10"
+                          Foreground="{DynamicResource PrimaryHueMidBrush}"/>
 
-                        <TextBlock Text="Edit gachapon stars"
-                                 FontSize="11"
-                                 Opacity="0.6"
-                                 TextWrapping="Wrap"
-                                 TextAlignment="Center"
-                                 Margin="8,0,8,8"/>
-
-                        <Button Command="{Binding MemoryEditor.SelectTicketEditorCommand}"
-                              Style="{StaticResource MaterialDesignRaisedButton}"
-                              Height="28"
-                              Padding="12,0"
-                              Margin="0,0,0,0"
-                              Background="{DynamicResource SecondaryHueMidBrush}"
-                              Foreground="Black">
-                            <StackPanel Orientation="Horizontal">
-                                <materialDesign:PackIcon Kind="ChevronRight"
-                                                       Width="14"
-                                                       Height="14"
-                                                       VerticalAlignment="Center"
-                                                       Margin="0,0,4,0"/>
-                                <TextBlock Text="Open"
-                                         FontSize="11"
-                                         VerticalAlignment="Center"
-                                         FontWeight="Medium"/>
-                            </StackPanel>
-                        </Button>
-                    </StackPanel>
-
-                    <!-- Maintenance Overlay -->
-                    <Border Background="#CC808080"
-                           CornerRadius="4"
-                           Visibility="{Binding MemoryEditor.IsStarsUnderMaintenance, Converter={StaticResource BooleanToVisibilityConverter}}"
-                           IsHitTestVisible="True">
-                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                            <materialDesign:PackIcon Kind="Lock"
-                                                   Width="48"
-                                                   Height="48"
-                                                   Foreground="White"
-                                                   HorizontalAlignment="Center"
-                                                   Opacity="0.9"/>
-                            <TextBlock Text="UNDER"
-                                     FontSize="12"
-                                     FontWeight="Bold"
-                                     Foreground="White"
-                                     HorizontalAlignment="Center"
-                                     Margin="0,8,0,0"/>
-                            <TextBlock Text="MAINTENANCE"
-                                     FontSize="11"
-                                     FontWeight="Bold"
-                                     Foreground="White"
-                                     HorizontalAlignment="Center"
-                                     Margin="0,2,0,0"/>
-                        </StackPanel>
-                    </Border>
-                    </Grid>
-                </materialDesign:Card>
-
-                <!-- Ina Flowers Editor Card -->
-                <materialDesign:Card Style="{StaticResource CardStyle}"
-                                   Margin="10,0,0,0"
-                                   Padding="16,12,16,12"
-                                   Width="180"
-                                   MinHeight="170"
-                                   HorizontalAlignment="Left"
-                                   VerticalAlignment="Top"
-                                   Cursor="Hand"
-                                   MouseLeftButtonUp="InaFlowersEditorCard_Click"
-                                   IsEnabled="{Binding MemoryEditor.IsFlowersEnabled}">
-                    <Grid>
-                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                        <Image Source="/Resources/Cards/Inazuma Flower.png"
-                               Width="48"
-                               Height="48"
-                               HorizontalAlignment="Center"
-                               Margin="0,0,0,8"
-                               RenderOptions.BitmapScalingMode="HighQuality"/>
-
-                        <TextBlock Text="Kizuna Flowers"
-                                 FontSize="15"
-                                 FontWeight="SemiBold"
-                                 HorizontalAlignment="Center"
-                                 Margin="0,0,0,4"/>
-
-                        <TextBlock Text="Edit Kizuna Flowers"
-                                 FontSize="11"
-                                 Opacity="0.6"
-                                 TextWrapping="Wrap"
-                                 TextAlignment="Center"
-                                 Margin="8,0,8,8"/>
-
-                        <Button Command="{Binding MemoryEditor.SelectInaFlowersEditorCommand}"
-                              Style="{StaticResource MaterialDesignRaisedButton}"
-                              Height="28"
-                              Padding="12,0"
-                              Margin="0,0,0,0"
-                              Background="{DynamicResource SecondaryHueMidBrush}"
-                              Foreground="Black">
-                            <StackPanel Orientation="Horizontal">
-                                <materialDesign:PackIcon Kind="ChevronRight"
-                                                       Width="14"
-                                                       Height="14"
-                                                       VerticalAlignment="Center"
-                                                       Margin="0,0,4,0"/>
-                                <TextBlock Text="Open"
-                                         FontSize="11"
-                                         VerticalAlignment="Center"
-                                         FontWeight="Medium"/>
-                            </StackPanel>
-                        </Button>
-                    </StackPanel>
-
-                    <!-- Maintenance Overlay -->
-                    <Border Background="#CC808080"
-                           CornerRadius="4"
-                           Visibility="{Binding MemoryEditor.IsFlowersUnderMaintenance, Converter={StaticResource BooleanToVisibilityConverter}}"
-                           IsHitTestVisible="True">
-                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                            <materialDesign:PackIcon Kind="Lock"
-                                                   Width="48"
-                                                   Height="48"
-                                                   Foreground="White"
-                                                   HorizontalAlignment="Center"
-                                                   Opacity="0.9"/>
-                            <TextBlock Text="UNDER"
-                                     FontSize="12"
-                                     FontWeight="Bold"
-                                     Foreground="White"
-                                     HorizontalAlignment="Center"
-                                     Margin="0,8,0,0"/>
-                            <TextBlock Text="MAINTENANCE"
-                                     FontSize="11"
-                                     FontWeight="Bold"
-                                     Foreground="White"
-                                     HorizontalAlignment="Center"
-                                     Margin="0,2,0,0"/>
-                        </StackPanel>
-                    </Border>
-                    </Grid>
-                </materialDesign:Card>
-
-                <!-- Spirits Editor Card -->
-                <materialDesign:Card Style="{StaticResource CardStyle}"
-                                   Margin="10,0,0,0"
-                                   Padding="16,12,16,12"
-                                   Width="180"
-                                   MinHeight="170"
-                                   HorizontalAlignment="Left"
-                                   VerticalAlignment="Top"
-                                   Cursor="Hand"
-                                   MouseLeftButtonUp="SpiritsEditorCard_Click"
-                                   IsEnabled="{Binding MemoryEditor.IsSpiritsEnabled}">
-                    <Grid>
-                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                        <Image Source="/Resources/Cards/Spirits.png"
-                               Width="48"
-                               Height="48"
-                               HorizontalAlignment="Center"
-                               Margin="0,0,0,8"
-                               RenderOptions.BitmapScalingMode="HighQuality"/>
-
-                        <TextBlock Text="Spirits"
-                                 FontSize="15"
-                                 FontWeight="SemiBold"
-                                 HorizontalAlignment="Center"
-                                 Margin="0,0,0,4"/>
-
-                        <TextBlock Text="Add Spirits"
-                                 FontSize="11"
-                                 Opacity="0.6"
-                                 TextWrapping="Wrap"
-                                 TextAlignment="Center"
-                                 Margin="8,0,8,8"/>
-
-                        <Button Command="{Binding MemoryEditor.SelectSpiritsEditorCommand}"
-                              Style="{StaticResource MaterialDesignRaisedButton}"
-                              Height="28"
-                              Padding="12,0"
-                              Margin="0,0,0,0"
-                              Background="{DynamicResource SecondaryHueMidBrush}"
-                              Foreground="Black">
-                            <StackPanel Orientation="Horizontal">
-                                <materialDesign:PackIcon Kind="ChevronRight"
-                                                       Width="14"
-                                                       Height="14"
-                                                       VerticalAlignment="Center"
-                                                       Margin="0,0,4,0"/>
-                                <TextBlock Text="Open"
-                                         FontSize="11"
-                                         VerticalAlignment="Center"
-                                         FontWeight="Medium"/>
-                            </StackPanel>
-                        </Button>
-                    </StackPanel>
-
-                    <!-- Maintenance Overlay -->
-                    <Border Background="#CC808080"
-                           CornerRadius="4"
-                           Visibility="{Binding MemoryEditor.IsSpiritsUnderMaintenance, Converter={StaticResource BooleanToVisibilityConverter}}"
-                           IsHitTestVisible="True">
-                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                            <materialDesign:PackIcon Kind="Lock"
-                                                   Width="48"
-                                                   Height="48"
-                                                   Foreground="White"
-                                                   HorizontalAlignment="Center"
-                                                   Opacity="0.9"/>
-                            <TextBlock Text="UNDER"
-                                     FontSize="12"
-                                     FontWeight="Bold"
-                                     Foreground="White"
-                                     HorizontalAlignment="Center"
-                                     Margin="0,8,0,0"/>
-                            <TextBlock Text="MAINTENANCE"
-                                     FontSize="11"
-                                     FontWeight="Bold"
-                                     Foreground="White"
-                                     HorizontalAlignment="Center"
-                                     Margin="0,2,0,0"/>
-                        </StackPanel>
-                    </Border>
-                    </Grid>
-                </materialDesign:Card>
-
-                <!-- Beans Editor Card -->
-                <materialDesign:Card Style="{StaticResource CardStyle}"
-                                   Margin="10,0,0,0"
-                                   Padding="16,12,16,12"
-                                   Width="180"
-                                   MinHeight="170"
-                                   HorizontalAlignment="Left"
-                                   VerticalAlignment="Top"
-                                   Cursor="Hand"
-                                   MouseLeftButtonUp="BeansEditorCard_Click"
-                                   IsEnabled="{Binding MemoryEditor.IsBeansEnabled}">
-                    <Grid>
-                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                        <Image Source="/Resources/Cards/Kicking Power.png"
-                               Width="48"
-                               Height="48"
-                               HorizontalAlignment="Center"
-                               Margin="0,0,0,8"
-                               RenderOptions.BitmapScalingMode="HighQuality"/>
-
-                        <TextBlock Text="Beans"
-                                 FontSize="15"
-                                 FontWeight="SemiBold"
-                                 HorizontalAlignment="Center"
-                                 Margin="0,0,0,4"/>
-
-                        <TextBlock Text="Edit Beans"
-                                 FontSize="11"
-                                 Opacity="0.6"
-                                 TextWrapping="Wrap"
-                                 TextAlignment="Center"
-                                 Margin="8,0,8,8"/>
-
-                        <Button Command="{Binding MemoryEditor.SelectBeansEditorCommand}"
-                              Style="{StaticResource MaterialDesignRaisedButton}"
-                              Height="28"
-                              Padding="12,0"
-                              Margin="0,0,0,0"
-                              Background="{DynamicResource SecondaryHueMidBrush}"
-                              Foreground="Black">
-                            <StackPanel Orientation="Horizontal">
-                                <materialDesign:PackIcon Kind="ChevronRight"
-                                                       Width="14"
-                                                       Height="14"
-                                                       VerticalAlignment="Center"
-                                                       Margin="0,0,4,0"/>
-                                <TextBlock Text="Open"
-                                         FontSize="11"
-                                         VerticalAlignment="Center"
-                                         FontWeight="Medium"/>
-                            </StackPanel>
-                        </Button>
-                    </StackPanel>
-
-                    <!-- Maintenance Overlay -->
-                    <Border Background="#CC808080"
-                           CornerRadius="4"
-                           Visibility="{Binding MemoryEditor.IsBeansUnderMaintenance, Converter={StaticResource BooleanToVisibilityConverter}}"
-                           IsHitTestVisible="True">
-                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                            <materialDesign:PackIcon Kind="Lock"
-                                                   Width="48"
-                                                   Height="48"
-                                                   Foreground="White"
-                                                   HorizontalAlignment="Center"
-                                                   Opacity="0.9"/>
-                            <TextBlock Text="UNDER"
-                                     FontSize="12"
-                                     FontWeight="Bold"
-                                     Foreground="White"
-                                     HorizontalAlignment="Center"
-                                     Margin="0,8,0,0"/>
-                            <TextBlock Text="MAINTENANCE"
-                                     FontSize="11"
-                                     FontWeight="Bold"
-                                     Foreground="White"
-                                     HorizontalAlignment="Center"
-                                     Margin="0,2,0,0"/>
-                        </StackPanel>
-                    </Border>
-                    </Grid>
-                </materialDesign:Card>
-
-                <!-- Victory Items Editor Card -->
-                <materialDesign:Card Style="{StaticResource CardStyle}"
-                                   Margin="10,0,0,0"
-                                   Padding="16,12,16,12"
-                                   Width="180"
-                                   MinHeight="170"
-                                   HorizontalAlignment="Left"
-                                   VerticalAlignment="Top"
-                                   Cursor="Hand"
-                                   MouseLeftButtonUp="VictoryItemsEditorCard_Click"
-                                   IsEnabled="{Binding MemoryEditor.IsVictoryItemsEnabled}">
-                    <Grid>
-                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                        <Image Source="/Resources/Cards/VSTAR.png"
-                               Width="48"
-                               Height="48"
-                               HorizontalAlignment="Center"
-                               Margin="0,0,0,8"
-                               RenderOptions.BitmapScalingMode="HighQuality"/>
-
-                        <TextBlock Text="Victory Items"
-                                 FontSize="15"
-                                 FontWeight="SemiBold"
-                                 HorizontalAlignment="Center"
-                                 Margin="0,0,0,4"/>
-
-                        <TextBlock Text="Edit Victory Items"
-                                 FontSize="11"
-                                 Opacity="0.6"
-                                 TextWrapping="Wrap"
-                                 TextAlignment="Center"
-                                 Margin="8,0,8,8"/>
-
-                        <Button Command="{Binding MemoryEditor.SelectVictoryItemsEditorCommand}"
-                              Style="{StaticResource MaterialDesignRaisedButton}"
-                              Height="28"
-                              Padding="12,0"
-                              Margin="0,0,0,0"
-                              Background="{DynamicResource SecondaryHueMidBrush}"
-                              Foreground="Black">
-                            <StackPanel Orientation="Horizontal">
-                                <materialDesign:PackIcon Kind="ChevronRight"
-                                                       Width="14"
-                                                       Height="14"
-                                                       VerticalAlignment="Center"
-                                                       Margin="0,0,4,0"/>
-                                <TextBlock Text="Open"
-                                         FontSize="11"
-                                         VerticalAlignment="Center"
-                                         FontWeight="Medium"/>
-                            </StackPanel>
-                        </Button>
-                    </StackPanel>
-
-                    <!-- Maintenance Overlay -->
-                    <Border Background="#CC808080"
-                           CornerRadius="4"
-                           Visibility="{Binding MemoryEditor.IsVictoryItemsUnderMaintenance, Converter={StaticResource BooleanToVisibilityConverter}}"
-                           IsHitTestVisible="True">
-                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                            <materialDesign:PackIcon Kind="Lock"
-                                                   Width="48"
-                                                   Height="48"
-                                                   Foreground="White"
-                                                   HorizontalAlignment="Center"
-                                                   Opacity="0.9"/>
-                            <TextBlock Text="UNDER"
-                                     FontSize="12"
-                                     FontWeight="Bold"
-                                     Foreground="White"
-                                     HorizontalAlignment="Center"
-                                     Margin="0,8,0,0"/>
-                            <TextBlock Text="MAINTENANCE"
-                                     FontSize="11"
-                                     FontWeight="Bold"
-                                     Foreground="White"
-                                     HorizontalAlignment="Center"
-                                     Margin="0,2,0,0"/>
-                        </StackPanel>
-                    </Border>
-                    </Grid>
-                </materialDesign:Card>
-
-                <!-- Passive Values Editor Card -->
-                <materialDesign:Card Style="{StaticResource CardStyle}"
-                                   Margin="10,0,0,0"
-                                   Padding="16,12,16,12"
-                                   Width="180"
-                                   MinHeight="170"
-                                   HorizontalAlignment="Left"
-                                   VerticalAlignment="Top"
-                                   Cursor="Hand"
-                                   MouseLeftButtonUp="PassiveValuesEditorCard_Click"
-                                   IsEnabled="{Binding MemoryEditor.IsPassiveValuesEnabled}">
-                    <Grid>
-                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                        <Image Source="/Resources/Cards/Pasivas.png"
-                               Width="48"
-                               Height="48"
-                               HorizontalAlignment="Center"
-                               Margin="0,0,0,8"
-                               RenderOptions.BitmapScalingMode="HighQuality"/>
-
-                        <TextBlock Text="Passive Values"
-                                 FontSize="15"
-                                 FontWeight="SemiBold"
-                                 HorizontalAlignment="Center"
-                                 Margin="0,0,0,4"/>
-
-                        <TextBlock Text="Edit Passive Values"
-                                 FontSize="11"
-                                 Opacity="0.6"
-                                 TextWrapping="Wrap"
-                                 TextAlignment="Center"
-                                 Margin="8,0,8,8"/>
-
-                        <Button Command="{Binding MemoryEditor.SelectPassiveValuesEditorCommand}"
-                              Style="{StaticResource MaterialDesignRaisedButton}"
-                              Height="28"
-                              Padding="12,0"
-                              Margin="0,0,0,0"
-                              Background="{DynamicResource SecondaryHueMidBrush}"
-                              Foreground="Black">
-                            <StackPanel Orientation="Horizontal">
-                                <materialDesign:PackIcon Kind="ChevronRight"
-                                                       Width="14"
-                                                       Height="14"
-                                                       VerticalAlignment="Center"
-                                                       Margin="0,0,4,0"/>
-                                <TextBlock Text="Open"
-                                         FontSize="11"
-                                         VerticalAlignment="Center"
-                                         FontWeight="Medium"/>
-                            </StackPanel>
-                        </Button>
-                    </StackPanel>
-
-                    <!-- Maintenance Overlay -->
-                    <Border Background="#CC808080"
-                           CornerRadius="4"
-                           Visibility="{Binding MemoryEditor.IsPassiveValuesUnderMaintenance, Converter={StaticResource BooleanToVisibilityConverter}}"
-                           IsHitTestVisible="True">
-                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                            <materialDesign:PackIcon Kind="Lock"
-                                                   Width="48"
-                                                   Height="48"
-                                                   Foreground="White"
-                                                   HorizontalAlignment="Center"
-                                                   Opacity="0.9"/>
-                            <TextBlock Text="UNDER"
-                                     FontSize="12"
-                                     FontWeight="Bold"
-                                     Foreground="White"
-                                     HorizontalAlignment="Center"
-                                     Margin="0,8,0,0"/>
-                            <TextBlock Text="MAINTENANCE"
-                                     FontSize="11"
-                                     FontWeight="Bold"
-                                     Foreground="White"
-                                     HorizontalAlignment="Center"
-                                     Margin="0,2,0,0"/>
-                        </StackPanel>
-                    </Border>
-                    </Grid>
-                </materialDesign:Card>
-
-                <!-- Custom Passives Editor Cards - Side by Side -->
-                <WrapPanel Orientation="Horizontal" Margin="10,0,0,0">
-                    <!-- Custom Passives - Normal Players Card -->
+                <WrapPanel Orientation="Horizontal" Margin="0,0,0,20">
+                    <!-- Freeze Items Card -->
                     <materialDesign:Card Style="{StaticResource CardStyle}"
+                                       Margin="0,0,10,10"
+                                       Padding="16,12"
+                                       Width="180"
+                                       MinHeight="140">
+                        <Grid>
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <materialDesign:PackIcon Kind="Snowflake"
+                                                   Width="40"
+                                                   Height="40"
+                                                   HorizontalAlignment="Center"
+                                                   Margin="0,0,0,8"/>
+                            <TextBlock Text="Freeze Items"
+                                     FontSize="14"
+                                     FontWeight="SemiBold"
+                                     HorizontalAlignment="Center"
+                                     TextAlignment="Center"
+                                     Margin="0,0,0,8"/>
+                            <ToggleButton IsChecked="{Binding MemoryEditor.IsStarsFrozen, Mode=OneWay}"
+                                        Style="{StaticResource MaterialDesignSwitchToggleButton}"
+                                        Command="{Binding MemoryEditor.ToggleStarsFreezeCommand}"
+                                        HorizontalAlignment="Center"
+                                        Margin="0,0,0,8"/>
+                            <Button Command="{Binding MemoryEditor.OpenTutorialsCommand}"
+                                   CommandParameter="Freeze Items"
+                                   Style="{StaticResource MaterialDesignIconButton}"
+                                   Width="32"
+                                   Height="32"
+                                   Padding="0"
+                                   ToolTip="Watch Tutorials">
+                                <materialDesign:PackIcon Kind="Youtube"
+                                                       Width="24"
+                                                       Height="24"
+                                                       Foreground="#FF0000"/>
+                            </Button>
+                        </StackPanel>
+                        <!-- Maintenance Overlay -->
+                        <Border Background="#CC808080"
+                               CornerRadius="4"
+                               Visibility="{Binding MemoryEditor.IsFreezeItemsUnderMaintenance, Converter={StaticResource BooleanToVisibilityConverter}}"
+                               IsHitTestVisible="True">
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <materialDesign:PackIcon Kind="Lock"
+                                                       Width="48"
+                                                       Height="48"
+                                                       Foreground="White"
+                                                       HorizontalAlignment="Center"
+                                                       Opacity="0.9"/>
+                                <TextBlock Text="MAINTENANCE"
+                                         FontSize="11"
+                                         FontWeight="Bold"
+                                         Foreground="White"
+                                         HorizontalAlignment="Center"
+                                         Margin="0,8,0,0"/>
+                            </StackPanel>
+                        </Border>
+                        </Grid>
+                    </materialDesign:Card>
+
+                    <!-- Increment Items Card -->
+                    <materialDesign:Card Style="{StaticResource CardStyle}"
+                                       Margin="0,0,10,10"
+                                       Padding="16,12"
+                                       Width="180"
+                                       MinHeight="140">
+                        <Grid>
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <materialDesign:PackIcon Kind="TrendingUp"
+                                                   Width="40"
+                                                   Height="40"
+                                                   HorizontalAlignment="Center"
+                                                   Margin="0,0,0,8"/>
+                            <TextBlock Text="Increment Items"
+                                     FontSize="14"
+                                     FontWeight="SemiBold"
+                                     HorizontalAlignment="Center"
+                                     TextAlignment="Center"
+                                     Margin="0,0,0,4"/>
+                            <TextBlock Text="on Use"
+                                     FontSize="12"
+                                     Opacity="0.7"
+                                     HorizontalAlignment="Center"
+                                     TextAlignment="Center"
+                                     Margin="0,0,0,8"/>
+                            <ToggleButton IsChecked="{Binding MemoryEditor.IsFlowersIncrementEnabled, Mode=OneWay}"
+                                        Style="{StaticResource MaterialDesignSwitchToggleButton}"
+                                        Command="{Binding MemoryEditor.ToggleFlowersIncrementCommand}"
+                                        HorizontalAlignment="Center"
+                                        Margin="0,0,0,8"/>
+                            <Button Command="{Binding MemoryEditor.OpenTutorialsCommand}"
+                                   CommandParameter="Increment Items"
+                                   Style="{StaticResource MaterialDesignIconButton}"
+                                   Width="32"
+                                   Height="32"
+                                   Padding="0"
+                                   ToolTip="Watch Tutorials">
+                                <materialDesign:PackIcon Kind="Youtube"
+                                                       Width="24"
+                                                       Height="24"
+                                                       Foreground="#FF0000"/>
+                            </Button>
+                        </StackPanel>
+                        <!-- Maintenance Overlay -->
+                        <Border Background="#CC808080"
+                               CornerRadius="4"
+                               Visibility="{Binding MemoryEditor.IsIncrementItemsUnderMaintenance, Converter={StaticResource BooleanToVisibilityConverter}}"
+                               IsHitTestVisible="True">
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <materialDesign:PackIcon Kind="Lock"
+                                                       Width="48"
+                                                       Height="48"
+                                                       Foreground="White"
+                                                       HorizontalAlignment="Center"
+                                                       Opacity="0.9"/>
+                                <TextBlock Text="MAINTENANCE"
+                                         FontSize="11"
+                                         FontWeight="Bold"
+                                         Foreground="White"
+                                         HorizontalAlignment="Center"
+                                         Margin="0,8,0,0"/>
+                            </StackPanel>
+                        </Border>
+                        </Grid>
+                    </materialDesign:Card>
+
+                    <!-- Store Item Multiplier Card -->
+                    <materialDesign:Card Style="{StaticResource CardStyle}"
+                                       Margin="0,0,10,10"
+                                       Padding="16,12"
+                                       Width="180"
+                                       MinHeight="140">
+                        <Grid>
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <materialDesign:PackIcon Kind="Multiplication"
+                                                   Width="40"
+                                                   Height="40"
+                                                   HorizontalAlignment="Center"
+                                                   Margin="0,0,0,8"/>
+                            <TextBlock Text="Store Item"
+                                     FontSize="14"
+                                     FontWeight="SemiBold"
+                                     HorizontalAlignment="Center"
+                                     TextAlignment="Center"
+                                     Margin="0,0,0,0"/>
+                            <TextBlock Text="Multiplier x2457"
+                                     FontSize="12"
+                                     Opacity="0.7"
+                                     HorizontalAlignment="Center"
+                                     TextAlignment="Center"
+                                     Margin="0,0,0,8"/>
+                            <ToggleButton IsChecked="{Binding MemoryEditor.IsStoreItemMultiplierEnabled, Mode=OneWay}"
+                                        Style="{StaticResource MaterialDesignSwitchToggleButton}"
+                                        Command="{Binding MemoryEditor.ToggleStoreItemMultiplierCommand}"
+                                        HorizontalAlignment="Center"
+                                        Margin="0,0,0,8"/>
+                            <Button Command="{Binding MemoryEditor.OpenTutorialsCommand}"
+                                   CommandParameter="Store Item Multiplier"
+                                   Style="{StaticResource MaterialDesignIconButton}"
+                                   Width="32"
+                                   Height="32"
+                                   Padding="0"
+                                   ToolTip="Watch Tutorials">
+                                <materialDesign:PackIcon Kind="Youtube"
+                                                       Width="24"
+                                                       Height="24"
+                                                       Foreground="#FF0000"/>
+                            </Button>
+                        </StackPanel>
+                        <!-- Maintenance Overlay -->
+                        <Border Background="#CC808080"
+                               CornerRadius="4"
+                               Visibility="{Binding MemoryEditor.IsStoreMultiplierUnderMaintenance, Converter={StaticResource BooleanToVisibilityConverter}}"
+                               IsHitTestVisible="True">
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <materialDesign:PackIcon Kind="Lock"
+                                                       Width="48"
+                                                       Height="48"
+                                                       Foreground="White"
+                                                       HorizontalAlignment="Center"
+                                                       Opacity="0.9"/>
+                                <TextBlock Text="MAINTENANCE"
+                                         FontSize="11"
+                                         FontWeight="Bold"
+                                         Foreground="White"
+                                         HorizontalAlignment="Center"
+                                         Margin="0,8,0,0"/>
+                            </StackPanel>
+                        </Border>
+                        </Grid>
+                    </materialDesign:Card>
+
+                    <!-- Star Editor Card -->
+                    <materialDesign:Card Style="{StaticResource CardStyle}"
+                                       Margin="0,0,10,10"
                                        Padding="16,12,16,12"
                                        Width="180"
                                        MinHeight="170"
-                                       Margin="0,0,10,0"
-                                       HorizontalAlignment="Left"
-                                       VerticalAlignment="Top"
+                                       Cursor="Hand"
+                                       MouseLeftButtonUp="TicketEditorCard_Click"
+                                       IsEnabled="{Binding MemoryEditor.IsStarsEnabled}">
+                        <Grid>
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <Image Source="/Resources/Cards/Stars.png"
+                                   Width="48"
+                                   Height="48"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,0,0,8"
+                                   RenderOptions.BitmapScalingMode="HighQuality"/>
+                            <TextBlock Text="Stars"
+                                     FontSize="15"
+                                     FontWeight="SemiBold"
+                                     HorizontalAlignment="Center"
+                                     Margin="0,0,0,4"/>
+                            <TextBlock Text="Edit gachapon stars"
+                                     FontSize="11"
+                                     Opacity="0.6"
+                                     TextWrapping="Wrap"
+                                     TextAlignment="Center"
+                                     Margin="8,0,8,8"/>
+                            <Button Command="{Binding MemoryEditor.SelectTicketEditorCommand}"
+                                  Style="{StaticResource MaterialDesignRaisedButton}"
+                                  Height="28"
+                                  Padding="12,0"
+                                  Background="{DynamicResource SecondaryHueMidBrush}"
+                                  Foreground="Black">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="ChevronRight" Width="14" Height="14" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                    <TextBlock Text="Open" FontSize="11" VerticalAlignment="Center" FontWeight="Medium"/>
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                        <Border Background="#CC808080" CornerRadius="4" Visibility="{Binding MemoryEditor.IsStarsUnderMaintenance, Converter={StaticResource BooleanToVisibilityConverter}}" IsHitTestVisible="True">
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <materialDesign:PackIcon Kind="Lock" Width="48" Height="48" Foreground="White" HorizontalAlignment="Center" Opacity="0.9"/>
+                                <TextBlock Text="UNDER" FontSize="12" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Margin="0,8,0,0"/>
+                                <TextBlock Text="MAINTENANCE" FontSize="11" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Margin="0,2,0,0"/>
+                            </StackPanel>
+                        </Border>
+                        </Grid>
+                    </materialDesign:Card>
+
+                    <!-- Kizuna Flowers Editor Card -->
+                    <materialDesign:Card Style="{StaticResource CardStyle}"
+                                       Margin="0,0,10,10"
+                                       Padding="16,12,16,12"
+                                       Width="180"
+                                       MinHeight="170"
+                                       Cursor="Hand"
+                                       MouseLeftButtonUp="InaFlowersEditorCard_Click"
+                                       IsEnabled="{Binding MemoryEditor.IsFlowersEnabled}">
+                        <Grid>
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <Image Source="/Resources/Cards/Inazuma Flower.png"
+                                   Width="48"
+                                   Height="48"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,0,0,8"
+                                   RenderOptions.BitmapScalingMode="HighQuality"/>
+                            <TextBlock Text="Kizuna Flowers"
+                                     FontSize="15"
+                                     FontWeight="SemiBold"
+                                     HorizontalAlignment="Center"
+                                     Margin="0,0,0,4"/>
+                            <TextBlock Text="Edit Kizuna Flowers"
+                                     FontSize="11"
+                                     Opacity="0.6"
+                                     TextWrapping="Wrap"
+                                     TextAlignment="Center"
+                                     Margin="8,0,8,8"/>
+                            <Button Command="{Binding MemoryEditor.SelectInaFlowersEditorCommand}"
+                                  Style="{StaticResource MaterialDesignRaisedButton}"
+                                  Height="28"
+                                  Padding="12,0"
+                                  Background="{DynamicResource SecondaryHueMidBrush}"
+                                  Foreground="Black">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="ChevronRight" Width="14" Height="14" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                    <TextBlock Text="Open" FontSize="11" VerticalAlignment="Center" FontWeight="Medium"/>
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                        <Border Background="#CC808080" CornerRadius="4" Visibility="{Binding MemoryEditor.IsFlowersUnderMaintenance, Converter={StaticResource BooleanToVisibilityConverter}}" IsHitTestVisible="True">
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <materialDesign:PackIcon Kind="Lock" Width="48" Height="48" Foreground="White" HorizontalAlignment="Center" Opacity="0.9"/>
+                                <TextBlock Text="UNDER" FontSize="12" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Margin="0,8,0,0"/>
+                                <TextBlock Text="MAINTENANCE" FontSize="11" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Margin="0,2,0,0"/>
+                            </StackPanel>
+                        </Border>
+                        </Grid>
+                    </materialDesign:Card>
+
+                    <!-- Beans Editor Card -->
+                    <materialDesign:Card Style="{StaticResource CardStyle}"
+                                       Margin="0,0,10,10"
+                                       Padding="16,12,16,12"
+                                       Width="180"
+                                       MinHeight="170"
+                                       Cursor="Hand"
+                                       MouseLeftButtonUp="BeansEditorCard_Click"
+                                       IsEnabled="{Binding MemoryEditor.IsBeansEnabled}">
+                        <Grid>
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <Image Source="/Resources/Cards/Kicking Power.png"
+                                   Width="48"
+                                   Height="48"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,0,0,8"
+                                   RenderOptions.BitmapScalingMode="HighQuality"/>
+                            <TextBlock Text="Beans"
+                                     FontSize="15"
+                                     FontWeight="SemiBold"
+                                     HorizontalAlignment="Center"
+                                     Margin="0,0,0,4"/>
+                            <TextBlock Text="Edit Beans"
+                                     FontSize="11"
+                                     Opacity="0.6"
+                                     TextWrapping="Wrap"
+                                     TextAlignment="Center"
+                                     Margin="8,0,8,8"/>
+                            <Button Command="{Binding MemoryEditor.SelectBeansEditorCommand}"
+                                  Style="{StaticResource MaterialDesignRaisedButton}"
+                                  Height="28"
+                                  Padding="12,0"
+                                  Background="{DynamicResource SecondaryHueMidBrush}"
+                                  Foreground="Black">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="ChevronRight" Width="14" Height="14" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                    <TextBlock Text="Open" FontSize="11" VerticalAlignment="Center" FontWeight="Medium"/>
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                        <Border Background="#CC808080" CornerRadius="4" Visibility="{Binding MemoryEditor.IsBeansUnderMaintenance, Converter={StaticResource BooleanToVisibilityConverter}}" IsHitTestVisible="True">
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <materialDesign:PackIcon Kind="Lock" Width="48" Height="48" Foreground="White" HorizontalAlignment="Center" Opacity="0.9"/>
+                                <TextBlock Text="UNDER" FontSize="12" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Margin="0,8,0,0"/>
+                                <TextBlock Text="MAINTENANCE" FontSize="11" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Margin="0,2,0,0"/>
+                            </StackPanel>
+                        </Border>
+                        </Grid>
+                    </materialDesign:Card>
+
+                    <!-- Victory Items Editor Card -->
+                    <materialDesign:Card Style="{StaticResource CardStyle}"
+                                       Margin="0,0,10,10"
+                                       Padding="16,12,16,12"
+                                       Width="180"
+                                       MinHeight="170"
+                                       Cursor="Hand"
+                                       MouseLeftButtonUp="VictoryItemsEditorCard_Click"
+                                       IsEnabled="{Binding MemoryEditor.IsVictoryItemsEnabled}">
+                        <Grid>
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <Image Source="/Resources/Cards/VSTAR.png"
+                                   Width="48"
+                                   Height="48"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,0,0,8"
+                                   RenderOptions.BitmapScalingMode="HighQuality"/>
+                            <TextBlock Text="Victory Items"
+                                     FontSize="15"
+                                     FontWeight="SemiBold"
+                                     HorizontalAlignment="Center"
+                                     Margin="0,0,0,4"/>
+                            <TextBlock Text="Edit Victory Items"
+                                     FontSize="11"
+                                     Opacity="0.6"
+                                     TextWrapping="Wrap"
+                                     TextAlignment="Center"
+                                     Margin="8,0,8,8"/>
+                            <Button Command="{Binding MemoryEditor.SelectVictoryItemsEditorCommand}"
+                                  Style="{StaticResource MaterialDesignRaisedButton}"
+                                  Height="28"
+                                  Padding="12,0"
+                                  Background="{DynamicResource SecondaryHueMidBrush}"
+                                  Foreground="Black">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="ChevronRight" Width="14" Height="14" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                    <TextBlock Text="Open" FontSize="11" VerticalAlignment="Center" FontWeight="Medium"/>
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                        <Border Background="#CC808080" CornerRadius="4" Visibility="{Binding MemoryEditor.IsVictoryItemsUnderMaintenance, Converter={StaticResource BooleanToVisibilityConverter}}" IsHitTestVisible="True">
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <materialDesign:PackIcon Kind="Lock" Width="48" Height="48" Foreground="White" HorizontalAlignment="Center" Opacity="0.9"/>
+                                <TextBlock Text="UNDER" FontSize="12" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Margin="0,8,0,0"/>
+                                <TextBlock Text="MAINTENANCE" FontSize="11" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Margin="0,2,0,0"/>
+                            </StackPanel>
+                        </Border>
+                        </Grid>
+                    </materialDesign:Card>
+                </WrapPanel>
+
+                <!-- SPIRITS SECTION -->
+                <TextBlock Text="SPIRITS"
+                          FontSize="18"
+                          FontWeight="Bold"
+                          Margin="0,10,0,10"
+                          Foreground="{DynamicResource PrimaryHueMidBrush}"/>
+
+                <WrapPanel Orientation="Horizontal" Margin="0,0,0,20">
+                    <!-- Freeze Spirits Card -->
+                    <materialDesign:Card Style="{StaticResource CardStyle}"
+                                       Margin="0,0,10,10"
+                                       Padding="16,12"
+                                       Width="180"
+                                       MinHeight="140">
+                        <Grid>
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <materialDesign:PackIcon Kind="Snowflake"
+                                                   Width="40"
+                                                   Height="40"
+                                                   HorizontalAlignment="Center"
+                                                   Margin="0,0,0,8"/>
+                            <TextBlock Text="Freeze Spirits"
+                                     FontSize="14"
+                                     FontWeight="SemiBold"
+                                     HorizontalAlignment="Center"
+                                     TextAlignment="Center"
+                                     Margin="0,0,0,8"/>
+                            <ToggleButton IsChecked="{Binding MemoryEditor.IsSpiritsFrozen, Mode=OneWay}"
+                                        Style="{StaticResource MaterialDesignSwitchToggleButton}"
+                                        Command="{Binding MemoryEditor.ToggleSpiritsFreezeCommand}"
+                                        HorizontalAlignment="Center"
+                                        Margin="0,0,0,8"/>
+                            <Button Command="{Binding MemoryEditor.OpenTutorialsCommand}"
+                                   CommandParameter="Freeze Spirits"
+                                   Style="{StaticResource MaterialDesignIconButton}"
+                                   Width="32"
+                                   Height="32"
+                                   Padding="0"
+                                   ToolTip="Watch Tutorials">
+                                <materialDesign:PackIcon Kind="Youtube"
+                                                       Width="24"
+                                                       Height="24"
+                                                       Foreground="#FF0000"/>
+                            </Button>
+                        </StackPanel>
+                        <!-- Maintenance Overlay -->
+                        <Border Background="#CC808080"
+                               CornerRadius="4"
+                               Visibility="{Binding MemoryEditor.IsFreezeSpiritsUnderMaintenance, Converter={StaticResource BooleanToVisibilityConverter}}"
+                               IsHitTestVisible="True">
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <materialDesign:PackIcon Kind="Lock"
+                                                       Width="48"
+                                                       Height="48"
+                                                       Foreground="White"
+                                                       HorizontalAlignment="Center"
+                                                       Opacity="0.9"/>
+                                <TextBlock Text="MAINTENANCE"
+                                         FontSize="11"
+                                         FontWeight="Bold"
+                                         Foreground="White"
+                                         HorizontalAlignment="Center"
+                                         Margin="0,8,0,0"/>
+                            </StackPanel>
+                        </Border>
+                        </Grid>
+                    </materialDesign:Card>
+
+                    <!-- Increment Spirits Card -->
+                    <materialDesign:Card Style="{StaticResource CardStyle}"
+                                       Margin="0,0,10,10"
+                                       Padding="16,12"
+                                       Width="180"
+                                       MinHeight="140">
+                        <Grid>
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <materialDesign:PackIcon Kind="PlusCircle"
+                                                   Width="40"
+                                                   Height="40"
+                                                   HorizontalAlignment="Center"
+                                                   Margin="0,0,0,8"/>
+                            <TextBlock Text="Increment Spirits"
+                                     FontSize="14"
+                                     FontWeight="SemiBold"
+                                     HorizontalAlignment="Center"
+                                     TextAlignment="Center"
+                                     Margin="0,0,0,4"/>
+                            <TextBlock Text="+1 Hero/Fable on Use"
+                                     FontSize="10"
+                                     Opacity="0.7"
+                                     HorizontalAlignment="Center"
+                                     TextAlignment="Center"
+                                     TextWrapping="Wrap"
+                                     Margin="0,0,0,8"/>
+                            <ToggleButton IsChecked="{Binding MemoryEditor.IsSpiritIncrementEnabled, Mode=OneWay}"
+                                        Style="{StaticResource MaterialDesignSwitchToggleButton}"
+                                        Command="{Binding MemoryEditor.ToggleSpiritIncrementCommand}"
+                                        HorizontalAlignment="Center"
+                                        Margin="0,0,0,8"/>
+                            <Button Command="{Binding MemoryEditor.OpenTutorialsCommand}"
+                                   CommandParameter="Increment Heroes"
+                                   Style="{StaticResource MaterialDesignIconButton}"
+                                   Width="32"
+                                   Height="32"
+                                   Padding="0"
+                                   ToolTip="Watch Tutorials">
+                                <materialDesign:PackIcon Kind="Youtube"
+                                                       Width="24"
+                                                       Height="24"
+                                                       Foreground="#FF0000"/>
+                            </Button>
+                        </StackPanel>
+                        <!-- Maintenance Overlay -->
+                        <Border Background="#CC808080"
+                               CornerRadius="4"
+                               Visibility="{Binding MemoryEditor.IsIncrementSpiritsUnderMaintenance, Converter={StaticResource BooleanToVisibilityConverter}}"
+                               IsHitTestVisible="True">
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <materialDesign:PackIcon Kind="Lock"
+                                                       Width="48"
+                                                       Height="48"
+                                                       Foreground="White"
+                                                       HorizontalAlignment="Center"
+                                                       Opacity="0.9"/>
+                                <TextBlock Text="MAINTENANCE"
+                                         FontSize="11"
+                                         FontWeight="Bold"
+                                         Foreground="White"
+                                         HorizontalAlignment="Center"
+                                         Margin="0,8,0,0"/>
+                            </StackPanel>
+                        </Border>
+                        </Grid>
+                    </materialDesign:Card>
+
+                    <!-- Increment Elite Spirits Card -->
+                    <materialDesign:Card Style="{StaticResource CardStyle}"
+                                       Margin="0,0,10,10"
+                                       Padding="16,12"
+                                       Width="180"
+                                       MinHeight="140">
+                        <Grid>
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <materialDesign:PackIcon Kind="StarCircle"
+                                                   Width="40"
+                                                   Height="40"
+                                                   HorizontalAlignment="Center"
+                                                   Margin="0,0,0,8"/>
+                            <TextBlock Text="Increment Spirits"
+                                     FontSize="14"
+                                     FontWeight="SemiBold"
+                                     HorizontalAlignment="Center"
+                                     TextAlignment="Center"
+                                     Margin="0,0,0,4"/>
+                            <TextBlock Text="+1 Spirit on Use"
+                                     FontSize="10"
+                                     Opacity="0.7"
+                                     HorizontalAlignment="Center"
+                                     TextWrapping="Wrap"
+                                     TextAlignment="Center"
+                                     Margin="0,0,0,8"/>
+                            <ToggleButton IsChecked="{Binding MemoryEditor.IsEliteSpiritIncrementEnabled, Mode=OneWay}"
+                                        Style="{StaticResource MaterialDesignSwitchToggleButton}"
+                                        Command="{Binding MemoryEditor.ToggleEliteSpiritIncrementCommand}"
+                                        HorizontalAlignment="Center"
+                                        Margin="0,0,0,8"/>
+                            <Button Command="{Binding MemoryEditor.OpenTutorialsCommand}"
+                                   CommandParameter="Increment Elite Spirits"
+                                   Style="{StaticResource MaterialDesignIconButton}"
+                                   Width="32"
+                                   Height="32"
+                                   Padding="0"
+                                   ToolTip="Watch Tutorials">
+                                <materialDesign:PackIcon Kind="Youtube"
+                                                       Width="24"
+                                                       Height="24"
+                                                       Foreground="#FF0000"/>
+                            </Button>
+                        </StackPanel>
+                        </Grid>
+                    </materialDesign:Card>
+
+                    <!-- Spirits Editor Card -->
+                    <materialDesign:Card Style="{StaticResource CardStyle}"
+                                       Margin="0,0,10,10"
+                                       Padding="16,12,16,12"
+                                       Width="180"
+                                       MinHeight="170"
+                                       Cursor="Hand"
+                                       MouseLeftButtonUp="SpiritsEditorCard_Click"
+                                       IsEnabled="{Binding MemoryEditor.IsSpiritsEnabled}">
+                        <Grid>
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <Image Source="/Resources/Cards/Spirits.png"
+                                   Width="48"
+                                   Height="48"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,0,0,8"
+                                   RenderOptions.BitmapScalingMode="HighQuality"/>
+                            <TextBlock Text="Spirits"
+                                     FontSize="15"
+                                     FontWeight="SemiBold"
+                                     HorizontalAlignment="Center"
+                                     Margin="0,0,0,4"/>
+                            <TextBlock Text="Add Spirits"
+                                     FontSize="11"
+                                     Opacity="0.6"
+                                     TextWrapping="Wrap"
+                                     TextAlignment="Center"
+                                     Margin="8,0,8,8"/>
+                            <Button Command="{Binding MemoryEditor.SelectSpiritsEditorCommand}"
+                                  Style="{StaticResource MaterialDesignRaisedButton}"
+                                  Height="28"
+                                  Padding="12,0"
+                                  Background="{DynamicResource SecondaryHueMidBrush}"
+                                  Foreground="Black">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="ChevronRight" Width="14" Height="14" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                    <TextBlock Text="Open" FontSize="11" VerticalAlignment="Center" FontWeight="Medium"/>
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                        <Border Background="#CC808080" CornerRadius="4" Visibility="{Binding MemoryEditor.IsSpiritsUnderMaintenance, Converter={StaticResource BooleanToVisibilityConverter}}" IsHitTestVisible="True">
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <materialDesign:PackIcon Kind="Lock" Width="48" Height="48" Foreground="White" HorizontalAlignment="Center" Opacity="0.9"/>
+                                <TextBlock Text="UNDER" FontSize="12" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Margin="0,8,0,0"/>
+                                <TextBlock Text="MAINTENANCE" FontSize="11" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Margin="0,2,0,0"/>
+                            </StackPanel>
+                        </Border>
+                        </Grid>
+                    </materialDesign:Card>
+                </WrapPanel>
+
+                <!-- SPIRIT MARKET SECTION -->
+                <TextBlock Text="SPIRIT MARKET"
+                          FontSize="18"
+                          FontWeight="Bold"
+                          Margin="0,10,0,10"
+                          Foreground="{DynamicResource PrimaryHueMidBrush}"/>
+
+                <WrapPanel Orientation="Horizontal" Margin="0,0,0,20">
+                    <!-- Free Buy Spirit Market Card -->
+                    <materialDesign:Card Style="{StaticResource CardStyle}"
+                                       Margin="0,0,10,10"
+                                       Padding="16,12"
+                                       Width="180"
+                                       MinHeight="140">
+                        <Grid>
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <materialDesign:PackIcon Kind="CurrencyUsd"
+                                                   Width="40"
+                                                   Height="40"
+                                                   HorizontalAlignment="Center"
+                                                   Margin="0,0,0,8"/>
+                            <TextBlock Text="Free Buy"
+                                     FontSize="14"
+                                     FontWeight="SemiBold"
+                                     HorizontalAlignment="Center"
+                                     TextAlignment="Center"
+                                     Margin="0,0,0,4"/>
+                            <TextBlock Text="Spirit Market"
+                                     FontSize="12"
+                                     Opacity="0.7"
+                                     HorizontalAlignment="Center"
+                                     TextAlignment="Center"
+                                     Margin="0,0,0,8"/>
+                            <ToggleButton IsChecked="{Binding MemoryEditor.IsFreeBuySpiritMarketEnabled, Mode=OneWay}"
+                                        Style="{StaticResource MaterialDesignSwitchToggleButton}"
+                                        Command="{Binding MemoryEditor.ToggleFreeBuySpiritMarketCommand}"
+                                        HorizontalAlignment="Center"
+                                        Margin="0,0,0,8"/>
+                            <Button Command="{Binding MemoryEditor.OpenTutorialsCommand}"
+                                   CommandParameter="Free Buy Spirit Market"
+                                   Style="{StaticResource MaterialDesignIconButton}"
+                                   Width="32"
+                                   Height="32"
+                                   Padding="0"
+                                   ToolTip="Watch Tutorials">
+                                <materialDesign:PackIcon Kind="Youtube"
+                                                       Width="24"
+                                                       Height="24"
+                                                       Foreground="#FF0000"/>
+                            </Button>
+                        </StackPanel>
+                        </Grid>
+                    </materialDesign:Card>
+
+                    <!-- Free Buy Shop Items Card -->
+                    <materialDesign:Card Style="{StaticResource CardStyle}"
+                                       Margin="0,0,10,10"
+                                       Padding="16,12"
+                                       Width="180"
+                                       MinHeight="140">
+                        <Grid>
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <materialDesign:PackIcon Kind="Store"
+                                                   Width="40"
+                                                   Height="40"
+                                                   HorizontalAlignment="Center"
+                                                   Margin="0,0,0,8"/>
+                            <TextBlock Text="Free Buy"
+                                     FontSize="14"
+                                     FontWeight="SemiBold"
+                                     HorizontalAlignment="Center"
+                                     TextAlignment="Center"
+                                     Margin="0,0,0,4"/>
+                            <TextBlock Text="Shop Items"
+                                     FontSize="12"
+                                     Opacity="0.7"
+                                     HorizontalAlignment="Center"
+                                     TextAlignment="Center"
+                                     Margin="0,0,0,8"/>
+                            <ToggleButton IsChecked="{Binding MemoryEditor.IsFreeBuyShopEnabled, Mode=OneWay}"
+                                        Style="{StaticResource MaterialDesignSwitchToggleButton}"
+                                        Command="{Binding MemoryEditor.ToggleFreeBuyShopCommand}"
+                                        HorizontalAlignment="Center"
+                                        Margin="0,0,0,8"/>
+                            <Button Command="{Binding MemoryEditor.OpenTutorialsCommand}"
+                                   CommandParameter="Free Buy Shop"
+                                   Style="{StaticResource MaterialDesignIconButton}"
+                                   Width="32"
+                                   Height="32"
+                                   Padding="0"
+                                   ToolTip="Watch Tutorials">
+                                <materialDesign:PackIcon Kind="Youtube"
+                                                       Width="24"
+                                                       Height="24"
+                                                       Foreground="#FF0000"/>
+                            </Button>
+                        </StackPanel>
+                        <!-- Maintenance Overlay -->
+                        <Border Background="#CC808080"
+                               CornerRadius="4"
+                               Visibility="{Binding MemoryEditor.IsFreeBuyShopUnderMaintenance, Converter={StaticResource BooleanToVisibilityConverter}}"
+                               IsHitTestVisible="True">
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <materialDesign:PackIcon Kind="Lock"
+                                                       Width="48"
+                                                       Height="48"
+                                                       Foreground="White"
+                                                       HorizontalAlignment="Center"
+                                                       Opacity="0.9"/>
+                                <TextBlock Text="MAINTENANCE"
+                                         FontSize="11"
+                                         FontWeight="Bold"
+                                         Foreground="White"
+                                         HorizontalAlignment="Center"
+                                         Margin="0,8,0,0"/>
+                            </StackPanel>
+                        </Border>
+                        </Grid>
+                    </materialDesign:Card>
+                </WrapPanel>
+
+                <!-- TEAM BUILDER SECTION -->
+                <TextBlock Text="TEAM BUILDER"
+                          FontSize="18"
+                          FontWeight="Bold"
+                          Margin="0,10,0,10"
+                          Foreground="{DynamicResource PrimaryHueMidBrush}"/>
+
+                <WrapPanel Orientation="Horizontal" Margin="0,0,0,20">
+                    <!-- Unlimited Heroes Card -->
+                    <materialDesign:Card Style="{StaticResource CardStyle}"
+                                       Margin="0,0,10,10"
+                                       Padding="16,12"
+                                       Width="180"
+                                       MinHeight="140">
+                        <Grid>
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <materialDesign:PackIcon Kind="AccountGroup"
+                                                   Width="40"
+                                                   Height="40"
+                                                   HorizontalAlignment="Center"
+                                                   Margin="0,0,0,8"/>
+                            <TextBlock Text="Unlimited Hero/Fabled"
+                                     FontSize="14"
+                                     FontWeight="SemiBold"
+                                     HorizontalAlignment="Center"
+                                     TextAlignment="Center"
+                                     Margin="0,0,0,4"/>
+                            <TextBlock Text="in Team"
+                                     FontSize="12"
+                                     Opacity="0.7"
+                                     HorizontalAlignment="Center"
+                                     TextAlignment="Center"
+                                     Margin="0,0,0,8"/>
+                            <ToggleButton IsChecked="{Binding MemoryEditor.IsUnlimitedHeroesEnabled, Mode=OneWay}"
+                                        Style="{StaticResource MaterialDesignSwitchToggleButton}"
+                                        Command="{Binding MemoryEditor.ToggleUnlimitedHeroesCommand}"
+                                        HorizontalAlignment="Center"
+                                        Margin="0,0,0,8"/>
+                            <Button Command="{Binding MemoryEditor.OpenTutorialsCommand}"
+                                   CommandParameter="Unlimited Heroes"
+                                   Style="{StaticResource MaterialDesignIconButton}"
+                                   Width="32"
+                                   Height="32"
+                                   Padding="0"
+                                   ToolTip="Watch Tutorials">
+                                <materialDesign:PackIcon Kind="Youtube"
+                                                       Width="24"
+                                                       Height="24"
+                                                       Foreground="#FF0000"/>
+                            </Button>
+                        </StackPanel>
+                        <!-- Maintenance Overlay -->
+                        <Border Background="#CC808080"
+                               CornerRadius="4"
+                               Visibility="{Binding MemoryEditor.IsUnlimitedHeroesUnderMaintenance, Converter={StaticResource BooleanToVisibilityConverter}}"
+                               IsHitTestVisible="True">
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <materialDesign:PackIcon Kind="Lock"
+                                                       Width="48"
+                                                       Height="48"
+                                                       Foreground="White"
+                                                       HorizontalAlignment="Center"
+                                                       Opacity="0.9"/>
+                                <TextBlock Text="MAINTENANCE"
+                                         FontSize="11"
+                                         FontWeight="Bold"
+                                         Foreground="White"
+                                         HorizontalAlignment="Center"
+                                         Margin="0,8,0,0"/>
+                            </StackPanel>
+                        </Border>
+                        </Grid>
+                    </materialDesign:Card>
+
+                    <!-- Player Level Card (Note: This one has input, keeping it special) -->
+                    <materialDesign:Card Style="{StaticResource CardStyle}"
+                                       Margin="0,0,10,10"
+                                       Padding="16,12"
+                                       Width="180"
+                                       MinHeight="140">
+                        <Grid>
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <materialDesign:PackIcon Kind="Star"
+                                                   Width="40"
+                                                   Height="40"
+                                                   HorizontalAlignment="Center"
+                                                   Margin="0,0,0,8"/>
+                            <TextBlock Text="Player Level"
+                                     FontSize="14"
+                                     FontWeight="SemiBold"
+                                     HorizontalAlignment="Center"
+                                     TextAlignment="Center"
+                                     Margin="0,0,0,8"/>
+                            <ToggleButton IsChecked="{Binding MemoryEditor.IsPlayerLevelEnabled, Mode=OneWay}"
+                                        Style="{StaticResource MaterialDesignSwitchToggleButton}"
+                                        Command="{Binding MemoryEditor.TogglePlayerLevelCommand}"
+                                        HorizontalAlignment="Center"
+                                        Margin="0,0,0,8"/>
+                            <!-- Input shown when enabled -->
+                            <StackPanel Visibility="{Binding MemoryEditor.ShowPlayerLevelInput, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                       Orientation="Horizontal"
+                                       HorizontalAlignment="Center">
+                                <TextBox Text="{Binding MemoryEditor.PlayerLevelInput, UpdateSourceTrigger=PropertyChanged}"
+                                        materialDesign:HintAssist.Hint="1-99"
+                                        Width="50"
+                                        MaxLength="2"
+                                        Margin="0,0,5,0"/>
+                                <Button Content="Apply"
+                                       Command="{Binding MemoryEditor.ApplyPlayerLevelCommand}"
+                                       Style="{StaticResource MaterialDesignFlatButton}"
+                                       Padding="8,0"/>
+                            </StackPanel>
+                            <Button Command="{Binding MemoryEditor.OpenTutorialsCommand}"
+                                   CommandParameter="Player Level"
+                                   Style="{StaticResource MaterialDesignIconButton}"
+                                   Width="32"
+                                   Height="32"
+                                   Padding="0"
+                                   Margin="0,4,0,0"
+                                   ToolTip="Watch Tutorials">
+                                <materialDesign:PackIcon Kind="Youtube"
+                                                       Width="24"
+                                                       Height="24"
+                                                       Foreground="#FF0000"/>
+                            </Button>
+                        </StackPanel>
+                        <!-- Maintenance Overlay -->
+                        <Border Background="#CC808080"
+                               CornerRadius="4"
+                               Visibility="{Binding MemoryEditor.IsPlayerLevelUnderMaintenance, Converter={StaticResource BooleanToVisibilityConverter}}"
+                               IsHitTestVisible="True">
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <materialDesign:PackIcon Kind="Lock"
+                                                       Width="48"
+                                                       Height="48"
+                                                       Foreground="White"
+                                                       HorizontalAlignment="Center"
+                                                       Opacity="0.9"/>
+                                <TextBlock Text="MAINTENANCE"
+                                         FontSize="11"
+                                         FontWeight="Bold"
+                                         Foreground="White"
+                                         HorizontalAlignment="Center"
+                                         Margin="0,8,0,0"/>
+                            </StackPanel>
+                        </Border>
+                        </Grid>
+                    </materialDesign:Card>
+
+                    <!-- Passive Values Editor Card -->
+                    <materialDesign:Card Style="{StaticResource CardStyle}"
+                                       Margin="0,0,10,10"
+                                       Padding="16,12,16,12"
+                                       Width="180"
+                                       MinHeight="170"
+                                       Cursor="Hand"
+                                       MouseLeftButtonUp="PassiveValuesEditorCard_Click"
+                                       IsEnabled="{Binding MemoryEditor.IsPassiveValuesEnabled}">
+                        <Grid>
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <Image Source="/Resources/Cards/Pasivas.png"
+                                   Width="48"
+                                   Height="48"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,0,0,8"
+                                   RenderOptions.BitmapScalingMode="HighQuality"/>
+                            <TextBlock Text="Passive Values"
+                                     FontSize="15"
+                                     FontWeight="SemiBold"
+                                     HorizontalAlignment="Center"
+                                     Margin="0,0,0,4"/>
+                            <TextBlock Text="Edit Passive Values"
+                                     FontSize="11"
+                                     Opacity="0.6"
+                                     TextWrapping="Wrap"
+                                     TextAlignment="Center"
+                                     Margin="8,0,8,8"/>
+                            <Button Command="{Binding MemoryEditor.SelectPassiveValuesEditorCommand}"
+                                  Style="{StaticResource MaterialDesignRaisedButton}"
+                                  Height="28"
+                                  Padding="12,0"
+                                  Background="{DynamicResource SecondaryHueMidBrush}"
+                                  Foreground="Black">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="ChevronRight" Width="14" Height="14" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                    <TextBlock Text="Open" FontSize="11" VerticalAlignment="Center" FontWeight="Medium"/>
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                        <Border Background="#CC808080" CornerRadius="4" Visibility="{Binding MemoryEditor.IsPassiveValuesUnderMaintenance, Converter={StaticResource BooleanToVisibilityConverter}}" IsHitTestVisible="True">
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <materialDesign:PackIcon Kind="Lock" Width="48" Height="48" Foreground="White" HorizontalAlignment="Center" Opacity="0.9"/>
+                                <TextBlock Text="UNDER" FontSize="12" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Margin="0,8,0,0"/>
+                                <TextBlock Text="MAINTENANCE" FontSize="11" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Margin="0,2,0,0"/>
+                            </StackPanel>
+                        </Border>
+                        </Grid>
+                    </materialDesign:Card>
+
+                    <!-- Custom Passives Editor Card -->
+                    <materialDesign:Card Style="{StaticResource CardStyle}"
+                                       Margin="0,0,10,10"
+                                       Padding="16,12,16,12"
+                                       Width="180"
+                                       MinHeight="170"
                                        Cursor="Hand"
                                        MouseLeftButtonUp="CustomPassivesEditorCard_Click"
                                        IsEnabled="{Binding MemoryEditor.IsCustomPassivesEnabled}">
@@ -1289,71 +1160,30 @@
                                    HorizontalAlignment="Center"
                                    Margin="0,0,0,8"
                                    RenderOptions.BitmapScalingMode="HighQuality"/>
-
                             <TextBlock Text="Custom Passives"
                                      FontSize="15"
                                      FontWeight="SemiBold"
                                      HorizontalAlignment="Center"
                                      Margin="0,0,0,4"/>
-
-                            <TextBlock Text="Normal Players (BETA)"
+                            <TextBlock Text="Opens Cheat Engine"
                                      FontSize="11"
                                      Opacity="0.6"
                                      TextWrapping="Wrap"
                                      TextAlignment="Center"
                                      Margin="8,0,8,8"/>
-
-                            <Button Command="{Binding MemoryEditor.SelectCustomPassivesEditorCommand}"
-                                  Style="{StaticResource MaterialDesignRaisedButton}"
-                                  Height="28"
-                                  Padding="12,0"
-                                  Margin="0,0,0,0"
-                                  Background="{DynamicResource SecondaryHueMidBrush}"
-                                  Foreground="Black">
-                                <StackPanel Orientation="Horizontal">
-                                    <materialDesign:PackIcon Kind="ChevronRight"
-                                                           Width="14"
-                                                           Height="14"
-                                                           VerticalAlignment="Center"
-                                                           Margin="0,0,4,0"/>
-                                    <TextBlock Text="Open"
-                                             FontSize="11"
-                                             VerticalAlignment="Center"
-                                             FontWeight="Medium"/>
-                                </StackPanel>
-                            </Button>
                         </StackPanel>
-
-                        <!-- Maintenance Overlay -->
-                        <Border Background="#CC808080"
-                               CornerRadius="4"
-                               Visibility="{Binding MemoryEditor.IsCustomPassivesUnderMaintenance, Converter={StaticResource BooleanToVisibilityConverter}}"
-                               IsHitTestVisible="True">
+                        <Border Background="#CC808080" CornerRadius="4" Visibility="{Binding MemoryEditor.IsCustomPassivesUnderMaintenance, Converter={StaticResource BooleanToVisibilityConverter}}" IsHitTestVisible="True">
                             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <materialDesign:PackIcon Kind="Lock"
-                                                       Width="48"
-                                                       Height="48"
-                                                       Foreground="White"
-                                                       HorizontalAlignment="Center"
-                                                       Opacity="0.9"/>
-                                <TextBlock Text="UNDER"
-                                         FontSize="12"
-                                         FontWeight="Bold"
-                                         Foreground="White"
-                                         HorizontalAlignment="Center"
-                                         Margin="0,8,0,0"/>
-                                <TextBlock Text="MAINTENANCE"
-                                         FontSize="11"
-                                         FontWeight="Bold"
-                                         Foreground="White"
-                                         HorizontalAlignment="Center"
-                                         Margin="0,2,0,0"/>
+                                <materialDesign:PackIcon Kind="Lock" Width="48" Height="48" Foreground="White" HorizontalAlignment="Center" Opacity="0.9"/>
+                                <TextBlock Text="UNDER" FontSize="12" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Margin="0,8,0,0"/>
+                                <TextBlock Text="MAINTENANCE" FontSize="11" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Margin="0,2,0,0"/>
                             </StackPanel>
                         </Border>
                         </Grid>
                     </materialDesign:Card>
                 </WrapPanel>
+
             </StackPanel>
-        </materialDesign:Card>
+        </ScrollViewer>
     </Grid>
 </UserControl>

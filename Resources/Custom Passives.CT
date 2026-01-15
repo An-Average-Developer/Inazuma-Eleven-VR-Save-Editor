@@ -1,0 +1,547 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CheatTable CheatEngineTableVersion="46">
+  <CheatEntries>
+    <CheatEntry>
+      <ID>105</ID>
+      <Description>"Passive Type"</Description>
+      <Options moHideChildren="1" moDeactivateChildrenAsWell="1"/>
+      <GroupHeader>1</GroupHeader>
+      <CheatEntries>
+        <CheatEntry>
+          <ID>111</ID>
+          <Description>"Data : Passive Dropdown Selection Data"</Description>
+          <Options moHideChildren="1"/>
+          <GroupHeader>1</GroupHeader>
+          <CheatEntries>
+            <CheatEntry>
+              <ID>110</ID>
+              <Description>"PassiveListDropDownData"</Description>
+              <DropDownList DisplayValueAsItem="1">3A2BCAF4:Passive 01 (Type 1)
+3E305FFD:Passive 01 (Type 2)
+A3229B4E:Passive 02 (Type 1)
+2C85F013:Passive 02 (Type 2)
+D425ABD8:Passive 03 (Type 1)
+94399776:Passive 03 (Type 2)
+09EEAFCF:Passive 04 (Type 1)
+4A413E7B:Passive 04 (Type 2)
+3D460EED:Passive 05 (Type 1)
+B152C8AA:Passive 05 (Type 2)
+A44F5F57:Passive 06 (Type 1)
+A3E76744:Passive 06 (Type 2)
+D3486FC1:Passive 07 (Type 1)
+1B5B0021:Passive 07 (Type 2)
+43F77250:Passive 08 (Type 1)
+43381077:Passive 08 (Type 2)
+34F042C6:Passive 09 (Type 1)
+FB847712:Passive 09 (Type 2)
+5437CB23:Passive 10 (Type 1)
+BBEC1128:Passive 10 (Type 2)
+2330FBB5:Passive 11 (Type 1)
+0350764D:Passive 11 (Type 2)
+BA39AA0F:Passive 14 (Type 1)
+11E5D9A3:Passive 14 (Type 2)
+A959BEC6:Passive 15 (Type 1)
+CD3E9A99:Passive 15 (Type 2)
+535A0F3A:Passive 16 (Type 1)
+348E867F:Passive 16 (Type 2)
+245D3FAC:Passive 17 (Type 1)
+8C32E11A:Passive 17 (Type 2)
+BD546E16:Passive 18 (Type 1)
+9E874EF4:Passive 18 (Type 2)
+CA535E80:Passive 19 (Type 1)
+263B2991:Passive 19 (Type 2)
+5AEC4311:Passive 20 (Type 1)
+7E5839C7:Passive 20 (Type 2)
+2DEB7387:Passive 21 (Type 1)
+7F1A98E0:Passive 21 (Type 2)
+081DA876:Passive 22 (Type 1)
+9114F9CC:Passive 22 (Type 2)
+E613C95A:Passive 23 (Type 1)
+78775CF9:Passive 23 (Type 2)
+96793DD5:Passive 24 (Type 1)
+0F706C6F:Passive 24 (Type 2)
+E17E0D43:Passive 25 (Type 1)
+71C110D2:Passive 25 (Type 2)
+06C62044:Passive 26 (Type 1)
+6601A9A1:Passive 26 (Type 2)
+11069937:Passive 27 (Type 1)
+880FC88D:Passive 27 (Type 2)
+FF08F81B:Passive 28 (Type 1)
+616C6DB8:Passive 28 (Type 2)
+166B5D2E:Passive 29 (Type 1)
+8F620C94:Passive 29 (Type 2)
+F8653C02:Passive 30 (Type 1)
+5CFB7AF1:Passive 30 (Type 2)
+68DA2193:Passive 31 (Type 1)
+1FDD1105:Passive 31 (Type 2)
+29403F66:Passive 32 (Type 1)
+5E470FF0:Passive 32 (Type 2)
+C74E5E4A:Passive 33 (Type 1)
+B0496EDC:Passive 33 (Type 2)
+2E2DFB7F:Passive 34 (Type 1)
+FC6E090F:Passive 34 (Type 2)
+592ACBE9:Passive 35 (Type 1)
+C0239A53:Passive 35 (Type 2)
+279BB754:Passive 36 (Type 1)
+B724AAC5:Passive 36 (Type 2)
+509C87C2:Passive 37 (Type 1)
+0E04D1D2:Passive 37 (Type 2)
+305B0E27:Passive 38
+475C3EB1:Passive 39
+A9525F9D:Passive 40 (Type 1)
+DE556F0B:Passive 40 (Type 2)
+3736CA3E:Passive 41 (Type 1)
+4031FAA8:Passive 41 (Type 2)
+AE3F9B84:Passive 42 (Type 1)
+D938AB12:Passive 42 (Type 2)
+4987B683:Passive 43 (Type 1)
+3E808615:Passive 43 (Type 2)
+1B765DE4:Passive 44 (Type 1)
+6C716D72:Passive 44 (Type 2)
+F5783CC8:Passive 45 (Type 1)
+827F0C5E:Passive 45 (Type 2)
+6B1CA96B:Passive 46 (Type 1)
+1C1B99FD:Passive 46 (Type 2)
+8512C847:Passive 47 (Type 1)
+F215F8D1:Passive 47 (Type 2)
+62AAE540:Passive 48 (Type 1)
+15ADD5D6:Passive 48 (Type 2)
+026D6CA5:Passive 49 (Type 1)
+756A5C33:Passive 49 (Type 2)
+9B643D1F:Passive 50 (Type 1)
+EC630D89:Passive 50 (Type 2)
+0500A8BC:Passive 51 (Type 1)
+7207982A:Passive 51 (Type 2)
+EB0EC990:Passive 52 (Type 1)
+9C09F906:Passive 52 (Type 2)
+7BB1D401:Passive 53 (Type 1)
+0CB6E497:Passive 53 (Type 2)
+F2F240FC:Passive 54 (Type 1)
+85F5706A:Passive 54 (Type 2)
+6BFB1146:Passive 55 (Type 1)
+1CFC21D0:Passive 55 (Type 2)
+8298B473:Passive 56
+F59F84E5:Passive 57 (Type 1)
+6C96D55F:Passive 57 (Type 2)
+1B91E5C9:Passive 58 (Type 1)
+8B2EF858:Passive 58 (Type 2)
+FC29C8CE:Passive 59 (Type 1)
+9CEE412B:Passive 59 (Type 2)
+EBE971BD:Passive 60 (Type 1)
+72E02007:Passive 60 (Type 2)
+05E71091:Passive 61 (Type 1)
+9B838532:Passive 61 (Type 2)
+EC84B5A4:Passive 62 (Type 1)
+758DE41E:Passive 62 (Type 2)
+028AD488:Passive 63 (Type 1)
+9235C919:Passive 63 (Type 2)
+E532F98F:Passive 64 (Type 1)
+4CEE9055:Passive 64 (Type 2)
+3BE9A0C3:Passive 65 (Type 1)
+A2E0F179:Passive 65 (Type 2)
+D5E7C1EF:Passive 66 (Type 1)
+4B83544C:Passive 66 (Type 2)
+3C8464DA:Passive 67 (Type 1)
+A58D3560:Passive 67 (Type 2)
+D28A05F6:Passive 68 (Type 1)
+42351867:Passive 68 (Type 2)
+353228F1:Passive 69 (Type 1)
+55F5A114:Passive 69 (Type 2)
+</DropDownList>
+              <GroupHeader>1</GroupHeader>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>112</ID>
+              <Description>"PassiveHeroListDropDownData"</Description>
+              <DropDownList DisplayValueAsItem="1">5C2AF11A:Hero Passive 01
+6BF40128:Hero Passive 04
+2122BE90:Hero Passive 08 (Type 1)
+2894F2BB:Hero Passive 08 (Type 2)
+999ED9F5:Hero Passive 09
+EE284FFD:Hero Passive 17
+FC9DE013:Hero Passive 18
+1C429720:Hero Passive 20
+845A23F9:Hero Passive 21
+6A5442D5:Hero Passive 22
+6D3986CC:Hero Passive 24
+8A81ABCB:Hero Passive 25
+9D4112B8:Hero Passive 26
+734F7394:Hero Passive 27
+9A2CD6A1:Hero Passive 28
+3EE1D416:Hero Passive 30
+939A9A8A:Hero Passive 31 (Type 1)
+E49DAA1C:Hero Passive 31 (Type 2)
+A507B4E9:Hero Passive 32
+9E74A7E8:Hero Passive 34
+6C1E7F35:Hero Passive 37
+5212E484:Hero Passive 40
+BB7141B1:Hero Passive 41
+793FB747:Hero Passive 45 (Type 1)
+0E64FCA7:Hero Passive 45 (Type 2)
+905C1272:Hero Passive 46 (Type 1)
+2B0FA37B:Hero Passive 46 (Type 2)
+EEED6ECF:Hero Passive 48 (Type 1)
+99EA5E59:Hero Passive 48 (Type 2)
+80F16F18:Hero Passive 53
+E7BC9AC9:Hero Passive 55
+0EDF3FFC:Hero Passive 57
+706E4341:Hero Passive 58
+67AEFA32:Hero Passive 59
+1E724296:Hero Passive 64 (Type 1)
+B7AE2B4C:Hero Passive 64 (Type 2)
+1FBC8477:Hero Passive 67
+FF63F344:Hero Passive 68
+07B7F21B:Hero Passive 69
+</DropDownList>
+              <GroupHeader>1</GroupHeader>
+            </CheatEntry>
+          </CheatEntries>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>106</ID>
+          <Description>"Player Summon"</Description>
+          <Options moHideChildren="1"/>
+          <VariableType>Auto Assembler Script</VariableType>
+          <AssemblerScript>/*
+How to use this script :
+https://www.youtube.com/watch?v=BeWccO06N80&amp;list=PL03h91jY8sapT1dknpUtyBPvi0hum_vZt
+*/
+
+[ENABLE]
+//active when open Abilearn Board
+//close-open Abilearn Board for refresh Passive
+//use for Player summon from spirit
+aobscanmodule(INJECTpassivetype,nie.exe,42 8B 9C AD * * 00 00)
+alloc(newmem,$1000,INJECTpassivetype)
+label(code passiveTypeAdr mempassivetypeBck)
+label(return)
+newmem:
+  db 4A 8D 9C
+  readMem(INJECTpassivetype+3,5)
+  push rax
+  push r8
+  mov r8,passiveTypeAdr
+  lea rax,[r8+r13*8]
+  mov [rax],rbx
+  pop r8
+  pop rax
+code:
+  readMem(INJECTpassivetype,8)
+  jmp return
+mempassivetypeBck:
+  readMem(INJECTpassivetype,8)
+passiveTypeAdr:
+  dq 0
+INJECTpassivetype:
+  jmp newmem
+  nop 3
+return:
+registersymbol(INJECTpassivetype)
+registersymbol(mempassivetypeBck passiveTypeAdr)
+[DISABLE]
+INJECTpassivetype:
+  readMem(mempassivetypeBck,8)
+unregistersymbol(INJECTpassivetype)
+unregistersymbol(mempassivetypeBck passiveTypeAdr)
+dealloc(newmem)
+
+{
+// ORIGINAL CODE - INJECTION POINT: nie.exe+D8BFB6
+
+nie.exe+D8BF87: 48 8B B7 18 0C 00 00     - mov rsi,[rdi+00000C18]
+nie.exe+D8BF8E: 41 81 E7 00 04 00 00     - and r15d,00000400
+nie.exe+D8BF95: 83 F8 06                 - cmp eax,06
+nie.exe+D8BF98: 0F 85 BD 00 00 00        - jne nie.exe+D8C05B
+nie.exe+D8BF9E: 45 85 FF                 - test r15d,r15d
+nie.exe+D8BFA1: 74 20                    - je nie.exe+D8BFC3
+nie.exe+D8BFA3: 48 85 ED                 - test rbp,rbp
+nie.exe+D8BFA6: 0F 84 21 01 00 00        - je nie.exe+D8C0CD
+nie.exe+D8BFAC: 41 83 FD 05              - cmp r13d,05
+nie.exe+D8BFB0: 0F 83 17 01 00 00        - jae nie.exe+D8C0CD
+// ---------- INJECTING HERE ----------
+nie.exe+D8BFB6: 42 8B 9C AD E0 01 00 00  - mov ebx,[rbp+r13*4+000001E0]
+// ---------- DONE INJECTING  ----------
+nie.exe+D8BFBE: E9 0A 01 00 00           - jmp nie.exe+D8C0CD
+nie.exe+D8BFC3: 49 8B 46 10              - mov rax,[r14+10]
+nie.exe+D8BFC7: 41 83 FD 02              - cmp r13d,02
+nie.exe+D8BFCB: 73 47                    - jae nie.exe+D8C014
+nie.exe+D8BFCD: 4C 63 80 38 01 00 00     - movsxd  r8,dword ptr [rax+00000138]
+nie.exe+D8BFD4: 44 89 44 24 60           - mov [rsp+60],r8d
+nie.exe+D8BFD9: 45 85 C0                 - test r8d,r8d
+nie.exe+D8BFDC: 0F 88 F3 00 00 00        - js nie.exe+D8C0D5
+nie.exe+D8BFE2: 49 0F BF C0              - movsx rax,r8w
+nie.exe+D8BFE6: 85 C0                    - test eax,eax
+}
+
+</AssemblerScript>
+          <CheatEntries>
+            <CheatEntry>
+              <ID>124</ID>
+              <Description>"Note : active when open Abilearn Board or Mouse Hover to Player"</Description>
+              <GroupHeader>1</GroupHeader>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>125</ID>
+              <Description>"Note : close-open Abilearn Board for refresh Passive"</Description>
+              <GroupHeader>1</GroupHeader>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>109</ID>
+              <Description>"Note : use for Player summon from spirit"</Description>
+              <GroupHeader>1</GroupHeader>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>113</ID>
+              <Description>"Passive 1 ID"</Description>
+              <DropDownListLink>PassiveListDropDownData</DropDownListLink>
+              <ShowAsHex>1</ShowAsHex>
+              <ShowAsSigned>0</ShowAsSigned>
+              <VariableType>4 Bytes</VariableType>
+              <Address>passiveTypeAdr</Address>
+              <Offsets>
+                <Offset>0</Offset>
+              </Offsets>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>114</ID>
+              <Description>"Passive 2 ID"</Description>
+              <DropDownListLink>PassiveListDropDownData</DropDownListLink>
+              <ShowAsHex>1</ShowAsHex>
+              <ShowAsSigned>0</ShowAsSigned>
+              <VariableType>4 Bytes</VariableType>
+              <Address>passiveTypeAdr+8</Address>
+              <Offsets>
+                <Offset>0</Offset>
+              </Offsets>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>115</ID>
+              <Description>"Passive 3 ID"</Description>
+              <DropDownListLink>PassiveListDropDownData</DropDownListLink>
+              <ShowAsHex>1</ShowAsHex>
+              <ShowAsSigned>0</ShowAsSigned>
+              <VariableType>4 Bytes</VariableType>
+              <Address>passiveTypeAdr+10</Address>
+              <Offsets>
+                <Offset>0</Offset>
+              </Offsets>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>116</ID>
+              <Description>"Passive 4 ID"</Description>
+              <DropDownListLink>PassiveListDropDownData</DropDownListLink>
+              <ShowAsHex>1</ShowAsHex>
+              <ShowAsSigned>0</ShowAsSigned>
+              <VariableType>4 Bytes</VariableType>
+              <Address>passiveTypeAdr+18</Address>
+              <Offsets>
+                <Offset>0</Offset>
+              </Offsets>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>117</ID>
+              <Description>"Passive 5 ID"</Description>
+              <DropDownListLink>PassiveListDropDownData</DropDownListLink>
+              <ShowAsHex>1</ShowAsHex>
+              <ShowAsSigned>0</ShowAsSigned>
+              <VariableType>4 Bytes</VariableType>
+              <Address>passiveTypeAdr+20</Address>
+              <Offsets>
+                <Offset>0</Offset>
+              </Offsets>
+            </CheatEntry>
+          </CheatEntries>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>118</ID>
+          <Description>"Player Hero, Fabled"</Description>
+          <Options moHideChildren="1"/>
+          <VariableType>Auto Assembler Script</VariableType>
+          <AssemblerScript>/*
+How to use this script :
+https://www.youtube.com/watch?v=BeWccO06N80&amp;list=PL03h91jY8sapT1dknpUtyBPvi0hum_vZt
+*/
+
+[ENABLE]
+//active when open Abilearn Board
+aobscanmodule(INJECTpassivetypehero,nie.exe,45 85 FF 75 03 4? 8B 3?)
+alloc(newmem,$1000,INJECTpassivetypehero)
+label(code codeF mempassivetypeheroBck passiveTypeHeroAdr)
+label(cfPassivetypeheroFabled)
+label(return)
+newmem:
+  jne return
+  mov r15,rsi
+  cmp edi,1
+  jne @f
+  mov [passiveTypeHeroAdr],r15
+@@:
+  cmp edi,3
+  jne @f
+  mov [passiveTypeHeroAdr+8],r15
+@@:
+  cmp [cfPassivetypeheroFabled],1
+  je codeF
+  cmp edi,7
+  jne @f
+  mov [passiveTypeHeroAdr+10],r15
+@@:
+  cmp edi,B
+  jne @f
+  mov [passiveTypeHeroAdr+18],r15
+@@:
+  cmp edi,E
+  jne code
+  mov [passiveTypeHeroAdr+20],r15
+  jmp code
+codeF:
+//Fabled
+  cmp edi,8
+  jne @f
+  mov [passiveTypeHeroAdr+10],r15
+@@:
+  cmp edi,C
+  jne @f
+  mov [passiveTypeHeroAdr+18],r15
+@@:
+  cmp edi,F
+  jne code
+  mov [passiveTypeHeroAdr+20],r15
+code:
+  readMem(INJECTpassivetypehero+5,3)
+  jmp return
+mempassivetypeheroBck:
+  readMem(INJECTpassivetypehero+3,5)
+cfPassivetypeheroFabled:
+  dd 0 //Hero-Type (0 = Hero, 1 = Fabled)
+passiveTypeHeroAdr:
+  dq 0
+INJECTpassivetypehero+3:
+  jmp newmem
+return:
+registersymbol(INJECTpassivetypehero)
+registersymbol(mempassivetypeheroBck passiveTypeHeroAdr cfPassivetypeheroFabled)
+[DISABLE]
+INJECTpassivetypehero+3:
+  readMem(mempassivetypeheroBck,5)
+unregistersymbol(INJECTpassivetypehero)
+unregistersymbol(mempassivetypeheroBck passiveTypeHeroAdr cfPassivetypeheroFabled)
+dealloc(newmem)
+
+{
+// ORIGINAL CODE - INJECTION POINT: nie.exe+EF124A
+
+nie.exe+EF1226: 48 8B D6              - mov rdx,rsi
+nie.exe+EF1229: 48 8D 4D C0           - lea rcx,[rbp-40]
+nie.exe+EF122D: F3 0F 2C C2           - cvttss2si eax,xmm2
+nie.exe+EF1231: 89 44 24 68           - mov [rsp+68],eax
+nie.exe+EF1235: E8 F6 49 52 00        - call nie.exe+1415C30
+nie.exe+EF123A: 48 8B 75 C0           - mov rsi,[rbp-40]
+nie.exe+EF123E: 48 85 F6              - test rsi,rsi
+nie.exe+EF1241: 74 0C                 - je nie.exe+EF124F
+nie.exe+EF1243: 44 8B 7D C8           - mov r15d,[rbp-38]
+nie.exe+EF1247: 45 85 FF              - test r15d,r15d
+// ---------- INJECTING HERE ----------
+nie.exe+EF124A: 75 03                 - jne nie.exe+EF124F
+// ---------- DONE INJECTING  ----------
+nie.exe+EF124C: 44 8B 3E              - mov r15d,[rsi]
+nie.exe+EF124F: BB 01 00 00 00        - mov ebx,00000001
+nie.exe+EF1254: C6 44 24 30 00        - mov byte ptr [rsp+30],00
+nie.exe+EF1259: 8B D3                 - mov edx,ebx
+nie.exe+EF125B: 48 8D 0D 86 4C 7F 00  - lea rcx,[nie.exe+16E5EE8]
+nie.exe+EF1262: 41 B8 A5 85 25 10     - mov r8d,102585A5
+nie.exe+EF1268: E8 63 FA 16 FF        - call nie.exe+60CD0
+nie.exe+EF126D: F7 D0                 - not eax
+nie.exe+EF126F: 44 3B F8              - cmp r15d,eax
+nie.exe+EF1272: 75 16                 - jne nie.exe+EF128A
+}
+
+</AssemblerScript>
+          <CheatEntries>
+            <CheatEntry>
+              <ID>107</ID>
+              <Description>"Note : active when open Abilearn Board"</Description>
+              <GroupHeader>1</GroupHeader>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>108</ID>
+              <Description>"Note : close-open Abilearn Board for refresh Passive"</Description>
+              <GroupHeader>1</GroupHeader>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>135</ID>
+              <Description>"Select Type Hero or Fabled"</Description>
+              <DropDownList ReadOnly="1" DescriptionOnly="1" DisplayValueAsItem="1">0:Hero
+1:Fabled
+</DropDownList>
+              <ShowAsSigned>0</ShowAsSigned>
+              <VariableType>4 Bytes</VariableType>
+              <Address>cfPassivetypeheroFabled</Address>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>119</ID>
+              <Description>"Passive 1 ID"</Description>
+              <DropDownListLink>PassiveHeroListDropDownData</DropDownListLink>
+              <ShowAsHex>1</ShowAsHex>
+              <ShowAsSigned>0</ShowAsSigned>
+              <VariableType>4 Bytes</VariableType>
+              <Address>passiveTypeHeroAdr</Address>
+              <Offsets>
+                <Offset>0</Offset>
+              </Offsets>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>120</ID>
+              <Description>"Passive 2 ID"</Description>
+              <DropDownListLink>PassiveHeroListDropDownData</DropDownListLink>
+              <ShowAsHex>1</ShowAsHex>
+              <ShowAsSigned>0</ShowAsSigned>
+              <VariableType>4 Bytes</VariableType>
+              <Address>passiveTypeHeroAdr+8</Address>
+              <Offsets>
+                <Offset>0</Offset>
+              </Offsets>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>121</ID>
+              <Description>"Passive 3 ID"</Description>
+              <DropDownListLink>PassiveHeroListDropDownData</DropDownListLink>
+              <ShowAsHex>1</ShowAsHex>
+              <ShowAsSigned>0</ShowAsSigned>
+              <VariableType>4 Bytes</VariableType>
+              <Address>passiveTypeHeroAdr+10</Address>
+              <Offsets>
+                <Offset>0</Offset>
+              </Offsets>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>122</ID>
+              <Description>"Passive 4 ID"</Description>
+              <DropDownListLink>PassiveHeroListDropDownData</DropDownListLink>
+              <ShowAsHex>1</ShowAsHex>
+              <ShowAsSigned>0</ShowAsSigned>
+              <VariableType>4 Bytes</VariableType>
+              <Address>passiveTypeHeroAdr+18</Address>
+              <Offsets>
+                <Offset>0</Offset>
+              </Offsets>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>123</ID>
+              <Description>"Passive 5 ID"</Description>
+              <DropDownListLink>PassiveHeroListDropDownData</DropDownListLink>
+              <ShowAsHex>1</ShowAsHex>
+              <ShowAsSigned>0</ShowAsSigned>
+              <VariableType>4 Bytes</VariableType>
+              <Address>passiveTypeHeroAdr+20</Address>
+              <Offsets>
+                <Offset>0</Offset>
+              </Offsets>
+            </CheatEntry>
+          </CheatEntries>
+        </CheatEntry>
+      </CheatEntries>
+    </CheatEntry>
+  </CheatEntries>
+  <UserdefinedSymbols/>
+</CheatTable>
