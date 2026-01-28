@@ -1,2 +1,5 @@
-1.5.1
-- Fixed Tutorial and CT files not found
+1.6.0
+- Fixed multiple options to work with the update 3.0.1
+- Added support for basara seeds multiplier
+- Added 2 options to increase custom basara spirits
+- Some options set Under Maintenance
