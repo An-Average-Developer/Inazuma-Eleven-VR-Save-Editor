@@ -33,6 +33,8 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
         private bool _isSpiritsFrozen = false;
         private bool _isSpiritIncrementEnabled = false;
         private bool _isEliteSpiritIncrementEnabled = false;
+        private bool _isCustomBaseSpiritIncrementEnabled = false;
+        private bool _isCustomHeroSpiritIncrementEnabled = false;
         private bool _isStoreItemMultiplierEnabled = false;
         private bool _isPassiveValueEditingEnabled = false;
         private bool _isUnlimitedSpiritsEnabled = false;
@@ -43,10 +45,10 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
         // Individual maintenance flags for each card
         private bool _isStarsUnderMaintenance = true;
         private bool _isFlowersUnderMaintenance = true;
-        private bool _isSpiritsUnderMaintenance = false;
+        private bool _isSpiritsUnderMaintenance = true;
         private bool _isBeansUnderMaintenance = true;
         private bool _isVictoryItemsUnderMaintenance = true;
-        private bool _isPassiveValuesUnderMaintenance = false;
+        private bool _isPassiveValuesUnderMaintenance = true;
 
         // Individual maintenance flags for toggle options
         private bool _isFreezeItemsUnderMaintenance = false;
@@ -54,12 +56,37 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
         private bool _isStoreMultiplierUnderMaintenance = false;
         private bool _isFreezeSpiritsUnderMaintenance = false;
         private bool _isIncrementSpiritsUnderMaintenance = false;
+        private bool _isIncrementEliteSpiritsUnderMaintenance = false;
+        private bool _isCustomBaseSpiritIncrementUnderMaintenance = false;
+        private bool _isCustomHeroSpiritIncrementUnderMaintenance = false;
         private bool _isUnlimitedHeroesUnderMaintenance = false;
-        private bool _isUnlimitedHeroesEnabled = false;
+        private bool _isUnlimitedHeroesEnabled = true;
         private bool _isFreeBuySpiritMarketEnabled = false;
+        private bool _isFreeBuySpiritMarketUnderMaintenance = true;
+        private bool _isPlayerSpiritsUnderMaintenance = true;
         private bool _isFreeBuyShopEnabled = false;
-        private bool _isFreeBuyShopUnderMaintenance = false;
+        private bool _isFreeBuyShopUnderMaintenance = true;
         private bool _isPlayerLevelUnderMaintenance = false;
+
+        // Hidden flags for cards
+        private bool _isFreezeItemsHidden = false;
+        private bool _isIncrementItemsHidden = false;
+        private bool _isStoreMultiplierHidden = false;
+        private bool _isStarsHidden = true;
+        private bool _isFlowersHidden = true;
+        private bool _isBeansHidden = true;
+        private bool _isVictoryItemsHidden = true;
+        private bool _isFreezeSpiritsHidden = false;
+        private bool _isIncrementSpiritsHidden = false;
+        private bool _isIncrementEliteSpiritsHidden = false;
+        private bool _isSpiritsHidden = false;
+        private bool _isPlayerSpiritsHidden = false;
+        private bool _isFreeBuySpiritMarketHidden = false;
+        private bool _isFreeBuyShopHidden = false;
+        private bool _isUnlimitedHeroesHidden = false;
+        private bool _isPlayerLevelHidden = false;
+        private bool _isPassiveValuesHidden = false;
+        private bool _isCustomPassivesHidden = false;
 
         // Passive value tracking
         private string _passiveValueType = "Unknown";
@@ -74,30 +101,29 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
         private string _customPassive3 = "";
         private string _customPassive4 = "";
         private string _customPassive5 = "";
-        private bool _isCustomPassivesUnderMaintenance = false;
+        private bool _isCustomPassivesUnderMaintenance = true;
 
         // Tutorials
         private TutorialsViewModel? _tutorialsViewModel;
         private string _currentTutorialFeature = "";
 
-        private const long STAR_FREEZE_ADDRESS = 0xDA2FEC;
+        private const long STAR_FREEZE_ADDRESS = 0xCA1F76;
 
-        private const long FLOWER_INCREMENT_ADDRESS = 0xDA2FE4;
+        private const long FLOWER_INCREMENT_ADDRESS = 0xCA1F69;
 
-        private const long SPIRIT_FREEZE_ADDRESS = 0xCF1F3A;
-        private const long ELITE_SPIRIT_FREEZE_ADDRESS = 0xCF1E37;
+        private const long SPIRIT_FREEZE_ADDRESS = 0xCD19DB;
+        private const long ELITE_SPIRIT_FREEZE_ADDRESS = 0xCD1917;
 
-        private static readonly byte[] FREEZE_BYTES = new byte[] { 0x90, 0x90, 0x90 };
-        private static readonly byte[] ORIGINAL_BYTES = new byte[] { 0x89, 0x50, 0x10 };
+        private static readonly byte[] FREEZE_BYTES = new byte[] { 0x90, 0x90, 0x90, 0x90 };
+        private static readonly byte[] ORIGINAL_BYTES = new byte[] { 0x44, 0x89, 0x40, 0x10, };
 
         private static readonly byte[] FLOWER_ORIGINAL_BYTES = new byte[] { 0x2B, 0xCD };
         private static readonly byte[] FLOWER_INCREMENT_BYTES = new byte[] { 0x03, 0xCD };
 
-        private static readonly byte[] SPIRIT_ORIGINAL_BYTES = new byte[] { 0x66, 0x89, 0x68, 0x0C };
-
+        private static readonly byte[] SPIRIT_ORIGINAL_BYTES = new byte[] { 0x66, 0x89, 0x70, 0x10 };
         private static readonly byte[] SPIRIT_FREEZE_BYTES = new byte[] { 0x90, 0x90, 0x90, 0x90 };
 
-        private static readonly byte[] ELITE_SPIRIT_ORIGINAL_BYTES = new byte[] { 0x66, 0x41, 0x89, 0x6C, 0x78, 0x10 };
+        private static readonly byte[] ELITE_SPIRIT_ORIGINAL_BYTES = new byte[] { 0x66, 0x41, 0x89, 0x74, 0x42, 0x14 };
         private static readonly byte[] ELITE_SPIRIT_FREEZE_BYTES = new byte[] { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 };
 
         public MemoryEditorViewModel()
@@ -183,6 +209,8 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
             ToggleSpiritsFreezeCommand = new RelayCommand(ToggleSpiritsFreeze, CanToggleSpiritsFreeze);
             ToggleSpiritIncrementCommand = new RelayCommand(ToggleSpiritIncrement, CanToggleSpiritIncrement);
             ToggleEliteSpiritIncrementCommand = new RelayCommand(ToggleEliteSpiritIncrement, CanToggleEliteSpiritIncrement);
+            ToggleCustomBaseSpiritIncrementCommand = new RelayCommand(ToggleCustomBaseSpiritIncrement, CanToggleCustomBaseSpiritIncrement);
+            ToggleCustomHeroSpiritIncrementCommand = new RelayCommand(ToggleCustomHeroSpiritIncrement, CanToggleCustomHeroSpiritIncrement);
             ToggleStoreItemMultiplierCommand = new RelayCommand(ToggleStoreItemMultiplier, CanToggleStoreItemMultiplier);
             ToggleUnlimitedSpiritsCommand = new RelayCommand(ToggleUnlimitedSpirits, CanToggleUnlimitedSpirits);
             ToggleUnlimitedHeroesCommand = new RelayCommand(ToggleUnlimitedHeroes, CanToggleUnlimitedHeroes);
@@ -220,6 +248,13 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
             AddSpiritCardCommand = new RelayCommand(AddSpiritCard, CanAddSpiritCard);
             ToggleSpiritCardCommand = new RelayCommand(ToggleSpiritCard, CanToggleSpiritCard);
             ToggleAllSpiritCardsCommand = new RelayCommand(ToggleAllSpiritCards, CanToggleAllSpiritCards);
+            SelectPlayerSpiritsEditorCommand = new RelayCommand(() =>
+            {
+                SelectedTool = "playerspirits";
+                SelectedValue = null;
+            });
+            TogglePlayerSpiritCommand = new RelayCommand(TogglePlayerSpirit, CanTogglePlayerSpirit);
+            ToggleAllPlayerSpiritsCommand = new RelayCommand(ToggleAllPlayerSpirits, CanToggleAllPlayerSpirits);
             TogglePlayerLevelCommand = new RelayCommand(TogglePlayerLevel, CanTogglePlayerLevel);
             ApplyPlayerLevelCommand = new RelayCommand(ApplyPlayerLevel, CanApplyPlayerLevel);
             SelectCustomPassivesEditorCommand = new RelayCommand(() =>
@@ -468,6 +503,43 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
                 new SpiritCardInfo { Name = "Zanark Avalonic", Variant = "Red", SpiritId = 0xA70E177A }
             };
 
+            // Initialize Player Spirits Collection with all player spirit IDs from the Cheat Engine script
+            PlayerSpiritsCollection = new ObservableCollection<PlayerSpiritInfo>
+            {
+                new PlayerSpiritInfo { Name = "Arion Sherwind", MixDescription = "Arion x King Arthur", PlayerId = 0x489A980B },
+                new PlayerSpiritInfo { Name = "Arion Sherwind", MixDescription = "Arion x Victor", PlayerId = 0xC4DB5F07 },
+                new PlayerSpiritInfo { Name = "Arion Sherwind", MixDescription = "Arion x Mark", PlayerId = 0x8B9AC9C0 },
+                new PlayerSpiritInfo { Name = "Riccardo Di Rigo", MixDescription = "Riccardo x Nobunaga", PlayerId = 0x061964FB },
+                new PlayerSpiritInfo { Name = "Riccardo Di Rigo", MixDescription = "Riccardo x Gabi", PlayerId = 0xEFF60CC4 },
+                new PlayerSpiritInfo { Name = "Victor Blade", MixDescription = "Victor x Soji", PlayerId = 0x7AACFA89 },
+                new PlayerSpiritInfo { Name = "Victor Blade", MixDescription = "Victor x Bailong", PlayerId = 0xB9ACAB42 },
+                new PlayerSpiritInfo { Name = "Vladimir Blade", MixDescription = "Vladimir x Victor", PlayerId = 0x5043C37D },
+                new PlayerSpiritInfo { Name = "Gabriel Garcia", MixDescription = "Gabi x Juana de Arco", PlayerId = 0x1F0255BA },
+                new PlayerSpiritInfo { Name = "Gabriel Garcia", MixDescription = "Gabi x Aitor", PlayerId = 0xF6ED3D85 },
+                new PlayerSpiritInfo { Name = "Goldie Lemmon", MixDescription = "Goldie x Reina de los Dragones", PlayerId = 0x5181A94A },
+                new PlayerSpiritInfo { Name = "Jean-Pierre Lapin", MixDescription = "JP x Liu Bei", PlayerId = 0x2D343738 },
+                new PlayerSpiritInfo { Name = "Ryoma Nishiki", MixDescription = "Roma x Ryoma", PlayerId = 0x63B7CBC8 },
+                new PlayerSpiritInfo { Name = "Fei Rune", MixDescription = "Fei x T-REX", PlayerId = 0x7B6E90BE },
+                new PlayerSpiritInfo { Name = "Fei Rune", MixDescription = "Fei x Big", PlayerId = 0xB3B71AB6 },
+                new PlayerSpiritInfo { Name = "Sor", MixDescription = "Sor x Padre de Sor", PlayerId = 0xAAAC2BF7 },
+                new PlayerSpiritInfo { Name = "Zanark Avalonic", MixDescription = "Zanark x Cao Cao", PlayerId = 0x1EC03F8D },
+                new PlayerSpiritInfo { Name = "Zanark Avalonic", MixDescription = "Zanark x Zeta", PlayerId = 0x35ED6C4E },
+                new PlayerSpiritInfo { Name = "Sol Daystar", MixDescription = "Sol x Zhuge Liang", PlayerId = 0x342F0679 },
+                new PlayerSpiritInfo { Name = "Bailong", MixDescription = "Bailong x Zhuge Liang", PlayerId = 0x07DB0ECC },
+                new PlayerSpiritInfo { Name = "Bailong", MixDescription = "Bailong x Tezcat", PlayerId = 0xA0B79A03 },
+                new PlayerSpiritInfo { Name = "Axel Blaze", MixDescription = "Axel x Shawn", PlayerId = 0x9281F881 },
+                new PlayerSpiritInfo { Name = "Jude Sharp", MixDescription = "Jude x Caleb", PlayerId = 0x1519E44E },
+                new PlayerSpiritInfo { Name = "Mike", MixDescription = "Miximaxed x Zanark", PlayerId = 0x79282EE7 },
+                new PlayerSpiritInfo { Name = "Gamma", MixDescription = "Miximaxed x Zanark", PlayerId = 0x60331FA6 },
+                new PlayerSpiritInfo { Name = "Juliet", MixDescription = "Miximaxed x Zanark", PlayerId = 0xB033CED8 },
+                new PlayerSpiritInfo { Name = "November", MixDescription = "Miximaxed x Zanark", PlayerId = 0x2EB0E356 },
+                new PlayerSpiritInfo { Name = "Quebec", MixDescription = "Miximaxed x Zanark", PlayerId = 0x1C8681D4 },
+                new PlayerSpiritInfo { Name = "Romeo", MixDescription = "Miximaxed x Zanark", PlayerId = 0x78EA44D0 },
+                new PlayerSpiritInfo { Name = "Desmodus Drakul", MixDescription = "Mix 'n' Match", PlayerId = 0x02941849 },
+                new PlayerSpiritInfo { Name = "Wolfram Vulpeen", MixDescription = "Mix 'n' Match", PlayerId = 0x4DD58E8E },
+                new PlayerSpiritInfo { Name = "Simeon Ayp", MixDescription = "Mix 'n' Match", PlayerId = 0x54CEBFCF }
+            };
+
             // Initialize AllPassiveIds collection with both normal and hero passives
             AllPassiveIds = new ObservableCollection<PassiveIdInfo>
             {
@@ -701,6 +773,8 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
 
         public ObservableCollection<SpiritCardInfo> SpiritCardsCollection { get; }
 
+        public ObservableCollection<PlayerSpiritInfo> PlayerSpiritsCollection { get; }
+
         public ObservableCollection<ItemInfo> WorkingItems { get; }
 
         public ObservableCollection<PassiveIdInfo> AllPassiveIds { get; }
@@ -880,6 +954,8 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
         public ICommand ToggleSpiritsFreezeCommand { get; }
         public ICommand ToggleSpiritIncrementCommand { get; }
         public ICommand ToggleEliteSpiritIncrementCommand { get; }
+        public ICommand ToggleCustomBaseSpiritIncrementCommand { get; }
+        public ICommand ToggleCustomHeroSpiritIncrementCommand { get; }
         public ICommand ToggleStoreItemMultiplierCommand { get; }
         public ICommand ToggleUnlimitedSpiritsCommand { get; }
         public ICommand ToggleUnlimitedHeroesCommand { get; }
@@ -895,6 +971,9 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
         public ICommand AddSpiritCardCommand { get; }
         public ICommand ToggleSpiritCardCommand { get; }
         public ICommand ToggleAllSpiritCardsCommand { get; }
+        public ICommand SelectPlayerSpiritsEditorCommand { get; }
+        public ICommand TogglePlayerSpiritCommand { get; }
+        public ICommand ToggleAllPlayerSpiritsCommand { get; }
         public ICommand TogglePlayerLevelCommand { get; }
         public ICommand ApplyPlayerLevelCommand { get; }
         public ICommand SelectCustomPassivesEditorCommand { get; }
@@ -936,6 +1015,9 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
                 ((RelayCommand)ToggleSpiritsFreezeCommand).RaiseCanExecuteChanged();
                 ((RelayCommand)ToggleSpiritIncrementCommand).RaiseCanExecuteChanged();
                 ((RelayCommand)ToggleEliteSpiritIncrementCommand).RaiseCanExecuteChanged();
+                ((RelayCommand)ToggleCustomBaseSpiritIncrementCommand).RaiseCanExecuteChanged();
+                ((RelayCommand)ToggleCustomHeroSpiritIncrementCommand).RaiseCanExecuteChanged();
+                ((RelayCommand)ToggleStoreItemMultiplierCommand).RaiseCanExecuteChanged();
             }
         }
 
@@ -949,6 +1031,9 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
                 ((RelayCommand)ToggleSpiritIncrementCommand).RaiseCanExecuteChanged();
                 ((RelayCommand)ToggleSpiritsFreezeCommand).RaiseCanExecuteChanged();
                 ((RelayCommand)ToggleEliteSpiritIncrementCommand).RaiseCanExecuteChanged();
+                ((RelayCommand)ToggleCustomBaseSpiritIncrementCommand).RaiseCanExecuteChanged();
+                ((RelayCommand)ToggleCustomHeroSpiritIncrementCommand).RaiseCanExecuteChanged();
+                ((RelayCommand)ToggleStoreItemMultiplierCommand).RaiseCanExecuteChanged();
             }
         }
 
@@ -962,6 +1047,41 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
                 ((RelayCommand)ToggleEliteSpiritIncrementCommand).RaiseCanExecuteChanged();
                 ((RelayCommand)ToggleSpiritIncrementCommand).RaiseCanExecuteChanged();
                 ((RelayCommand)ToggleSpiritsFreezeCommand).RaiseCanExecuteChanged();
+                ((RelayCommand)ToggleCustomBaseSpiritIncrementCommand).RaiseCanExecuteChanged();
+                ((RelayCommand)ToggleCustomHeroSpiritIncrementCommand).RaiseCanExecuteChanged();
+                ((RelayCommand)ToggleStoreItemMultiplierCommand).RaiseCanExecuteChanged();
+            }
+        }
+
+        public bool IsCustomBaseSpiritIncrementEnabled
+        {
+            get => _isCustomBaseSpiritIncrementEnabled;
+            set
+            {
+                _isCustomBaseSpiritIncrementEnabled = value;
+                OnPropertyChanged();
+                ((RelayCommand)ToggleCustomBaseSpiritIncrementCommand).RaiseCanExecuteChanged();
+                ((RelayCommand)ToggleSpiritsFreezeCommand).RaiseCanExecuteChanged();
+                ((RelayCommand)ToggleSpiritIncrementCommand).RaiseCanExecuteChanged();
+                ((RelayCommand)ToggleEliteSpiritIncrementCommand).RaiseCanExecuteChanged();
+                ((RelayCommand)ToggleCustomHeroSpiritIncrementCommand).RaiseCanExecuteChanged();
+                ((RelayCommand)ToggleStoreItemMultiplierCommand).RaiseCanExecuteChanged();
+            }
+        }
+
+        public bool IsCustomHeroSpiritIncrementEnabled
+        {
+            get => _isCustomHeroSpiritIncrementEnabled;
+            set
+            {
+                _isCustomHeroSpiritIncrementEnabled = value;
+                OnPropertyChanged();
+                ((RelayCommand)ToggleCustomHeroSpiritIncrementCommand).RaiseCanExecuteChanged();
+                ((RelayCommand)ToggleSpiritsFreezeCommand).RaiseCanExecuteChanged();
+                ((RelayCommand)ToggleSpiritIncrementCommand).RaiseCanExecuteChanged();
+                ((RelayCommand)ToggleEliteSpiritIncrementCommand).RaiseCanExecuteChanged();
+                ((RelayCommand)ToggleCustomBaseSpiritIncrementCommand).RaiseCanExecuteChanged();
+                ((RelayCommand)ToggleStoreItemMultiplierCommand).RaiseCanExecuteChanged();
             }
         }
 
@@ -973,6 +1093,11 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
                 _isStoreItemMultiplierEnabled = value;
                 OnPropertyChanged();
                 ((RelayCommand)ToggleStoreItemMultiplierCommand).RaiseCanExecuteChanged();
+                ((RelayCommand)ToggleSpiritsFreezeCommand).RaiseCanExecuteChanged();
+                ((RelayCommand)ToggleSpiritIncrementCommand).RaiseCanExecuteChanged();
+                ((RelayCommand)ToggleEliteSpiritIncrementCommand).RaiseCanExecuteChanged();
+                ((RelayCommand)ToggleCustomBaseSpiritIncrementCommand).RaiseCanExecuteChanged();
+                ((RelayCommand)ToggleCustomHeroSpiritIncrementCommand).RaiseCanExecuteChanged();
             }
         }
 
@@ -1181,6 +1306,26 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
             }
         }
 
+        public bool IsFreeBuySpiritMarketUnderMaintenance
+        {
+            get => _isFreeBuySpiritMarketUnderMaintenance;
+            set
+            {
+                _isFreeBuySpiritMarketUnderMaintenance = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public bool IsPlayerSpiritsUnderMaintenance
+        {
+            get => _isPlayerSpiritsUnderMaintenance;
+            set
+            {
+                _isPlayerSpiritsUnderMaintenance = value;
+                OnPropertyChanged();
+            }
+        }
+
         public bool IsFreeBuyShopEnabled
         {
             get => _isFreeBuyShopEnabled;
@@ -1210,6 +1355,56 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
                 OnPropertyChanged();
             }
         }
+
+        public bool IsIncrementEliteSpiritsUnderMaintenance
+        {
+            get => _isIncrementEliteSpiritsUnderMaintenance;
+            set
+            {
+                _isIncrementEliteSpiritsUnderMaintenance = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public bool IsCustomBaseSpiritIncrementUnderMaintenance
+        {
+            get => _isCustomBaseSpiritIncrementUnderMaintenance;
+            set
+            {
+                _isCustomBaseSpiritIncrementUnderMaintenance = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public bool IsCustomHeroSpiritIncrementUnderMaintenance
+        {
+            get => _isCustomHeroSpiritIncrementUnderMaintenance;
+            set
+            {
+                _isCustomHeroSpiritIncrementUnderMaintenance = value;
+                OnPropertyChanged();
+            }
+        }
+
+        // Card visibility properties (for hiding cards)
+        public bool IsFreezeItemsVisible => !_isFreezeItemsHidden;
+        public bool IsIncrementItemsVisible => !_isIncrementItemsHidden;
+        public bool IsStoreMultiplierVisible => !_isStoreMultiplierHidden;
+        public bool IsStarsVisible => !_isStarsHidden;
+        public bool IsFlowersVisible => !_isFlowersHidden;
+        public bool IsBeansVisible => !_isBeansHidden;
+        public bool IsVictoryItemsVisible => !_isVictoryItemsHidden;
+        public bool IsFreezeSpiritsVisible => !_isFreezeSpiritsHidden;
+        public bool IsIncrementSpiritsVisible => !_isIncrementSpiritsHidden;
+        public bool IsIncrementEliteSpiritsVisible => !_isIncrementEliteSpiritsHidden;
+        public bool IsSpiritsVisible => !_isSpiritsHidden;
+        public bool IsPlayerSpiritsVisible => !_isPlayerSpiritsHidden;
+        public bool IsFreeBuySpiritMarketVisible => !_isFreeBuySpiritMarketHidden;
+        public bool IsFreeBuyShopVisible => !_isFreeBuyShopHidden;
+        public bool IsUnlimitedHeroesVisible => !_isUnlimitedHeroesHidden;
+        public bool IsPlayerLevelVisible => !_isPlayerLevelHidden;
+        public bool IsPassiveValuesVisible => !_isPassiveValuesHidden;
+        public bool IsCustomPassivesVisible => !_isCustomPassivesHidden;
 
         public bool IsPassiveValueEditingEnabled
         {
@@ -1678,7 +1873,9 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
 
         private bool CanToggleSpiritsFreeze(object? parameter)
         {
-            return IsAttached && !IsSpiritIncrementEnabled && !IsEliteSpiritIncrementEnabled;
+            return IsAttached && !IsSpiritIncrementEnabled && !IsEliteSpiritIncrementEnabled
+                && !IsCustomBaseSpiritIncrementEnabled && !IsCustomHeroSpiritIncrementEnabled
+                && !IsStoreItemMultiplierEnabled;
         }
 
         private void ToggleSpiritsFreeze(object? parameter)
@@ -1746,7 +1943,9 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
 
         private bool CanToggleSpiritIncrement(object? parameter)
         {
-            return IsAttached && !IsSpiritsFrozen && !IsEliteSpiritIncrementEnabled;
+            return IsAttached && !IsSpiritsFrozen && !IsEliteSpiritIncrementEnabled
+                && !IsCustomBaseSpiritIncrementEnabled && !IsCustomHeroSpiritIncrementEnabled
+                && !IsStoreItemMultiplierEnabled;
         }
 
         private void ToggleSpiritIncrement(object? parameter)
@@ -1810,7 +2009,9 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
 
         private bool CanToggleEliteSpiritIncrement(object? parameter)
         {
-            return IsAttached && !IsSpiritsFrozen && !IsSpiritIncrementEnabled;
+            return IsAttached && !IsSpiritsFrozen && !IsSpiritIncrementEnabled
+                && !IsCustomBaseSpiritIncrementEnabled && !IsCustomHeroSpiritIncrementEnabled
+                && !IsStoreItemMultiplierEnabled;
         }
 
         private void ToggleEliteSpiritIncrement(object? parameter)
@@ -1872,9 +2073,143 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
             }
         }
 
+        private bool CanToggleCustomBaseSpiritIncrement(object? parameter)
+        {
+            return IsAttached && !IsSpiritsFrozen && !IsSpiritIncrementEnabled
+                && !IsEliteSpiritIncrementEnabled && !IsCustomHeroSpiritIncrementEnabled
+                && !IsStoreItemMultiplierEnabled;
+        }
+
+        private void ToggleCustomBaseSpiritIncrement(object? parameter)
+        {
+            if (!IsAttached)
+                return;
+
+            try
+            {
+                bool success;
+
+                if (!IsCustomBaseSpiritIncrementEnabled)
+                {
+                    success = _memoryService.InjectEliteSpiritIncrement();
+
+                    if (success)
+                    {
+                        IsCustomBaseSpiritIncrementEnabled = true;
+                        StatusMessage = "Custom (Base) Basara increment enabled!";
+                    }
+                    else
+                    {
+                        StatusMessage = "Failed to enable Custom (Base) Basara increment";
+                        MessageBox.Show(
+                            "Failed to enable Custom (Base) Basara increment. Make sure the game is running and you are attached to the process.",
+                            "Enable Failed",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Error);
+                    }
+                }
+                else
+                {
+                    success = _memoryService.RemoveEliteSpiritIncrement();
+
+                    if (success)
+                    {
+                        IsCustomBaseSpiritIncrementEnabled = false;
+                        StatusMessage = "Custom (Base) Basara increment disabled";
+                    }
+                    else
+                    {
+                        StatusMessage = "Failed to disable Custom (Base) Basara increment";
+                        MessageBox.Show(
+                            "Failed to disable Custom (Base) Basara increment.",
+                            "Disable Failed",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Error);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Error toggling Custom (Base) Basara increment: {ex.Message}";
+                MessageBox.Show(
+                    $"Error occurred while toggling Custom (Base) Basara increment:\n\n{ex.Message}",
+                    "Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
+
+        private bool CanToggleCustomHeroSpiritIncrement(object? parameter)
+        {
+            return IsAttached && !IsSpiritsFrozen && !IsSpiritIncrementEnabled
+                && !IsEliteSpiritIncrementEnabled && !IsCustomBaseSpiritIncrementEnabled
+                && !IsStoreItemMultiplierEnabled;
+        }
+
+        private void ToggleCustomHeroSpiritIncrement(object? parameter)
+        {
+            if (!IsAttached)
+                return;
+
+            try
+            {
+                bool success;
+
+                if (!IsCustomHeroSpiritIncrementEnabled)
+                {
+                    success = _memoryService.InjectSpiritIncrement();
+
+                    if (success)
+                    {
+                        IsCustomHeroSpiritIncrementEnabled = true;
+                        StatusMessage = "Custom (Hero) Basara increment enabled!";
+                    }
+                    else
+                    {
+                        StatusMessage = "Failed to enable Custom (Hero) Basara increment";
+                        MessageBox.Show(
+                            "Failed to enable Custom (Hero) Basara increment. Make sure the game is running and you are attached to the process.",
+                            "Enable Failed",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Error);
+                    }
+                }
+                else
+                {
+                    success = _memoryService.RemoveSpiritIncrement();
+
+                    if (success)
+                    {
+                        IsCustomHeroSpiritIncrementEnabled = false;
+                        StatusMessage = "Custom (Hero) Basara increment disabled";
+                    }
+                    else
+                    {
+                        StatusMessage = "Failed to disable Custom (Hero) Basara increment";
+                        MessageBox.Show(
+                            "Failed to disable Custom (Hero) Basara increment.",
+                            "Disable Failed",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Error);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Error toggling Custom (Hero) Basara increment: {ex.Message}";
+                MessageBox.Show(
+                    $"Error occurred while toggling Custom (Hero) Basara increment:\n\n{ex.Message}",
+                    "Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
+
         private bool CanToggleStoreItemMultiplier(object? parameter)
         {
-            return IsAttached;
+            return IsAttached && !IsSpiritsFrozen && !IsSpiritIncrementEnabled
+                && !IsEliteSpiritIncrementEnabled && !IsCustomBaseSpiritIncrementEnabled
+                && !IsCustomHeroSpiritIncrementEnabled;
         }
 
         private void ToggleStoreItemMultiplier(object? parameter)
@@ -1894,6 +2229,14 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
                     {
                         IsStoreItemMultiplierEnabled = true;
                         StatusMessage = "Store item multiplier enabled - items will be multiplied by 2457 when purchased!";
+
+                        MessageBox.Show(
+                            "Store Item Multiplier has been enabled!\n\n" +
+                            "WARNING: Turn OFF this multiplier before summoning spirits!\n\n" +
+                            "Using spirit actions (summoning, etc.) while this multiplier is active will crash the game.",
+                            "Warning - Disable Before Using Spirits",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Warning);
                     }
                     else
                     {
@@ -2707,6 +3050,159 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
                 foreach (var spiritCard in SpiritCardsCollection)
                 {
                     spiritCard.IsEnabled = false;
+                }
+            }
+        }
+
+        private bool CanTogglePlayerSpirit(object? parameter)
+        {
+            return IsAttached;
+        }
+
+        private void TogglePlayerSpirit(object? parameter)
+        {
+            if (!IsAttached || parameter == null)
+                return;
+
+            var playerSpirit = parameter as PlayerSpiritInfo;
+            if (playerSpirit == null)
+                return;
+
+            try
+            {
+                if (playerSpirit.IsEnabled)
+                {
+                    // Add player spirit when toggled ON
+                    bool success = _memoryService.AddPlayerSpiritToTeam(playerSpirit.PlayerId, playerSpirit.SelectedRarity);
+
+                    if (success)
+                    {
+                        StatusMessage = $"Enabled: {playerSpirit.DisplayName} ({playerSpirit.MixDisplay}) - {playerSpirit.RarityDisplay}";
+                        MessageBox.Show(
+                            $"{playerSpirit.DisplayName} ({playerSpirit.MixDisplay}) is now enabled!\n" +
+                            $"Rarity: {playerSpirit.RarityDisplay}\n\n" +
+                            "Open Team Dock - Spirits in the game to receive this player spirit.",
+                            "Player Spirit Enabled",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Information);
+                    }
+                    else
+                    {
+                        StatusMessage = $"Failed to enable {playerSpirit.DisplayName}";
+                        playerSpirit.IsEnabled = false; // Revert toggle
+                        MessageBox.Show(
+                            $"Failed to enable {playerSpirit.DisplayName}.\n\n" +
+                            "Make sure:\n" +
+                            "1. You are attached to the game\n" +
+                            "2. You have opened Team Dock - Spirits at least once",
+                            "Error",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Error);
+                    }
+                }
+                else
+                {
+                    // Disable player spirit when toggled OFF
+                    _memoryService.ClearPlayerSpiritToAdd();
+                    StatusMessage = $"Disabled: {playerSpirit.DisplayName} ({playerSpirit.MixDisplay})";
+                }
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Error toggling player spirit: {ex.Message}";
+                playerSpirit.IsEnabled = false; // Revert toggle on error
+                MessageBox.Show(
+                    $"Error: {ex.Message}",
+                    "Exception",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
+
+        private bool CanToggleAllPlayerSpirits(object? parameter)
+        {
+            return IsAttached;
+        }
+
+        private void ToggleAllPlayerSpirits(object? parameter)
+        {
+            if (!IsAttached)
+                return;
+
+            try
+            {
+                bool enableAll = PlayerSpiritsCollection.Any(s => !s.IsEnabled);
+
+                if (enableAll)
+                {
+                    // Get the rarity from the first spirit (they should all use the same rarity when adding all)
+                    int rarity = PlayerSpiritsCollection.FirstOrDefault()?.SelectedRarity ?? 1;
+
+                    // Enable all player spirits
+                    foreach (var playerSpirit in PlayerSpiritsCollection)
+                    {
+                        playerSpirit.IsEnabled = true;
+                    }
+
+                    // Collect all player IDs
+                    List<uint> allPlayerIds = PlayerSpiritsCollection.Select(s => s.PlayerId).ToList();
+
+                    // Enable injection if needed
+                    if (!_memoryService.AddPlayerSpiritToTeam(allPlayerIds[0], rarity))
+                    {
+                        throw new Exception("Failed to enable player spirit injection");
+                    }
+
+                    // Use the Add-All mode to add all player spirits at once
+                    bool success = _memoryService.SetAllPlayerSpiritsToAdd(allPlayerIds, rarity);
+
+                    if (success)
+                    {
+                        StatusMessage = "All player spirits enabled - Open Team Dock - Spirits to receive them!";
+                        MessageBox.Show(
+                            $"All {allPlayerIds.Count} player spirits have been enabled!\n\n" +
+                            "Open Team Dock - Spirits in the game to receive the player spirits.",
+                            "All Player Spirits Enabled",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Information);
+                    }
+                    else
+                    {
+                        StatusMessage = "Failed to enable all player spirits";
+                        // Revert all toggles
+                        foreach (var playerSpirit in PlayerSpiritsCollection)
+                        {
+                            playerSpirit.IsEnabled = false;
+                        }
+                    }
+                }
+                else
+                {
+                    // Disable all player spirits
+                    foreach (var playerSpirit in PlayerSpiritsCollection)
+                    {
+                        playerSpirit.IsEnabled = false;
+                    }
+
+                    // Set back to Add-One mode with no player
+                    _memoryService.SetPlayerSpiritToAdd(0, 1);
+
+                    StatusMessage = "All player spirits disabled";
+                }
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Error toggling all player spirits: {ex.Message}";
+                MessageBox.Show(
+                    $"Error occurred while toggling all player spirits:\n\n{ex.Message}",
+                    "Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+
+                // Revert all toggles on error
+                foreach (var playerSpirit in PlayerSpiritsCollection)
+                {
+                    playerSpirit.IsEnabled = false;
                 }
             }
         }

@@ -65,6 +65,14 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.Views
             }
         }
 
+        private void PlayerSpiritsEditorCard_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (ViewModel != null && ViewModel.MemoryEditor.SelectPlayerSpiritsEditorCommand.CanExecute(null))
+            {
+                ViewModel.MemoryEditor.SelectPlayerSpiritsEditorCommand.Execute(null);
+            }
+        }
+
         private void BeansEditorCard_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             if (ViewModel != null && ViewModel.MemoryEditor.SelectBeansEditorCommand.CanExecute(null))

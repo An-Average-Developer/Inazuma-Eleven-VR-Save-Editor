@@ -501,6 +501,11 @@
                             Visibility="{Binding MemoryEditor.SelectedTool, Converter={StaticResource EqualToVisibilityConverter}, ConverterParameter=spiritcards}"
                             DataContext="{Binding}"/>
 
+                        <!-- Player Spirits Adder View -->
+                        <memoryEditorViews:PlayerSpiritsAdderControl
+                            Visibility="{Binding MemoryEditor.SelectedTool, Converter={StaticResource EqualToVisibilityConverter}, ConverterParameter=playerspirits}"
+                            DataContext="{Binding}"/>
+
                         <!-- Beans Editor View -->
                         <memoryEditorViews:BeansEditorControl
                             Visibility="{Binding MemoryEditor.SelectedTool, Converter={StaticResource EqualToVisibilityConverter}, ConverterParameter=beans}"

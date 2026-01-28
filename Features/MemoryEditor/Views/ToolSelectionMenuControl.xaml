@@ -202,7 +202,8 @@
                                        Margin="0,0,10,10"
                                        Padding="16,12"
                                        Width="180"
-                                       MinHeight="140">
+                                       MinHeight="140"
+                                       Visibility="{Binding MemoryEditor.IsFreezeItemsVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <Grid>
                         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                             <materialDesign:PackIcon Kind="Snowflake"
@@ -262,7 +263,8 @@
                                        Margin="0,0,10,10"
                                        Padding="16,12"
                                        Width="180"
-                                       MinHeight="140">
+                                       MinHeight="140"
+                                       Visibility="{Binding MemoryEditor.IsIncrementItemsVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <Grid>
                         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                             <materialDesign:PackIcon Kind="TrendingUp"
@@ -328,7 +330,8 @@
                                        Margin="0,0,10,10"
                                        Padding="16,12"
                                        Width="180"
-                                       MinHeight="140">
+                                       MinHeight="140"
+                                       Visibility="{Binding MemoryEditor.IsStoreMultiplierVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <Grid>
                         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                             <materialDesign:PackIcon Kind="Multiplication"
@@ -397,7 +400,8 @@
                                        MinHeight="170"
                                        Cursor="Hand"
                                        MouseLeftButtonUp="TicketEditorCard_Click"
-                                       IsEnabled="{Binding MemoryEditor.IsStarsEnabled}">
+                                       IsEnabled="{Binding MemoryEditor.IsStarsEnabled}"
+                                       Visibility="{Binding MemoryEditor.IsStarsVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <Grid>
                         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                             <Image Source="/Resources/Cards/Stars.png"
@@ -447,7 +451,8 @@
                                        MinHeight="170"
                                        Cursor="Hand"
                                        MouseLeftButtonUp="InaFlowersEditorCard_Click"
-                                       IsEnabled="{Binding MemoryEditor.IsFlowersEnabled}">
+                                       IsEnabled="{Binding MemoryEditor.IsFlowersEnabled}"
+                                       Visibility="{Binding MemoryEditor.IsFlowersVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <Grid>
                         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                             <Image Source="/Resources/Cards/Inazuma Flower.png"
@@ -497,7 +502,8 @@
                                        MinHeight="170"
                                        Cursor="Hand"
                                        MouseLeftButtonUp="BeansEditorCard_Click"
-                                       IsEnabled="{Binding MemoryEditor.IsBeansEnabled}">
+                                       IsEnabled="{Binding MemoryEditor.IsBeansEnabled}"
+                                       Visibility="{Binding MemoryEditor.IsBeansVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <Grid>
                         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                             <Image Source="/Resources/Cards/Kicking Power.png"
@@ -547,7 +553,8 @@
                                        MinHeight="170"
                                        Cursor="Hand"
                                        MouseLeftButtonUp="VictoryItemsEditorCard_Click"
-                                       IsEnabled="{Binding MemoryEditor.IsVictoryItemsEnabled}">
+                                       IsEnabled="{Binding MemoryEditor.IsVictoryItemsEnabled}"
+                                       Visibility="{Binding MemoryEditor.IsVictoryItemsVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <Grid>
                         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                             <Image Source="/Resources/Cards/VSTAR.png"
@@ -603,7 +610,8 @@
                                        Margin="0,0,10,10"
                                        Padding="16,12"
                                        Width="180"
-                                       MinHeight="140">
+                                       MinHeight="140"
+                                       Visibility="{Binding MemoryEditor.IsFreezeSpiritsVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <Grid>
                         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                             <materialDesign:PackIcon Kind="Snowflake"
@@ -663,7 +671,8 @@
                                        Margin="0,0,10,10"
                                        Padding="16,12"
                                        Width="180"
-                                       MinHeight="140">
+                                       MinHeight="140"
+                                       Visibility="{Binding MemoryEditor.IsIncrementSpiritsVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <Grid>
                         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                             <materialDesign:PackIcon Kind="PlusCircle"
@@ -730,7 +739,8 @@
                                        Margin="0,0,10,10"
                                        Padding="16,12"
                                        Width="180"
-                                       MinHeight="140">
+                                       MinHeight="140"
+                                       Visibility="{Binding MemoryEditor.IsIncrementEliteSpiritsVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <Grid>
                         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                             <materialDesign:PackIcon Kind="StarCircle"
@@ -769,6 +779,162 @@
                                                        Foreground="#FF0000"/>
                             </Button>
                         </StackPanel>
+                        <!-- Maintenance Overlay -->
+                        <Border Background="#CC808080"
+                               CornerRadius="4"
+                               Visibility="{Binding MemoryEditor.IsIncrementEliteSpiritsUnderMaintenance, Converter={StaticResource BooleanToVisibilityConverter}}"
+                               IsHitTestVisible="True">
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <materialDesign:PackIcon Kind="Lock"
+                                                       Width="48"
+                                                       Height="48"
+                                                       Foreground="White"
+                                                       HorizontalAlignment="Center"
+                                                       Opacity="0.9"/>
+                                <TextBlock Text="MAINTENANCE"
+                                         FontSize="11"
+                                         FontWeight="Bold"
+                                         Foreground="White"
+                                         HorizontalAlignment="Center"
+                                         Margin="0,8,0,0"/>
+                            </StackPanel>
+                        </Border>
+                        </Grid>
+                    </materialDesign:Card>
+
+                    <!-- Increment Custom Base Basara Card -->
+                    <materialDesign:Card Style="{StaticResource CardStyle}"
+                                       Margin="0,0,10,10"
+                                       Padding="16,12"
+                                       Width="180"
+                                       MinHeight="140"
+                                       Visibility="{Binding MemoryEditor.IsIncrementEliteSpiritsVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <Grid>
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <materialDesign:PackIcon Kind="StarCircle"
+                                                   Width="40"
+                                                   Height="40"
+                                                   HorizontalAlignment="Center"
+                                                   Margin="0,0,0,8"/>
+                            <TextBlock Text="Increment Spirits"
+                                     FontSize="14"
+                                     FontWeight="SemiBold"
+                                     HorizontalAlignment="Center"
+                                     TextAlignment="Center"
+                                     Margin="0,0,0,4"/>
+                            <TextBlock Text="+1 Custom (Base) Basara"
+                                     FontSize="10"
+                                     Opacity="0.7"
+                                     HorizontalAlignment="Center"
+                                     TextWrapping="Wrap"
+                                     TextAlignment="Center"
+                                     Margin="0,0,0,8"/>
+                            <ToggleButton IsChecked="{Binding MemoryEditor.IsCustomBaseSpiritIncrementEnabled, Mode=OneWay}"
+                                        Style="{StaticResource MaterialDesignSwitchToggleButton}"
+                                        Command="{Binding MemoryEditor.ToggleCustomBaseSpiritIncrementCommand}"
+                                        HorizontalAlignment="Center"
+                                        Margin="0,0,0,8"/>
+                            <Button Command="{Binding MemoryEditor.OpenTutorialsCommand}"
+                                   CommandParameter="Increment Elite Spirits"
+                                   Style="{StaticResource MaterialDesignIconButton}"
+                                   Width="32"
+                                   Height="32"
+                                   Padding="0"
+                                   ToolTip="Watch Tutorials">
+                                <materialDesign:PackIcon Kind="Youtube"
+                                                       Width="24"
+                                                       Height="24"
+                                                       Foreground="#FF0000"/>
+                            </Button>
+                        </StackPanel>
+                        <!-- Maintenance Overlay -->
+                        <Border Background="#CC808080"
+                               CornerRadius="4"
+                               Visibility="{Binding MemoryEditor.IsCustomBaseSpiritIncrementUnderMaintenance, Converter={StaticResource BooleanToVisibilityConverter}}"
+                               IsHitTestVisible="True">
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <materialDesign:PackIcon Kind="Lock"
+                                                       Width="48"
+                                                       Height="48"
+                                                       Foreground="White"
+                                                       HorizontalAlignment="Center"
+                                                       Opacity="0.9"/>
+                                <TextBlock Text="MAINTENANCE"
+                                         FontSize="11"
+                                         FontWeight="Bold"
+                                         Foreground="White"
+                                         HorizontalAlignment="Center"
+                                         Margin="0,8,0,0"/>
+                            </StackPanel>
+                        </Border>
+                        </Grid>
+                    </materialDesign:Card>
+
+                    <!-- Increment Custom Hero Basara Card -->
+                    <materialDesign:Card Style="{StaticResource CardStyle}"
+                                       Margin="0,0,10,10"
+                                       Padding="16,12"
+                                       Width="180"
+                                       MinHeight="140"
+                                       Visibility="{Binding MemoryEditor.IsIncrementSpiritsVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <Grid>
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <materialDesign:PackIcon Kind="PlusCircle"
+                                                   Width="40"
+                                                   Height="40"
+                                                   HorizontalAlignment="Center"
+                                                   Margin="0,0,0,8"/>
+                            <TextBlock Text="Increment Spirits"
+                                     FontSize="14"
+                                     FontWeight="SemiBold"
+                                     HorizontalAlignment="Center"
+                                     TextAlignment="Center"
+                                     Margin="0,0,0,4"/>
+                            <TextBlock Text="+1 Custom (Hero) Basara"
+                                     FontSize="10"
+                                     Opacity="0.7"
+                                     HorizontalAlignment="Center"
+                                     TextAlignment="Center"
+                                     TextWrapping="Wrap"
+                                     Margin="0,0,0,8"/>
+                            <ToggleButton IsChecked="{Binding MemoryEditor.IsCustomHeroSpiritIncrementEnabled, Mode=OneWay}"
+                                        Style="{StaticResource MaterialDesignSwitchToggleButton}"
+                                        Command="{Binding MemoryEditor.ToggleCustomHeroSpiritIncrementCommand}"
+                                        HorizontalAlignment="Center"
+                                        Margin="0,0,0,8"/>
+                            <Button Command="{Binding MemoryEditor.OpenTutorialsCommand}"
+                                   CommandParameter="Increment Heroes"
+                                   Style="{StaticResource MaterialDesignIconButton}"
+                                   Width="32"
+                                   Height="32"
+                                   Padding="0"
+                                   ToolTip="Watch Tutorials">
+                                <materialDesign:PackIcon Kind="Youtube"
+                                                       Width="24"
+                                                       Height="24"
+                                                       Foreground="#FF0000"/>
+                            </Button>
+                        </StackPanel>
+                        <!-- Maintenance Overlay -->
+                        <Border Background="#CC808080"
+                               CornerRadius="4"
+                               Visibility="{Binding MemoryEditor.IsCustomHeroSpiritIncrementUnderMaintenance, Converter={StaticResource BooleanToVisibilityConverter}}"
+                               IsHitTestVisible="True">
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <materialDesign:PackIcon Kind="Lock"
+                                                       Width="48"
+                                                       Height="48"
+                                                       Foreground="White"
+                                                       HorizontalAlignment="Center"
+                                                       Opacity="0.9"/>
+                                <TextBlock Text="MAINTENANCE"
+                                         FontSize="11"
+                                         FontWeight="Bold"
+                                         Foreground="White"
+                                         HorizontalAlignment="Center"
+                                         Margin="0,8,0,0"/>
+                            </StackPanel>
+                        </Border>
                         </Grid>
                     </materialDesign:Card>
 
@@ -780,7 +946,8 @@
                                        MinHeight="170"
                                        Cursor="Hand"
                                        MouseLeftButtonUp="SpiritsEditorCard_Click"
-                                       IsEnabled="{Binding MemoryEditor.IsSpiritsEnabled}">
+                                       IsEnabled="{Binding MemoryEditor.IsSpiritsEnabled}"
+                                       Visibility="{Binding MemoryEditor.IsSpiritsVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <Grid>
                         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                             <Image Source="/Resources/Cards/Spirits.png"
@@ -821,6 +988,74 @@
                         </Border>
                         </Grid>
                     </materialDesign:Card>
+
+                    <!-- Player Spirits Editor Card -->
+                    <materialDesign:Card Style="{StaticResource CardStyle}"
+                                       Margin="0,0,10,10"
+                                       Padding="16,12,16,12"
+                                       Width="180"
+                                       MinHeight="170"
+                                       Cursor="Hand"
+                                       MouseLeftButtonUp="PlayerSpiritsEditorCard_Click"
+                                       IsEnabled="True"
+                                       Visibility="{Binding MemoryEditor.IsPlayerSpiritsVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <Grid>
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <materialDesign:PackIcon Kind="AccountConvert"
+                                   Width="48"
+                                   Height="48"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,0,0,8"/>
+                            <TextBlock Text="Player Spirits"
+                                     FontSize="15"
+                                     FontWeight="SemiBold"
+                                     HorizontalAlignment="Center"
+                                     Margin="0,0,0,4"/>
+                            <TextBlock Text="Add Miximax Spirits"
+                                     FontSize="11"
+                                     Opacity="0.6"
+                                     TextWrapping="Wrap"
+                                     TextAlignment="Center"
+                                     Margin="8,0,8,8"/>
+                            <Button Command="{Binding MemoryEditor.SelectPlayerSpiritsEditorCommand}"
+                                  Style="{StaticResource MaterialDesignRaisedButton}"
+                                  Height="28"
+                                  Padding="12,0"
+                                  Background="{DynamicResource SecondaryHueMidBrush}"
+                                  Foreground="Black">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="ChevronRight" Width="14" Height="14" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                    <TextBlock Text="Open" FontSize="11" VerticalAlignment="Center" FontWeight="Medium"/>
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                        <!-- Maintenance Overlay -->
+                        <Border Background="#CC808080"
+                               CornerRadius="4"
+                               Visibility="{Binding MemoryEditor.IsPlayerSpiritsUnderMaintenance, Converter={StaticResource BooleanToVisibilityConverter}}"
+                               IsHitTestVisible="True">
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <materialDesign:PackIcon Kind="Lock"
+                                                       Width="48"
+                                                       Height="48"
+                                                       Foreground="White"
+                                                       HorizontalAlignment="Center"
+                                                       Opacity="0.9"/>
+                                <TextBlock Text="MAINTENANCE"
+                                         FontSize="11"
+                                         FontWeight="Bold"
+                                         Foreground="White"
+                                         HorizontalAlignment="Center"
+                                         Margin="0,8,0,4"/>
+                                <TextBlock Text="Add miximax spirits"
+                                         FontSize="9"
+                                         Foreground="White"
+                                         HorizontalAlignment="Center"
+                                         Opacity="0.8"/>
+                            </StackPanel>
+                        </Border>
+                        </Grid>
+                    </materialDesign:Card>
                 </WrapPanel>
 
                 <!-- SPIRIT MARKET SECTION -->
@@ -836,7 +1071,8 @@
                                        Margin="0,0,10,10"
                                        Padding="16,12"
                                        Width="180"
-                                       MinHeight="140">
+                                       MinHeight="140"
+                                       Visibility="{Binding MemoryEditor.IsFreeBuySpiritMarketVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <Grid>
                         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                             <materialDesign:PackIcon Kind="CurrencyUsd"
@@ -874,6 +1110,26 @@
                                                        Foreground="#FF0000"/>
                             </Button>
                         </StackPanel>
+                        <!-- Maintenance Overlay -->
+                        <Border Background="#CC808080"
+                               CornerRadius="4"
+                               Visibility="{Binding MemoryEditor.IsFreeBuySpiritMarketUnderMaintenance, Converter={StaticResource BooleanToVisibilityConverter}}"
+                               IsHitTestVisible="True">
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <materialDesign:PackIcon Kind="Lock"
+                                                       Width="48"
+                                                       Height="48"
+                                                       Foreground="White"
+                                                       HorizontalAlignment="Center"
+                                                       Opacity="0.9"/>
+                                <TextBlock Text="MAINTENANCE"
+                                         FontSize="11"
+                                         FontWeight="Bold"
+                                         Foreground="White"
+                                         HorizontalAlignment="Center"
+                                         Margin="0,8,0,0"/>
+                            </StackPanel>
+                        </Border>
                         </Grid>
                     </materialDesign:Card>
 
@@ -882,7 +1138,8 @@
                                        Margin="0,0,10,10"
                                        Padding="16,12"
                                        Width="180"
-                                       MinHeight="140">
+                                       MinHeight="140"
+                                       Visibility="{Binding MemoryEditor.IsFreeBuyShopVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <Grid>
                         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                             <materialDesign:PackIcon Kind="Store"
@@ -957,7 +1214,8 @@
                                        Margin="0,0,10,10"
                                        Padding="16,12"
                                        Width="180"
-                                       MinHeight="140">
+                                       MinHeight="140"
+                                       Visibility="{Binding MemoryEditor.IsUnlimitedHeroesVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <Grid>
                         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                             <materialDesign:PackIcon Kind="AccountGroup"
@@ -1023,7 +1281,8 @@
                                        Margin="0,0,10,10"
                                        Padding="16,12"
                                        Width="180"
-                                       MinHeight="140">
+                                       MinHeight="140"
+                                       Visibility="{Binding MemoryEditor.IsPlayerLevelVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <Grid>
                         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                             <materialDesign:PackIcon Kind="Star"
@@ -1101,7 +1360,8 @@
                                        MinHeight="170"
                                        Cursor="Hand"
                                        MouseLeftButtonUp="PassiveValuesEditorCard_Click"
-                                       IsEnabled="{Binding MemoryEditor.IsPassiveValuesEnabled}">
+                                       IsEnabled="{Binding MemoryEditor.IsPassiveValuesEnabled}"
+                                       Visibility="{Binding MemoryEditor.IsPassiveValuesVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <Grid>
                         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                             <Image Source="/Resources/Cards/Pasivas.png"
@@ -1151,7 +1411,8 @@
                                        MinHeight="170"
                                        Cursor="Hand"
                                        MouseLeftButtonUp="CustomPassivesEditorCard_Click"
-                                       IsEnabled="{Binding MemoryEditor.IsCustomPassivesEnabled}">
+                                       IsEnabled="{Binding MemoryEditor.IsCustomPassivesEnabled}"
+                                       Visibility="{Binding MemoryEditor.IsCustomPassivesVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <Grid>
                         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                             <Image Source="/Resources/Cards/Pasivas.png"
