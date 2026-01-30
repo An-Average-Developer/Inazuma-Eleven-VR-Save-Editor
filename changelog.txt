@@ -1,5 +1,5 @@
-1.6.0
-- Fixed multiple options to work with the update 3.0.1
-- Added support for basara seeds multiplier
-- Added 2 options to increase custom basara spirits
-- Some options set Under Maintenance
+1.6.1
+- Fixed more options to work with the update 3.0.1
+- Added custom special moves
+- Fixed custom passives
+- Fixed Free Stores
