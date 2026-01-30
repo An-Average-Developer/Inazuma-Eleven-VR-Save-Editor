@@ -1403,6 +1403,57 @@
                         </Grid>
                     </materialDesign:Card>
 
+                    <!-- Special Moves Editor Card -->
+                    <materialDesign:Card Style="{StaticResource CardStyle}"
+                                       Margin="0,0,10,10"
+                                       Padding="16,12,16,12"
+                                       Width="180"
+                                       MinHeight="170"
+                                       Cursor="Hand"
+                                       MouseLeftButtonUp="SpecialMovesEditorCard_Click"
+                                       IsEnabled="{Binding MemoryEditor.IsSpecialMovesEnabled}"
+                                       Visibility="{Binding MemoryEditor.IsSpecialMovesVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <Grid>
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <Image Source="/Resources/Cards/Pasivas.png"
+                                   Width="48"
+                                   Height="48"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,0,0,8"
+                                   RenderOptions.BitmapScalingMode="HighQuality"/>
+                            <TextBlock Text="Special Moves"
+                                     FontSize="15"
+                                     FontWeight="SemiBold"
+                                     HorizontalAlignment="Center"
+                                     Margin="0,0,0,4"/>
+                            <TextBlock Text="Edit Special Move Values"
+                                     FontSize="11"
+                                     Opacity="0.6"
+                                     TextWrapping="Wrap"
+                                     TextAlignment="Center"
+                                     Margin="8,0,8,8"/>
+                            <Button Command="{Binding MemoryEditor.SelectSpecialMovesEditorCommand}"
+                                  Style="{StaticResource MaterialDesignRaisedButton}"
+                                  Height="28"
+                                  Padding="12,0"
+                                  Background="{DynamicResource SecondaryHueMidBrush}"
+                                  Foreground="Black">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="ChevronRight" Width="14" Height="14" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                    <TextBlock Text="Open" FontSize="11" VerticalAlignment="Center" FontWeight="Medium"/>
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                        <Border Background="#CC808080" CornerRadius="4" Visibility="{Binding MemoryEditor.IsSpecialMovesUnderMaintenance, Converter={StaticResource BooleanToVisibilityConverter}}" IsHitTestVisible="True">
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <materialDesign:PackIcon Kind="Lock" Width="48" Height="48" Foreground="White" HorizontalAlignment="Center" Opacity="0.9"/>
+                                <TextBlock Text="UNDER" FontSize="12" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Margin="0,8,0,0"/>
+                                <TextBlock Text="MAINTENANCE" FontSize="11" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Margin="0,2,0,0"/>
+                            </StackPanel>
+                        </Border>
+                        </Grid>
+                    </materialDesign:Card>
+
                     <!-- Custom Passives Editor Card -->
                     <materialDesign:Card Style="{StaticResource CardStyle}"
                                        Margin="0,0,10,10"

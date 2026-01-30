@@ -526,6 +526,11 @@
                             Visibility="{Binding MemoryEditor.SelectedTool, Converter={StaticResource EqualToVisibilityConverter}, ConverterParameter=passivevalues}"
                             DataContext="{Binding}"/>
 
+                        <!-- Special Moves Editor View -->
+                        <memoryEditorViews:SpecialMovesEditorControl
+                            Visibility="{Binding MemoryEditor.SelectedTool, Converter={StaticResource EqualToVisibilityConverter}, ConverterParameter=specialmoves}"
+                            DataContext="{Binding}"/>
+
                         <!-- Tutorials View -->
                         <ContentControl Visibility="{Binding MemoryEditor.SelectedTool, Converter={StaticResource EqualToVisibilityConverter}, ConverterParameter=tutorials}">
                             <memoryEditorViews:TutorialsControl DataContext="{Binding MemoryEditor.TutorialsViewModel}"/>

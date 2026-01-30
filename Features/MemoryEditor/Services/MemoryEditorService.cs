@@ -49,6 +49,9 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.Services
         private IntPtr _passiveValAdrAddress = IntPtr.Zero; // Address where passiveValAdr is stored
         private IntPtr _passiveValTypeAddress = IntPtr.Zero; // Address where passiveValType is stored
         private IntPtr _passiveValueHookAddress = IntPtr.Zero; // Address of the hook
+        private IntPtr _specialMoveTypeCodeCave = IntPtr.Zero; // For Special Move Type injection
+        private IntPtr _specialMoveTypeAdrAddress = IntPtr.Zero; // Address where specialMoveTypeAdr is stored (9 qwords)
+        private IntPtr _specialMoveTypeHookAddress = IntPtr.Zero; // Address of the hook
         private IntPtr _spiritCardInjectionCodeCave = IntPtr.Zero; // For Spirit Card injection
         private IntPtr _spiritCardHookAddress = IntPtr.Zero; // Address of the spirit card hook
         private IntPtr _cfHerospiritAddTypeAddress = IntPtr.Zero; // cfHerospiritAddType address
@@ -1251,6 +1254,408 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.Services
             }
         }
 
+        public bool InjectSpecialMoveTypeEditing()
+        {
+            if (!_isAttached || _processHandle == IntPtr.Zero)
+            {
+                throw new InvalidOperationException("Not attached to process");
+            }
+
+            try
+            {
+                // AOB scan for "74 3D 8B 58 04" (je +3D; mov ebx,[rax+04])
+                byte[] aobPattern = new byte[] { 0x74, 0x3D, 0x8B, 0x58, 0x04 };
+                byte[] aobMask = new byte[] { 1, 1, 1, 1, 1 }; // No wildcards
+                _specialMoveTypeHookAddress = AOBScan(aobPattern, aobMask);
+
+                if (_specialMoveTypeHookAddress == IntPtr.Zero)
+                {
+                    throw new Exception("Failed to find Special Move Type AOB pattern.\n\n" +
+                        "Make sure:\n" +
+                        "1. The game is running\n" +
+                        "2. You are in the Abilearn Board screen\n" +
+                        "3. The game version is correct");
+                }
+
+                // Allocate memory for code cave
+                long[] offsets = { 0x10000000, 0x20000000, 0x30000000, -0x10000000, -0x20000000, 0x05000000, 0x01000000 };
+
+                foreach (long offset in offsets)
+                {
+                    IntPtr preferredAddress = new IntPtr(_moduleBase.ToInt64() + offset);
+                    _specialMoveTypeCodeCave = VirtualAllocEx(_processHandle, preferredAddress, 4096, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+
+                    if (_specialMoveTypeCodeCave != IntPtr.Zero)
+                    {
+                        long distance = _specialMoveTypeCodeCave.ToInt64() - _specialMoveTypeHookAddress.ToInt64();
+                        if (Math.Abs(distance) <= 0x7FFFFFFF)
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            VirtualFreeEx(_processHandle, _specialMoveTypeCodeCave, 0, MEM_RELEASE);
+                            _specialMoveTypeCodeCave = IntPtr.Zero;
+                        }
+                    }
+                }
+
+                if (_specialMoveTypeCodeCave == IntPtr.Zero)
+                {
+                    throw new Exception("Failed to allocate memory within ±2GB range");
+                }
+
+                // Memory layout:
+                // +0x000: Injection code
+                // +0x200: specialMoveTypeAdr (9 qwords = 72 bytes at offsets 0, 8, 0x10, 0x18, 0x20, 0x28, 0x30, 0x38, 0x40)
+                _specialMoveTypeAdrAddress = new IntPtr(_specialMoveTypeCodeCave.ToInt64() + 0x200);
+
+                // Initialize specialMoveTypeAdr to zeros (72 bytes for 9 qwords)
+                byte[] zeroBuffer = new byte[72];
+                WriteProcessMemory(_processHandle, _specialMoveTypeAdrAddress, zeroBuffer, 72, out _);
+
+                // Build injected code matching CE script exactly
+                List<byte> injectedCode = new List<byte>();
+                IntPtr returnAddress = new IntPtr(_specialMoveTypeHookAddress.ToInt64() + 5);
+                IntPtr originalJeTarget = new IntPtr(_specialMoveTypeHookAddress.ToInt64() + 5 + 0x3A); // return+3A
+
+                // ===== newmem: =====
+                // je return+3A (jump to original target if ZF is set)
+                injectedCode.AddRange(new byte[] { 0x0F, 0x84 }); // je rel32
+                int jeTargetPlaceholder = injectedCode.Count;
+                injectedCode.AddRange(new byte[] { 0x00, 0x00, 0x00, 0x00 }); // Placeholder
+
+                // cmp r8d,0
+                injectedCode.AddRange(new byte[] { 0x41, 0x83, 0xF8, 0x00 });
+
+                // jne @f (skip the clearing block)
+                int jneSkipClearOffset = injectedCode.Count;
+                injectedCode.AddRange(new byte[] { 0x75, 0x00 }); // jne rel8 (patch later)
+
+                // xor rbx,rbx
+                injectedCode.AddRange(new byte[] { 0x48, 0x31, 0xDB });
+
+                // Clear all specialMoveTypeAdr offsets when r8d=0
+                // mov [specialMoveTypeAdr+8],rbx
+                int off8 = (int)((_specialMoveTypeAdrAddress.ToInt64() + 8) - (_specialMoveTypeCodeCave.ToInt64() + injectedCode.Count + 7));
+                injectedCode.AddRange(new byte[] { 0x48, 0x89, 0x1D });
+                injectedCode.AddRange(BitConverter.GetBytes(off8));
+
+                // mov [specialMoveTypeAdr+10],rbx
+                int off10 = (int)((_specialMoveTypeAdrAddress.ToInt64() + 0x10) - (_specialMoveTypeCodeCave.ToInt64() + injectedCode.Count + 7));
+                injectedCode.AddRange(new byte[] { 0x48, 0x89, 0x1D });
+                injectedCode.AddRange(BitConverter.GetBytes(off10));
+
+                // mov [specialMoveTypeAdr+18],rbx
+                int off18 = (int)((_specialMoveTypeAdrAddress.ToInt64() + 0x18) - (_specialMoveTypeCodeCave.ToInt64() + injectedCode.Count + 7));
+                injectedCode.AddRange(new byte[] { 0x48, 0x89, 0x1D });
+                injectedCode.AddRange(BitConverter.GetBytes(off18));
+
+                // mov [specialMoveTypeAdr+20],rbx
+                int off20 = (int)((_specialMoveTypeAdrAddress.ToInt64() + 0x20) - (_specialMoveTypeCodeCave.ToInt64() + injectedCode.Count + 7));
+                injectedCode.AddRange(new byte[] { 0x48, 0x89, 0x1D });
+                injectedCode.AddRange(BitConverter.GetBytes(off20));
+
+                // mov [specialMoveTypeAdr+28],rbx
+                int off28 = (int)((_specialMoveTypeAdrAddress.ToInt64() + 0x28) - (_specialMoveTypeCodeCave.ToInt64() + injectedCode.Count + 7));
+                injectedCode.AddRange(new byte[] { 0x48, 0x89, 0x1D });
+                injectedCode.AddRange(BitConverter.GetBytes(off28));
+
+                // mov [specialMoveTypeAdr+30],rbx
+                int off30 = (int)((_specialMoveTypeAdrAddress.ToInt64() + 0x30) - (_specialMoveTypeCodeCave.ToInt64() + injectedCode.Count + 7));
+                injectedCode.AddRange(new byte[] { 0x48, 0x89, 0x1D });
+                injectedCode.AddRange(BitConverter.GetBytes(off30));
+
+                // mov [specialMoveTypeAdr+38],rbx
+                int off38 = (int)((_specialMoveTypeAdrAddress.ToInt64() + 0x38) - (_specialMoveTypeCodeCave.ToInt64() + injectedCode.Count + 7));
+                injectedCode.AddRange(new byte[] { 0x48, 0x89, 0x1D });
+                injectedCode.AddRange(BitConverter.GetBytes(off38));
+
+                // mov [specialMoveTypeAdr+40],rbx
+                int off40 = (int)((_specialMoveTypeAdrAddress.ToInt64() + 0x40) - (_specialMoveTypeCodeCave.ToInt64() + injectedCode.Count + 7));
+                injectedCode.AddRange(new byte[] { 0x48, 0x89, 0x1D });
+                injectedCode.AddRange(BitConverter.GetBytes(off40));
+
+                // Patch jne @f to skip clearing
+                int skipClearTarget = injectedCode.Count - (jneSkipClearOffset + 2);
+                injectedCode[jneSkipClearOffset + 1] = (byte)skipClearTarget;
+
+                // @@: lea rbx,[rax+04]
+                injectedCode.AddRange(new byte[] { 0x48, 0x8D, 0x58, 0x04 });
+
+                // === r8d comparisons and stores ===
+
+                // cmp r8d,0 / jne @f / mov [specialMoveTypeAdr],rbx
+                injectedCode.AddRange(new byte[] { 0x41, 0x83, 0xF8, 0x00 }); // cmp r8d,0
+                injectedCode.AddRange(new byte[] { 0x75, 0x07 }); // jne +7
+                int offBase = (int)(_specialMoveTypeAdrAddress.ToInt64() - (_specialMoveTypeCodeCave.ToInt64() + injectedCode.Count + 7));
+                injectedCode.AddRange(new byte[] { 0x48, 0x89, 0x1D });
+                injectedCode.AddRange(BitConverter.GetBytes(offBase));
+
+                // cmp r8d,2 / jne @f / mov [specialMoveTypeAdr+8],rbx
+                injectedCode.AddRange(new byte[] { 0x41, 0x83, 0xF8, 0x02 }); // cmp r8d,2
+                injectedCode.AddRange(new byte[] { 0x75, 0x07 }); // jne +7
+                off8 = (int)((_specialMoveTypeAdrAddress.ToInt64() + 8) - (_specialMoveTypeCodeCave.ToInt64() + injectedCode.Count + 7));
+                injectedCode.AddRange(new byte[] { 0x48, 0x89, 0x1D });
+                injectedCode.AddRange(BitConverter.GetBytes(off8));
+
+                // cmp r8d,4 / jne @f / mov [specialMoveTypeAdr+10],rbx
+                injectedCode.AddRange(new byte[] { 0x41, 0x83, 0xF8, 0x04 }); // cmp r8d,4
+                injectedCode.AddRange(new byte[] { 0x75, 0x07 }); // jne +7
+                off10 = (int)((_specialMoveTypeAdrAddress.ToInt64() + 0x10) - (_specialMoveTypeCodeCave.ToInt64() + injectedCode.Count + 7));
+                injectedCode.AddRange(new byte[] { 0x48, 0x89, 0x1D });
+                injectedCode.AddRange(BitConverter.GetBytes(off10));
+
+                // cmp r8d,8 / jne @f / mov [specialMoveTypeAdr+18],rbx
+                injectedCode.AddRange(new byte[] { 0x41, 0x83, 0xF8, 0x08 }); // cmp r8d,8
+                injectedCode.AddRange(new byte[] { 0x75, 0x07 }); // jne +7
+                off18 = (int)((_specialMoveTypeAdrAddress.ToInt64() + 0x18) - (_specialMoveTypeCodeCave.ToInt64() + injectedCode.Count + 7));
+                injectedCode.AddRange(new byte[] { 0x48, 0x89, 0x1D });
+                injectedCode.AddRange(BitConverter.GetBytes(off18));
+
+                // cmp r8d,9 / jne @f / mov [specialMoveTypeAdr+18],rbx (same offset as r8d=8)
+                injectedCode.AddRange(new byte[] { 0x41, 0x83, 0xF8, 0x09 }); // cmp r8d,9
+                injectedCode.AddRange(new byte[] { 0x75, 0x07 }); // jne +7
+                off18 = (int)((_specialMoveTypeAdrAddress.ToInt64() + 0x18) - (_specialMoveTypeCodeCave.ToInt64() + injectedCode.Count + 7));
+                injectedCode.AddRange(new byte[] { 0x48, 0x89, 0x1D });
+                injectedCode.AddRange(BitConverter.GetBytes(off18));
+
+                // cmp r8d,A / jne @f / mov [specialMoveTypeAdr+20],rbx
+                injectedCode.AddRange(new byte[] { 0x41, 0x83, 0xF8, 0x0A }); // cmp r8d,0xA
+                injectedCode.AddRange(new byte[] { 0x75, 0x07 }); // jne +7
+                off20 = (int)((_specialMoveTypeAdrAddress.ToInt64() + 0x20) - (_specialMoveTypeCodeCave.ToInt64() + injectedCode.Count + 7));
+                injectedCode.AddRange(new byte[] { 0x48, 0x89, 0x1D });
+                injectedCode.AddRange(BitConverter.GetBytes(off20));
+
+                // cmp r8d,B / jne @f / mov [specialMoveTypeAdr+20],rbx (same offset as r8d=A)
+                injectedCode.AddRange(new byte[] { 0x41, 0x83, 0xF8, 0x0B }); // cmp r8d,0xB
+                injectedCode.AddRange(new byte[] { 0x75, 0x07 }); // jne +7
+                off20 = (int)((_specialMoveTypeAdrAddress.ToInt64() + 0x20) - (_specialMoveTypeCodeCave.ToInt64() + injectedCode.Count + 7));
+                injectedCode.AddRange(new byte[] { 0x48, 0x89, 0x1D });
+                injectedCode.AddRange(BitConverter.GetBytes(off20));
+
+                // cmp r8d,C / jne @f / mov [specialMoveTypeAdr+28],rbx
+                injectedCode.AddRange(new byte[] { 0x41, 0x83, 0xF8, 0x0C }); // cmp r8d,0xC
+                injectedCode.AddRange(new byte[] { 0x75, 0x07 }); // jne +7
+                off28 = (int)((_specialMoveTypeAdrAddress.ToInt64() + 0x28) - (_specialMoveTypeCodeCave.ToInt64() + injectedCode.Count + 7));
+                injectedCode.AddRange(new byte[] { 0x48, 0x89, 0x1D });
+                injectedCode.AddRange(BitConverter.GetBytes(off28));
+
+                // cmp r8d,D / jne @f / mov [specialMoveTypeAdr+28],rbx (same offset as r8d=C)
+                injectedCode.AddRange(new byte[] { 0x41, 0x83, 0xF8, 0x0D }); // cmp r8d,0xD
+                injectedCode.AddRange(new byte[] { 0x75, 0x07 }); // jne +7
+                off28 = (int)((_specialMoveTypeAdrAddress.ToInt64() + 0x28) - (_specialMoveTypeCodeCave.ToInt64() + injectedCode.Count + 7));
+                injectedCode.AddRange(new byte[] { 0x48, 0x89, 0x1D });
+                injectedCode.AddRange(BitConverter.GetBytes(off28));
+
+                // cmp r8d,13 / jne @f / mov [specialMoveTypeAdr+30],rbx
+                injectedCode.AddRange(new byte[] { 0x41, 0x83, 0xF8, 0x13 }); // cmp r8d,0x13
+                injectedCode.AddRange(new byte[] { 0x75, 0x07 }); // jne +7
+                off30 = (int)((_specialMoveTypeAdrAddress.ToInt64() + 0x30) - (_specialMoveTypeCodeCave.ToInt64() + injectedCode.Count + 7));
+                injectedCode.AddRange(new byte[] { 0x48, 0x89, 0x1D });
+                injectedCode.AddRange(BitConverter.GetBytes(off30));
+
+                // cmp r8d,15 / jne @f / mov [specialMoveTypeAdr+38],rbx
+                injectedCode.AddRange(new byte[] { 0x41, 0x83, 0xF8, 0x15 }); // cmp r8d,0x15
+                injectedCode.AddRange(new byte[] { 0x75, 0x07 }); // jne +7
+                off38 = (int)((_specialMoveTypeAdrAddress.ToInt64() + 0x38) - (_specialMoveTypeCodeCave.ToInt64() + injectedCode.Count + 7));
+                injectedCode.AddRange(new byte[] { 0x48, 0x89, 0x1D });
+                injectedCode.AddRange(BitConverter.GetBytes(off38));
+
+                // cmp r8d,17 / jne code / mov [specialMoveTypeAdr+40],rbx
+                injectedCode.AddRange(new byte[] { 0x41, 0x83, 0xF8, 0x17 }); // cmp r8d,0x17
+                injectedCode.AddRange(new byte[] { 0x75, 0x07 }); // jne +7 (to code label)
+                off40 = (int)((_specialMoveTypeAdrAddress.ToInt64() + 0x40) - (_specialMoveTypeCodeCave.ToInt64() + injectedCode.Count + 7));
+                injectedCode.AddRange(new byte[] { 0x48, 0x89, 0x1D });
+                injectedCode.AddRange(BitConverter.GetBytes(off40));
+
+                // ===== code: =====
+                int codeLabel = injectedCode.Count;
+
+                // mov ebx,[rax+04] - original instruction
+                injectedCode.AddRange(new byte[] { 0x8B, 0x58, 0x04 });
+
+                // jmp return
+                injectedCode.Add(0xE9);
+                long jmpOffset = returnAddress.ToInt64() - (_specialMoveTypeCodeCave.ToInt64() + injectedCode.Count + 4);
+                injectedCode.AddRange(BitConverter.GetBytes((int)jmpOffset));
+
+                // Patch je to original target
+                long jeOffset = originalJeTarget.ToInt64() - (_specialMoveTypeCodeCave.ToInt64() + jeTargetPlaceholder + 4);
+                byte[] jeOffsetBytes = BitConverter.GetBytes((int)jeOffset);
+                for (int i = 0; i < 4; i++)
+                {
+                    injectedCode[jeTargetPlaceholder + i] = jeOffsetBytes[i];
+                }
+
+                // Write injected code
+                if (!WriteProcessMemory(_processHandle, _specialMoveTypeCodeCave, injectedCode.ToArray(), injectedCode.Count, out _))
+                {
+                    VirtualFreeEx(_processHandle, _specialMoveTypeCodeCave, 0, MEM_RELEASE);
+                    _specialMoveTypeCodeCave = IntPtr.Zero;
+                    throw new Exception("Failed to write injected code");
+                }
+
+                // Create hook: 5-byte jmp to code cave
+                long jmpToCodeCave = _specialMoveTypeCodeCave.ToInt64() - (_specialMoveTypeHookAddress.ToInt64() + 5);
+                byte[] hookBytes = new byte[5];
+                hookBytes[0] = 0xE9; // jmp opcode
+                byte[] hookOffsetBytes = BitConverter.GetBytes((int)jmpToCodeCave);
+                Array.Copy(hookOffsetBytes, 0, hookBytes, 1, 4);
+
+                // Change memory protection and write hook
+                uint oldProtect;
+                if (!VirtualProtectEx(_processHandle, _specialMoveTypeHookAddress, 5, PAGE_EXECUTE_READWRITE, out oldProtect))
+                {
+                    VirtualFreeEx(_processHandle, _specialMoveTypeCodeCave, 0, MEM_RELEASE);
+                    _specialMoveTypeCodeCave = IntPtr.Zero;
+                    throw new Exception("Failed to change memory protection");
+                }
+
+                bool hookSuccess = WriteProcessMemory(_processHandle, _specialMoveTypeHookAddress, hookBytes, hookBytes.Length, out _);
+                VirtualProtectEx(_processHandle, _specialMoveTypeHookAddress, 5, oldProtect, out _);
+
+                if (!hookSuccess)
+                {
+                    VirtualFreeEx(_processHandle, _specialMoveTypeCodeCave, 0, MEM_RELEASE);
+                    _specialMoveTypeCodeCave = IntPtr.Zero;
+                    throw new Exception("Failed to write hook");
+                }
+
+                return true;
+            }
+            catch (Exception)
+            {
+                if (_specialMoveTypeCodeCave != IntPtr.Zero)
+                {
+                    VirtualFreeEx(_processHandle, _specialMoveTypeCodeCave, 0, MEM_RELEASE);
+                    _specialMoveTypeCodeCave = IntPtr.Zero;
+                }
+                throw;
+            }
+        }
+
+        public bool RemoveSpecialMoveTypeEditing()
+        {
+            if (!_isAttached || _processHandle == IntPtr.Zero)
+            {
+                throw new InvalidOperationException("Not attached to process");
+            }
+
+            try
+            {
+                bool success = true;
+
+                if (_specialMoveTypeHookAddress != IntPtr.Zero)
+                {
+                    // Restore original bytes: 74 3D 8B 58 04
+                    byte[] originalBytes = new byte[] { 0x74, 0x3D, 0x8B, 0x58, 0x04 };
+                    uint oldProtect;
+                    VirtualProtectEx(_processHandle, _specialMoveTypeHookAddress, (uint)originalBytes.Length, PAGE_EXECUTE_READWRITE, out oldProtect);
+                    success = WriteProcessMemory(_processHandle, _specialMoveTypeHookAddress, originalBytes, originalBytes.Length, out _);
+                    VirtualProtectEx(_processHandle, _specialMoveTypeHookAddress, (uint)originalBytes.Length, oldProtect, out _);
+
+                    _specialMoveTypeHookAddress = IntPtr.Zero;
+                }
+
+                if (_specialMoveTypeCodeCave != IntPtr.Zero)
+                {
+                    VirtualFreeEx(_processHandle, _specialMoveTypeCodeCave, 0, MEM_RELEASE);
+                    _specialMoveTypeCodeCave = IntPtr.Zero;
+                }
+
+                _specialMoveTypeAdrAddress = IntPtr.Zero;
+
+                return success;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        public (bool hasValue, long address, int currentValue) ReadSpecialMoveValue(int slotIndex)
+        {
+            if (!_isAttached || _processHandle == IntPtr.Zero || _specialMoveTypeAdrAddress == IntPtr.Zero)
+            {
+                return (false, 0, 0);
+            }
+
+            if (slotIndex < 0 || slotIndex > 8)
+            {
+                return (false, 0, 0);
+            }
+
+            try
+            {
+                // Read the address at specialMoveTypeAdr + (slotIndex * 8)
+                IntPtr slotAddress = new IntPtr(_specialMoveTypeAdrAddress.ToInt64() + (slotIndex * 8));
+                byte[] adrBuffer = new byte[8];
+                if (!ReadProcessMemory(_processHandle, slotAddress, adrBuffer, 8, out _))
+                {
+                    return (false, 0, 0);
+                }
+
+                long valueAddress = BitConverter.ToInt64(adrBuffer, 0);
+                if (valueAddress == 0)
+                {
+                    return (false, 0, 0);
+                }
+
+                // Read the actual dword value at that address
+                byte[] valueBuffer = new byte[4];
+                if (!ReadProcessMemory(_processHandle, new IntPtr(valueAddress), valueBuffer, 4, out _))
+                {
+                    return (false, 0, 0);
+                }
+
+                int currentValue = BitConverter.ToInt32(valueBuffer, 0);
+                return (true, valueAddress, currentValue);
+            }
+            catch (Exception)
+            {
+                return (false, 0, 0);
+            }
+        }
+
+        public bool WriteSpecialMoveValue(int slotIndex, int newValue)
+        {
+            if (!_isAttached || _processHandle == IntPtr.Zero || _specialMoveTypeAdrAddress == IntPtr.Zero)
+            {
+                return false;
+            }
+
+            if (slotIndex < 0 || slotIndex > 8)
+            {
+                return false;
+            }
+
+            try
+            {
+                // Read the address at specialMoveTypeAdr + (slotIndex * 8)
+                IntPtr slotAddress = new IntPtr(_specialMoveTypeAdrAddress.ToInt64() + (slotIndex * 8));
+                byte[] adrBuffer = new byte[8];
+                if (!ReadProcessMemory(_processHandle, slotAddress, adrBuffer, 8, out _))
+                {
+                    return false;
+                }
+
+                long valueAddress = BitConverter.ToInt64(adrBuffer, 0);
+                if (valueAddress == 0)
+                {
+                    return false;
+                }
+
+                // Write the new value
+                byte[] valueBuffer = BitConverter.GetBytes(newValue);
+                return WriteProcessMemory(_processHandle, new IntPtr(valueAddress), valueBuffer, valueBuffer.Length, out _);
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
         public bool EnableSpiritCardInjection()
         {
             if (!_isAttached || _processHandle == IntPtr.Zero)
@@ -1881,9 +2286,9 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.Services
 
             try
             {
-                // AOB scan for first injection point: "48 8B 0F 0F B7 D6 E8 ?? ?? ?? ?? 48"
-                byte[] aobPattern1 = new byte[] { 0x48, 0x8B, 0x0F, 0x0F, 0xB7, 0xD6, 0xE8, 0x00, 0x00, 0x00, 0x00, 0x48 };
-                byte[] aobMask1 = new byte[] { 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1 };
+                // AOB scan for first injection point: "0F B7 C3 41 89 06 0F"
+                byte[] aobPattern1 = new byte[] { 0x0F, 0xB7, 0xC3, 0x41, 0x89, 0x06, 0x0F };
+                byte[] aobMask1 = new byte[] { 1, 1, 1, 1, 1, 1, 1 };
                 _freeBuySpiritMarketHookAddress = AOBScan(aobPattern1, aobMask1);
 
                 if (_freeBuySpiritMarketHookAddress == IntPtr.Zero)
@@ -1929,25 +2334,34 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.Services
                     throw new Exception("Failed to allocate memory for Free Buy Spirit Market");
                 }
 
-                // Build the injection code first to know its size
+                // Build the injection code
+                // cmp ebp,4 / je codeA / cmp ebp,5 / je codeA / cmp ebp,6 / je codeA / cmp ebp,7 / je codeA / jmp code
+                // codeA: mov bx,[cfFBspiritmarketSpQuan]
+                // code: movzx eax,bx / mov [r14],eax / jmp return
                 List<byte> injectedCode = new List<byte>();
 
-                // cmp r14d,4
-                injectedCode.AddRange(new byte[] { 0x41, 0x83, 0xFE, 0x04 });
+                // cmp ebp,4
+                injectedCode.AddRange(new byte[] { 0x83, 0xFD, 0x04 });
                 // je codeA
                 int jeCodeA1 = injectedCode.Count;
                 injectedCode.AddRange(new byte[] { 0x74, 0x00 }); // offset to be patched
 
-                // cmp r15d,6
-                injectedCode.AddRange(new byte[] { 0x41, 0x83, 0xFF, 0x06 });
+                // cmp ebp,5
+                injectedCode.AddRange(new byte[] { 0x83, 0xFD, 0x05 });
                 // je codeA
                 int jeCodeA2 = injectedCode.Count;
                 injectedCode.AddRange(new byte[] { 0x74, 0x00 });
 
-                // cmp r15d,8
-                injectedCode.AddRange(new byte[] { 0x41, 0x83, 0xFF, 0x08 });
+                // cmp ebp,6
+                injectedCode.AddRange(new byte[] { 0x83, 0xFD, 0x06 });
                 // je codeA
                 int jeCodeA3 = injectedCode.Count;
+                injectedCode.AddRange(new byte[] { 0x74, 0x00 });
+
+                // cmp ebp,7
+                injectedCode.AddRange(new byte[] { 0x83, 0xFD, 0x07 });
+                // je codeA
+                int jeCodeA4 = injectedCode.Count;
                 injectedCode.AddRange(new byte[] { 0x74, 0x00 });
 
                 // jmp code
@@ -1963,11 +2377,13 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.Services
                 injectedCode[jeCodeA2 + 1] = jeA2Dist;
                 byte jeA3Dist = (byte)(codeALabel - (jeCodeA3 + 2));
                 injectedCode[jeCodeA3 + 1] = jeA3Dist;
+                byte jeA4Dist = (byte)(codeALabel - (jeCodeA4 + 2));
+                injectedCode[jeCodeA4 + 1] = jeA4Dist;
 
-                // mov si,[cfFBspiritmarketSpQuan]
+                // mov bx,[cfFBspiritmarketSpQuan]
                 // We'll calculate the offset later after we know the code size
-                injectedCode.AddRange(new byte[] { 0x66, 0x8B, 0x35 });
-                int movSiOffsetPosition = injectedCode.Count; // Remember where to patch the offset
+                injectedCode.AddRange(new byte[] { 0x66, 0x8B, 0x1D });
+                int movBxOffsetPosition = injectedCode.Count; // Remember where to patch the offset
                 injectedCode.AddRange(new byte[] { 0x00, 0x00, 0x00, 0x00 }); // Placeholder for offset
 
                 // code:
@@ -1978,10 +2394,10 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.Services
                 codeArray[jmpCode + 1] = jmpCodeDist;
                 injectedCode = new List<byte>(codeArray);
 
-                // mov rcx,[rdi]
-                injectedCode.AddRange(new byte[] { 0x48, 0x8B, 0x0F });
-                // movzx edx,si
-                injectedCode.AddRange(new byte[] { 0x0F, 0xB7, 0xD6 });
+                // movzx eax,bx
+                injectedCode.AddRange(new byte[] { 0x0F, 0xB7, 0xC3 });
+                // mov [r14],eax
+                injectedCode.AddRange(new byte[] { 0x41, 0x89, 0x06 });
 
                 // jmp return
                 injectedCode.Add(0xE9);
@@ -1992,12 +2408,12 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.Services
                 // Set cfFBspiritmarketSpQuan address right after the code
                 _cfFBspiritmarketSpQuanAddress = new IntPtr(_freeBuySpiritMarketCodeCave.ToInt64() + injectedCode.Count);
 
-                // Now calculate and patch the mov si offset
+                // Now calculate and patch the mov bx offset
                 byte[] codeArray2 = injectedCode.ToArray();
-                long movSiInstructionEnd = _freeBuySpiritMarketCodeCave.ToInt64() + movSiOffsetPosition + 4;
-                int cfQuanOffset = (int)(_cfFBspiritmarketSpQuanAddress.ToInt64() - movSiInstructionEnd);
+                long movBxInstructionEnd = _freeBuySpiritMarketCodeCave.ToInt64() + movBxOffsetPosition + 4;
+                int cfQuanOffset = (int)(_cfFBspiritmarketSpQuanAddress.ToInt64() - movBxInstructionEnd);
                 byte[] offsetBytes = BitConverter.GetBytes(cfQuanOffset);
-                Array.Copy(offsetBytes, 0, codeArray2, movSiOffsetPosition, 4);
+                Array.Copy(offsetBytes, 0, codeArray2, movBxOffsetPosition, 4);
                 injectedCode = new List<byte>(codeArray2);
 
                 // Add the quantity value (999) to the end of the code
@@ -2012,7 +2428,7 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.Services
                     throw new Exception("Failed to write Free Buy Spirit Market injection code");
                 }
 
-                // Create first hook
+                // Create first hook (5 bytes jmp + 1 nop)
                 long jmpToCodeCave = _freeBuySpiritMarketCodeCave.ToInt64() - (_freeBuySpiritMarketHookAddress.ToInt64() + 5);
                 byte[] hookBytes = new byte[6];
                 hookBytes[0] = 0xE9; // jmp
@@ -2038,13 +2454,13 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.Services
                     throw new Exception("Failed to write first hook");
                 }
 
-                // Create second hook (level)
+                // Create second hook (level): mov dl,99; nop
                 byte[] levelHookBytes = new byte[] { 0xB2, 0x63, 0x90 }; // mov dl,99; nop
 
                 if (!VirtualProtectEx(_processHandle, _freeBuySpiritMarketLvHookAddress, 3, PAGE_EXECUTE_READWRITE, out oldProtect))
                 {
                     // Clean up first hook
-                    byte[] originalBytes1 = new byte[] { 0x48, 0x8B, 0x0F, 0x0F, 0xB7, 0xD6 };
+                    byte[] originalBytes1 = new byte[] { 0x0F, 0xB7, 0xC3, 0x41, 0x89, 0x06 };
                     VirtualProtectEx(_processHandle, _freeBuySpiritMarketHookAddress, 6, PAGE_EXECUTE_READWRITE, out _);
                     WriteProcessMemory(_processHandle, _freeBuySpiritMarketHookAddress, originalBytes1, 6, out _);
                     VirtualFreeEx(_processHandle, _freeBuySpiritMarketCodeCave, 0, MEM_RELEASE);
@@ -2058,7 +2474,7 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.Services
                 if (!levelHookSuccess)
                 {
                     // Clean up
-                    byte[] originalBytes1 = new byte[] { 0x48, 0x8B, 0x0F, 0x0F, 0xB7, 0xD6 };
+                    byte[] originalBytes1 = new byte[] { 0x0F, 0xB7, 0xC3, 0x41, 0x89, 0x06 };
                     VirtualProtectEx(_processHandle, _freeBuySpiritMarketHookAddress, 6, PAGE_EXECUTE_READWRITE, out _);
                     WriteProcessMemory(_processHandle, _freeBuySpiritMarketHookAddress, originalBytes1, 6, out _);
                     VirtualFreeEx(_processHandle, _freeBuySpiritMarketCodeCave, 0, MEM_RELEASE);
@@ -2092,8 +2508,8 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.Services
 
                 if (_freeBuySpiritMarketHookAddress != IntPtr.Zero)
                 {
-                    // Restore original bytes for first hook: 48 8B 0F 0F B7 D6
-                    byte[] originalBytes1 = new byte[] { 0x48, 0x8B, 0x0F, 0x0F, 0xB7, 0xD6 };
+                    // Restore original bytes for first hook: 0F B7 C3 41 89 06
+                    byte[] originalBytes1 = new byte[] { 0x0F, 0xB7, 0xC3, 0x41, 0x89, 0x06 };
                     uint oldProtect;
                     VirtualProtectEx(_processHandle, _freeBuySpiritMarketHookAddress, 6, PAGE_EXECUTE_READWRITE, out oldProtect);
                     success = WriteProcessMemory(_processHandle, _freeBuySpiritMarketHookAddress, originalBytes1, originalBytes1.Length, out _);
@@ -2139,7 +2555,8 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.Services
 
             try
             {
-                // AOB scan for: "4C 8B 7C 24 ?? 8B ?? 4C 8B 64"
+                // AOB scan for: "4C 8B 7C 24 * 8B * 4C 8B 64"
+                // Original instruction: mov r15,[rsp+30]
                 byte[] aobPattern = new byte[] { 0x4C, 0x8B, 0x7C, 0x24, 0x00, 0x8B, 0x00, 0x4C, 0x8B, 0x64 };
                 byte[] aobMask = new byte[] { 1, 1, 1, 1, 0, 1, 0, 1, 1, 1 };
                 _freeBuyShopHookAddress = AOBScan(aobPattern, aobMask);
@@ -2177,58 +2594,78 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.Services
                     throw new Exception("Failed to allocate memory for Free Buy Shop");
                 }
 
+                // Memory layout (matching CE script):
+                // +0x00: newmem - injected code
+                // +0x??: cfFreeBuyTokenQuan - dd 999
+                // +0x??: memfreebuyBck - original 5 bytes backup
+
+                // Read original 5 bytes for backup
+                byte[] originalBytes = new byte[5];
+                ReadProcessMemory(_processHandle, _freeBuyShopHookAddress, originalBytes, 5, out _);
+
                 // Build the injection code
                 List<byte> injectedCode = new List<byte>();
 
-                // Original bytes: 4C 8B 7C 24 ?? (mov r15,[rsp+??])
-                // Read the 5th byte from the original location
-                byte[] originalBytes = new byte[5];
-                ReadProcessMemory(_processHandle, _freeBuyShopHookAddress, originalBytes, 5, out _);
-                injectedCode.AddRange(originalBytes); // Add original 5 bytes
+                // newmem:
+                // readMem(INJECTfreebuy,5) - Execute original instruction first
+                injectedCode.AddRange(originalBytes); // 5 bytes at offset 0-4
 
-                // cmp r15d,0Bh
-                injectedCode.AddRange(new byte[] { 0x41, 0x83, 0xFF, 0x0B });
-                // jne code
-                injectedCode.AddRange(new byte[] { 0x75, 0x0A }); // jne +10 bytes
+                // cmp r15d, 0Bh
+                injectedCode.AddRange(new byte[] { 0x41, 0x83, 0xFF, 0x0B }); // 4 bytes at offset 5-8
 
-                // mov eax,[cfFreeBuyTokenQuan]
-                injectedCode.AddRange(new byte[] { 0x8B, 0x05 });
-                int movEaxOffsetPosition = injectedCode.Count; // Remember where to patch the offset
-                injectedCode.AddRange(new byte[] { 0x00, 0x00, 0x00, 0x00 }); // Placeholder for offset
+                // jne code (skip mov eax if r15d != 0x0B)
+                // mov eax,[rel32] is 6 bytes, so jne +6
+                injectedCode.AddRange(new byte[] { 0x75, 0x06 }); // 2 bytes at offset 9-10
+
+                // mov eax,[cfFreeBuyTokenQuan] (RIP-relative)
+                injectedCode.AddRange(new byte[] { 0x8B, 0x05 }); // 2 bytes at offset 11-12
+                int movEaxOffsetPosition = injectedCode.Count;
+                injectedCode.AddRange(new byte[] { 0x00, 0x00, 0x00, 0x00 }); // 4 bytes placeholder at offset 13-16
 
                 // code:
                 // jmp return
-                injectedCode.Add(0xE9);
+                injectedCode.Add(0xE9); // 1 byte at offset 17
                 IntPtr returnAddress = new IntPtr(_freeBuyShopHookAddress.ToInt64() + 5);
-                long jmpReturnDist = returnAddress.ToInt64() - (_freeBuyShopCodeCave.ToInt64() + injectedCode.Count + 4);
-                injectedCode.AddRange(BitConverter.GetBytes((int)jmpReturnDist));
+                int jmpCodeLabelOffset = injectedCode.Count;
+                injectedCode.AddRange(new byte[] { 0x00, 0x00, 0x00, 0x00 }); // 4 bytes placeholder at offset 18-21
 
-                // Set cfFreeBuyTokenQuan address right after the code
-                _cfFreeBuyShopTokenQuanAddress = new IntPtr(_freeBuyShopCodeCave.ToInt64() + injectedCode.Count);
+                // cfFreeBuyTokenQuan:
+                int cfTokenQuanOffset = injectedCode.Count;
+                _cfFreeBuyShopTokenQuanAddress = new IntPtr(_freeBuyShopCodeCave.ToInt64() + cfTokenQuanOffset);
+                injectedCode.AddRange(BitConverter.GetBytes((int)999)); // dd 999 at offset 22-25
 
-                // Now calculate and patch the mov eax offset
+                // memfreebuyBck: (backup of original bytes for disable)
+                int memBckOffset = injectedCode.Count;
+                injectedCode.AddRange(originalBytes); // 5 bytes backup at offset 26-30
+
+                // Now calculate and patch the RIP-relative offsets
                 byte[] codeArray = injectedCode.ToArray();
+
+                // Patch mov eax,[cfFreeBuyTokenQuan] offset
+                // RIP-relative: offset = target - (instruction_end)
                 long movEaxInstructionEnd = _freeBuyShopCodeCave.ToInt64() + movEaxOffsetPosition + 4;
-                int cfQuanOffset = (int)(_cfFreeBuyShopTokenQuanAddress.ToInt64() - movEaxInstructionEnd);
-                byte[] offsetBytes = BitConverter.GetBytes(cfQuanOffset);
-                Array.Copy(offsetBytes, 0, codeArray, movEaxOffsetPosition, 4);
-                injectedCode = new List<byte>(codeArray);
+                int cfQuanRelOffset = (int)(_cfFreeBuyShopTokenQuanAddress.ToInt64() - movEaxInstructionEnd);
+                byte[] cfQuanOffsetBytes = BitConverter.GetBytes(cfQuanRelOffset);
+                Array.Copy(cfQuanOffsetBytes, 0, codeArray, movEaxOffsetPosition, 4);
 
-                // Add the quantity value (999) to the end of the code
-                injectedCode.AddRange(BitConverter.GetBytes((int)999));
+                // Patch jmp return offset
+                long jmpInstructionEnd = _freeBuyShopCodeCave.ToInt64() + jmpCodeLabelOffset + 4;
+                int jmpReturnRelOffset = (int)(returnAddress.ToInt64() - jmpInstructionEnd);
+                byte[] jmpReturnOffsetBytes = BitConverter.GetBytes(jmpReturnRelOffset);
+                Array.Copy(jmpReturnOffsetBytes, 0, codeArray, jmpCodeLabelOffset, 4);
 
-                // Write injected code + data
-                if (!WriteProcessMemory(_processHandle, _freeBuyShopCodeCave, injectedCode.ToArray(), injectedCode.Count, out _))
+                // Write injected code + data to code cave
+                if (!WriteProcessMemory(_processHandle, _freeBuyShopCodeCave, codeArray, codeArray.Length, out _))
                 {
                     VirtualFreeEx(_processHandle, _freeBuyShopCodeCave, 0, MEM_RELEASE);
                     _freeBuyShopCodeCave = IntPtr.Zero;
                     throw new Exception("Failed to write Free Buy Shop injection code");
                 }
 
-                // Create hook
+                // Create hook: jmp newmem
                 long jmpToCodeCave = _freeBuyShopCodeCave.ToInt64() - (_freeBuyShopHookAddress.ToInt64() + 5);
                 byte[] hookBytes = new byte[5];
-                hookBytes[0] = 0xE9; // jmp
+                hookBytes[0] = 0xE9; // jmp rel32
                 byte[] hookOffsetBytes = BitConverter.GetBytes((int)jmpToCodeCave);
                 Array.Copy(hookOffsetBytes, 0, hookBytes, 1, 4);
 
@@ -2276,10 +2713,10 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.Services
 
                 if (_freeBuyShopHookAddress != IntPtr.Zero)
                 {
-                    // Restore original bytes
+                    // Restore original bytes from memfreebuyBck (at offset 26 in code cave)
                     byte[] originalBytes = new byte[5];
-                    // Read the original bytes we saved at the start of our code cave
-                    ReadProcessMemory(_processHandle, _freeBuyShopCodeCave, originalBytes, 5, out _);
+                    IntPtr memBckAddress = new IntPtr(_freeBuyShopCodeCave.ToInt64() + 26);
+                    ReadProcessMemory(_processHandle, memBckAddress, originalBytes, 5, out _);
 
                     uint oldProtect;
                     VirtualProtectEx(_processHandle, _freeBuyShopHookAddress, 5, PAGE_EXECUTE_READWRITE, out oldProtect);
@@ -2399,11 +2836,11 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.Services
                 byte[] bckRxregInit = new byte[24];
                 WriteProcessMemory(_processHandle, bckRxregAddress, bckRxregInit, 24, out _);
 
-                // Build injection code - EXACT match to CE script structure
+                // Build injection code matching CE script (Add-One only)
                 List<byte> injectionCode = new List<byte>();
 
                 // ===== newmem: =====
-                // readmem(INJECTaddplayerspirit,5) - Execute original: mov r12,[r14+rax*8+08]
+                // readMem(INJECTaddplayerspirit,5) - Execute original: mov r12,[r14+rax*8+08]
                 injectionCode.AddRange(originalBytes);
 
                 // test r12,r12
@@ -2420,7 +2857,7 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.Services
                 int jneNotEmptyOffset = injectionCode.Count;
                 injectionCode.AddRange(new byte[] { 0x0F, 0x85, 0x00, 0x00, 0x00, 0x00 }); // jne rel32 (patch later)
 
-                // ===== Save registers (exactly like CE script) =====
+                // ===== Save registers =====
                 // mov [bckRxreg],rax
                 int bckRaxOff = (int)(bckRxregAddress.ToInt64() - (_playerSpiritInjectionCodeCave.ToInt64() + injectionCode.Count + 7));
                 injectionCode.AddRange(new byte[] { 0x48, 0x89, 0x05 });
@@ -2442,7 +2879,7 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.Services
                 injectionCode.AddRange(BitConverter.GetBytes(cfTypeOff));
                 injectionCode.Add(0x00);
 
-                // je codeE (skip if disabled - type == 0)
+                // je codeE (skip if type == 0, meaning disabled/not ready)
                 int jeDisabledOffset = injectionCode.Count;
                 injectionCode.AddRange(new byte[] { 0x0F, 0x84, 0x00, 0x00, 0x00, 0x00 }); // je rel32 (patch later)
 
@@ -2498,7 +2935,7 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.Services
                 long jmpReturnOff = returnAddress.ToInt64() - (_playerSpiritInjectionCodeCave.ToInt64() + injectionCode.Count + 4);
                 injectionCode.AddRange(BitConverter.GetBytes((int)jmpReturnOff));
 
-                // ===== fncAddPlayerspirit function (matching CE script exactly) =====
+                // ===== fncAddPlayerspirit function =====
                 int fncStart = injectionCode.Count;
 
                 // push rcx

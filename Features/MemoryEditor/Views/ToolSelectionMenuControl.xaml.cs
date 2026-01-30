@@ -97,6 +97,14 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.Views
             }
         }
 
+        private void SpecialMovesEditorCard_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (ViewModel != null && ViewModel.MemoryEditor.SelectSpecialMovesEditorCommand.CanExecute(null))
+            {
+                ViewModel.MemoryEditor.SelectSpecialMovesEditorCommand.Execute(null);
+            }
+        }
+
         private void CustomPassivesEditorCard_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             try

@@ -8,6 +8,7 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading;
 using InazumaElevenVRSaveEditor.Common.Infrastructure;
+using InazumaElevenVRSaveEditor.Features.MemoryEditor.Data;
 using InazumaElevenVRSaveEditor.Features.MemoryEditor.Models;
 using InazumaElevenVRSaveEditor.Features.MemoryEditor.Services;
 using InazumaElevenVRSaveEditor.Features.MemoryEditor.Views;
@@ -37,6 +38,7 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
         private bool _isCustomHeroSpiritIncrementEnabled = false;
         private bool _isStoreItemMultiplierEnabled = false;
         private bool _isPassiveValueEditingEnabled = false;
+        private bool _isSpecialMoveTypeEditingEnabled = false;
         private bool _isUnlimitedSpiritsEnabled = false;
         private bool _isPlayerLevelEnabled = false;
         private string _playerLevelInput = "99";
@@ -45,10 +47,11 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
         // Individual maintenance flags for each card
         private bool _isStarsUnderMaintenance = true;
         private bool _isFlowersUnderMaintenance = true;
-        private bool _isSpiritsUnderMaintenance = true;
+        private bool _isSpiritsUnderMaintenance = false;
         private bool _isBeansUnderMaintenance = true;
         private bool _isVictoryItemsUnderMaintenance = true;
-        private bool _isPassiveValuesUnderMaintenance = true;
+        private bool _isPassiveValuesUnderMaintenance = false;
+        private bool _isSpecialMovesUnderMaintenance = false;
 
         // Individual maintenance flags for toggle options
         private bool _isFreezeItemsUnderMaintenance = false;
@@ -60,12 +63,12 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
         private bool _isCustomBaseSpiritIncrementUnderMaintenance = false;
         private bool _isCustomHeroSpiritIncrementUnderMaintenance = false;
         private bool _isUnlimitedHeroesUnderMaintenance = false;
-        private bool _isUnlimitedHeroesEnabled = true;
+        private bool _isUnlimitedHeroesEnabled = false;
         private bool _isFreeBuySpiritMarketEnabled = false;
-        private bool _isFreeBuySpiritMarketUnderMaintenance = true;
-        private bool _isPlayerSpiritsUnderMaintenance = true;
+        private bool _isFreeBuySpiritMarketUnderMaintenance = false;
+        private bool _isPlayerSpiritsUnderMaintenance = false;
         private bool _isFreeBuyShopEnabled = false;
-        private bool _isFreeBuyShopUnderMaintenance = true;
+        private bool _isFreeBuyShopUnderMaintenance = false;
         private bool _isPlayerLevelUnderMaintenance = false;
 
         // Hidden flags for cards
@@ -86,6 +89,7 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
         private bool _isUnlimitedHeroesHidden = false;
         private bool _isPlayerLevelHidden = false;
         private bool _isPassiveValuesHidden = false;
+        private bool _isSpecialMovesHidden = false;
         private bool _isCustomPassivesHidden = false;
 
         // Passive value tracking
@@ -95,13 +99,74 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
         private bool _hasPassiveValue = false;
         private PassiveInfo? _selectedPassive = null;
 
+        // Special Move value tracking (9 slots)
+        private string[] _specialMoveCurrentValues = new string[9] { "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A" };
+        private string[] _specialMoveNewValues = new string[9] { "", "", "", "", "", "", "", "", "" };
+        private bool[] _hasSpecialMoveValue = new bool[9] { false, false, false, false, false, false, false, false, false };
+        private SpecialMove?[] _selectedSpecialMoves = new SpecialMove?[9];
+        private readonly string[] _specialMoveSlotNames = new string[9]
+        {
+            "Main Move (r8d=0)",
+            "Slot 2 (r8d=2)",
+            "Slot 3 (r8d=4)",
+            "Slot 4 (r8d=8/9)",
+            "Slot 5 (r8d=A/B)",
+            "Slot 6 (r8d=C/D)",
+            "Slot 7 (r8d=13)",
+            "Slot 8 (r8d=15)",
+            "Slot 9 (r8d=17)"
+        };
+
+        // Special Move dropdown data
+        private string _selectedMoveCategory = "All";
+        public List<SpecialMove> AllSpecialMoves { get; } = SpecialMoveData.AllMoves;
+
+        public List<string> AvailableMoveCategories { get; } = new List<string>
+        {
+            "All",
+            "Shot",
+            "Offence",
+            "Defence",
+            "Goalkeep",
+            "Keshin",
+            "Armourfied Keshin",
+            "Mix 'n' Match",
+            "Totems",
+            "Bond Transform",
+            "Awakening"
+        };
+
+        public string SelectedMoveCategory
+        {
+            get => _selectedMoveCategory;
+            set
+            {
+                if (_selectedMoveCategory != value)
+                {
+                    _selectedMoveCategory = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(FilteredSpecialMoves));
+                }
+            }
+        }
+
+        public List<SpecialMove> FilteredSpecialMoves
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(_selectedMoveCategory) || _selectedMoveCategory == "All")
+                    return AllSpecialMoves;
+                return AllSpecialMoves.Where(m => m.Category == _selectedMoveCategory).ToList();
+            }
+        }
+
         // Custom Passives
         private string _customPassive1 = "";
         private string _customPassive2 = "";
         private string _customPassive3 = "";
         private string _customPassive4 = "";
         private string _customPassive5 = "";
-        private bool _isCustomPassivesUnderMaintenance = true;
+        private bool _isCustomPassivesUnderMaintenance = false;
 
         // Tutorials
         private TutorialsViewModel? _tutorialsViewModel;
@@ -240,6 +305,27 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
                 }
             });
             ApplyPassiveValueCommand = new RelayCommand(ApplyPassiveValue, CanApplyPassiveValue);
+            ToggleSpecialMoveTypeEditingCommand = new RelayCommand(ToggleSpecialMoveTypeEditing, CanToggleSpecialMoveTypeEditing);
+            SelectSpecialMovesEditorCommand = new RelayCommand(() =>
+            {
+                // Show warning before entering Special Moves editor
+                var result = MessageBox.Show(
+                    "⚠️ IMPORTANT WARNING ⚠️\n\n" +
+                    "• Special move values you edit will affect the current player's moves\n" +
+                    "• Special move values will reset to default after restarting the game\n" +
+                    "• Use this feature carefully\n\n" +
+                    "Do you want to continue?",
+                    "Special Moves Warning",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning);
+
+                if (result == MessageBoxResult.Yes)
+                {
+                    SelectedTool = "specialmoves";
+                    SelectedValue = null;
+                }
+            });
+            ApplySpecialMoveValueCommand = new RelayCommand(ApplySpecialMoveValueWrapper, CanApplySpecialMoveValueWrapper);
             SelectSpiritCardsEditorCommand = new RelayCommand(() =>
             {
                 SelectedTool = "spiritcards";
@@ -399,106 +485,128 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
             // Initialize Spirit Cards Collection with all spirit IDs from the Cheat Engine script
             SpiritCardsCollection = new ObservableCollection<SpiritCardInfo>
             {
+                new SpiritCardInfo { Name = "Acker Reese", Variant = "Pink", SpiritId = 0x46071079 },
+                new SpiritCardInfo { Name = "Acker Reese", Variant = "White-Black", SpiritId = 0xE86F81E8 },
+                new SpiritCardInfo { Name = "Aiden Froste", Variant = "Pink", SpiritId = 0x4CA0D52D },
+                new SpiritCardInfo { Name = "Aiden Froste", Variant = "Red", SpiritId = 0xCB00F04E },
+                new SpiritCardInfo { Name = "Alix La Fontaine", Variant = "White-Black", SpiritId = 0x64D90B98 },
+                new SpiritCardInfo { Name = "Alix La Fontaine", Variant = "Pink", SpiritId = 0xCAB19A09 },
                 new SpiritCardInfo { Name = "Alpha", Variant = "Pink", SpiritId = 0x1FB2701F },
                 new SpiritCardInfo { Name = "Alpha", Variant = "White-Black", SpiritId = 0x367AC4ED },
-                new SpiritCardInfo { Name = "Arion Sherwind", Variant = "Pink", SpiritId = 0x24DFD4DA },
-                new SpiritCardInfo { Name = "Arion Sherwind", Variant = "White-Black", SpiritId = 0x0D176028 },
-                new SpiritCardInfo { Name = "Archer Hawkins", Variant = "Pink", SpiritId = 0x75FFCCFC },
                 new SpiritCardInfo { Name = "Archer Hawkins", Variant = "Red", SpiritId = 0x5C37780E },
+                new SpiritCardInfo { Name = "Archer Hawkins", Variant = "Pink", SpiritId = 0x75FFCCFC },
                 new SpiritCardInfo { Name = "Arculus Orbes", Variant = "Pink", SpiritId = 0x2CCA249C },
                 new SpiritCardInfo { Name = "Arculus Orbes", Variant = "White-Black", SpiritId = 0x0502906E },
+                new SpiritCardInfo { Name = "Arion Sherwind", Variant = "White-Black", SpiritId = 0x0D176028 },
+                new SpiritCardInfo { Name = "Arion Sherwind", Variant = "Pink", SpiritId = 0x24DFD4DA },
                 new SpiritCardInfo { Name = "Austin Hobbes", Variant = "Pink", SpiritId = 0x5ED29F3F },
                 new SpiritCardInfo { Name = "Austin Hobbes", Variant = "Red", SpiritId = 0x771A2BCD },
-                new SpiritCardInfo { Name = "Axel Blaze", Variant = "Pink", SpiritId = 0xBFFC1B42 },
                 new SpiritCardInfo { Name = "Axel Blaze", Variant = "White-Black", SpiritId = 0x9634AFB0 },
+                new SpiritCardInfo { Name = "Axel Blaze", Variant = "Pink", SpiritId = 0xBFFC1B42 },
                 new SpiritCardInfo { Name = "Bailong", Variant = "Pink", SpiritId = 0xD1B08725 },
                 new SpiritCardInfo { Name = "Bailong", Variant = "Red", SpiritId = 0xF87833D7 },
-                new SpiritCardInfo { Name = "Bash Lancer", Variant = "Pink", SpiritId = 0xA9FB7299 },
                 new SpiritCardInfo { Name = "Bash Lancer", Variant = "Red", SpiritId = 0x8033C66B },
-                new SpiritCardInfo { Name = "Bellatrix", Variant = "Red", SpiritId = 0x62A929F4 },
+                new SpiritCardInfo { Name = "Bash Lancer", Variant = "Pink", SpiritId = 0xA9FB7299 },
                 new SpiritCardInfo { Name = "Bellatrix", Variant = "White-Black", SpiritId = 0x4B619D06 },
-                new SpiritCardInfo { Name = "Beta", Variant = "Pink", SpiritId = 0x35FE1083 },
+                new SpiritCardInfo { Name = "Bellatrix", Variant = "Red", SpiritId = 0x62A929F4 },
                 new SpiritCardInfo { Name = "Beta", Variant = "Red", SpiritId = 0x1C36A471 },
+                new SpiritCardInfo { Name = "Beta", Variant = "Pink", SpiritId = 0x35FE1083 },
+                new SpiritCardInfo { Name = "Briar Bloomhurst", Variant = "White-Black", SpiritId = 0x7DC23AD9 },
+                new SpiritCardInfo { Name = "Briar Bloomhurst", Variant = "Pink", SpiritId = 0x540A8E2B },
                 new SpiritCardInfo { Name = "Buddy Fury", Variant = "Red", SpiritId = 0x6A6392AD },
                 new SpiritCardInfo { Name = "Buddy Fury", Variant = "Pink", SpiritId = 0x43AB265F },
                 new SpiritCardInfo { Name = "Byron Love", Variant = "Pink", SpiritId = 0x209B996D },
                 new SpiritCardInfo { Name = "Byron Love", Variant = "Red", SpiritId = 0x09532D9F },
-                new SpiritCardInfo { Name = "Briar Bloomhurst", Variant = "Pink", SpiritId = 0x540A8E2B },
-                new SpiritCardInfo { Name = "Briar Bloomhurst", Variant = "White-Black", SpiritId = 0x7DC23AD9 },
-                new SpiritCardInfo { Name = "Caleb Stonewall", Variant = "Pink", SpiritId = 0x1376EEC9 },
+                new SpiritCardInfo { Name = "Cade Shelby", Variant = "White-Black", SpiritId = 0x00B5CE9C },
+                new SpiritCardInfo { Name = "Cade Shelby", Variant = "Pink", SpiritId = 0xAEDD5F0D },
                 new SpiritCardInfo { Name = "Caleb Stonewall", Variant = "Red", SpiritId = 0x3ABE5A3B },
-                new SpiritCardInfo { Name = "Circulus Corona", Variant = "Red", SpiritId = 0x06864400 },
+                new SpiritCardInfo { Name = "Caleb Stonewall", Variant = "Pink", SpiritId = 0x1376EEC9 },
+                new SpiritCardInfo { Name = "Cedric Freud", Variant = "Red", SpiritId = 0x1B4B18EC },
+                new SpiritCardInfo { Name = "Cedric Freud", Variant = "White-Black", SpiritId = 0x3283AC1E },
                 new SpiritCardInfo { Name = "Circulus Corona", Variant = "White-Black", SpiritId = 0x2F4EF0F2 },
+                new SpiritCardInfo { Name = "Circulus Corona", Variant = "Red", SpiritId = 0x06864400 },
                 new SpiritCardInfo { Name = "Darren LaChance", Variant = "Pink", SpiritId = 0xD963436D },
                 new SpiritCardInfo { Name = "Darren LaChance", Variant = "Red", SpiritId = 0xF0ABF79F },
-                new SpiritCardInfo { Name = "Dvalin", Variant = "Pink", SpiritId = 0x5735BAC2 },
                 new SpiritCardInfo { Name = "Dvalin", Variant = "Red", SpiritId = 0x7EFD0E30 },
+                new SpiritCardInfo { Name = "Dvalin", Variant = "Pink", SpiritId = 0x5735BAC2 },
+                new SpiritCardInfo { Name = "Elliot Ember", Variant = "Red", SpiritId = 0x97FD929C },
+                new SpiritCardInfo { Name = "Elliot Ember", Variant = "Pink", SpiritId = 0x105DB7FF },
                 new SpiritCardInfo { Name = "Erik Eagle", Variant = "Pink", SpiritId = 0x9594520B },
                 new SpiritCardInfo { Name = "Erik Eagle", Variant = "White-Black", SpiritId = 0xBC5CE6F9 },
                 new SpiritCardInfo { Name = "Falco Flashman", Variant = "Red", SpiritId = 0xCBBB7F46 },
                 new SpiritCardInfo { Name = "Falco Flashman", Variant = "Pink", SpiritId = 0xE273CBB4 },
-                new SpiritCardInfo { Name = "Fei Rune", Variant = "Pink", SpiritId = 0x28685D70 },
                 new SpiritCardInfo { Name = "Fei Rune", Variant = "White-Black", SpiritId = 0x01A0E982 },
+                new SpiritCardInfo { Name = "Fei Rune", Variant = "Pink", SpiritId = 0x28685D70 },
                 new SpiritCardInfo { Name = "Gabriel Garcia", Variant = "Pink", SpiritId = 0xC72B0D11 },
                 new SpiritCardInfo { Name = "Gabriel Garcia", Variant = "White-Black", SpiritId = 0xEEE3B9E3 },
                 new SpiritCardInfo { Name = "Gamma", Variant = "Black", SpiritId = 0x3EA257BE },
                 new SpiritCardInfo { Name = "Gamma", Variant = "Red", SpiritId = 0x176AE34C },
-                new SpiritCardInfo { Name = "Gandares Baran", Variant = "Red", SpiritId = 0xBCDFC454 },
                 new SpiritCardInfo { Name = "Gandares Baran", Variant = "White-Black", SpiritId = 0x951770A6 },
-                new SpiritCardInfo { Name = "Gazelle", Variant = "Pink", SpiritId = 0x030F668B },
+                new SpiritCardInfo { Name = "Gandares Baran", Variant = "Red", SpiritId = 0xBCDFC454 },
                 new SpiritCardInfo { Name = "Gazelle", Variant = "White-Black", SpiritId = 0x2AC7D279 },
+                new SpiritCardInfo { Name = "Gazelle", Variant = "Pink", SpiritId = 0x030F668B },
                 new SpiritCardInfo { Name = "Goldie Lemmon", Variant = "Red", SpiritId = 0x7CD71DC7 },
                 new SpiritCardInfo { Name = "Goldie Lemmon", Variant = "White-Black", SpiritId = 0x551FA935 },
-                new SpiritCardInfo { Name = "Harper Evans", Variant = "Pink", SpiritId = 0x3887A738 },
                 new SpiritCardInfo { Name = "Harper Evans", Variant = "Red", SpiritId = 0x114F13CA },
-                new SpiritCardInfo { Name = "Hector Helio", Variant = "Pink", SpiritId = 0xF75F83DA },
+                new SpiritCardInfo { Name = "Harper Evans", Variant = "Pink", SpiritId = 0x3887A738 },
+                new SpiritCardInfo { Name = "Heath Moore", Variant = "Pink", SpiritId = 0x2D3D9E4F },
+                new SpiritCardInfo { Name = "Heath Moore", Variant = "Red", SpiritId = 0xAA9DBB2C },
                 new SpiritCardInfo { Name = "Hector Helio", Variant = "White-Black", SpiritId = 0xDE973728 },
-                new SpiritCardInfo { Name = "Hurley Kane", Variant = "Red", SpiritId = 0x37D0DE29 },
+                new SpiritCardInfo { Name = "Hector Helio", Variant = "Pink", SpiritId = 0xF75F83DA },
                 new SpiritCardInfo { Name = "Hurley Kane", Variant = "White-Black", SpiritId = 0x1E186ADB },
+                new SpiritCardInfo { Name = "Hurley Kane", Variant = "Red", SpiritId = 0x37D0DE29 },
                 new SpiritCardInfo { Name = "Jack Wallside", Variant = "Pink", SpiritId = 0x951322B6 },
                 new SpiritCardInfo { Name = "Jack Wallside", Variant = "White-Black", SpiritId = 0xBCDB9644 },
                 new SpiritCardInfo { Name = "Janus", Variant = "Red", SpiritId = 0x4C6835DA },
                 new SpiritCardInfo { Name = "Janus", Variant = "White-Black", SpiritId = 0x65A08128 },
                 new SpiritCardInfo { Name = "Jean-Pierre Lapin", Variant = "Red", SpiritId = 0x9171AA97 },
                 new SpiritCardInfo { Name = "Jean-Pierre Lapin", Variant = "White-Black", SpiritId = 0xB8B91E65 },
-                new SpiritCardInfo { Name = "Joseph King", Variant = "Red", SpiritId = 0xA4A1945A },
                 new SpiritCardInfo { Name = "Joseph King", Variant = "Pink", SpiritId = 0x8D6920A8 },
-                new SpiritCardInfo { Name = "Jude Sharp", Variant = "Red", SpiritId = 0xBC78CF2C },
+                new SpiritCardInfo { Name = "Joseph King", Variant = "Red", SpiritId = 0xA4A1945A },
                 new SpiritCardInfo { Name = "Jude Sharp", Variant = "White-Black", SpiritId = 0x95B07BDE },
-                new SpiritCardInfo { Name = "Mark Evans", Variant = "Pink", SpiritId = 0xA7254034 },
+                new SpiritCardInfo { Name = "Jude Sharp", Variant = "Red", SpiritId = 0xBC78CF2C },
                 new SpiritCardInfo { Name = "Mark Evans", Variant = "White-Black", SpiritId = 0x8EEDF4C6 },
+                new SpiritCardInfo { Name = "Mark Evans", Variant = "Pink", SpiritId = 0xA7254034 },
                 new SpiritCardInfo { Name = "Nathan Swift", Variant = "Red", SpiritId = 0x8C0813F7 },
                 new SpiritCardInfo { Name = "Nathan Swift", Variant = "White-Black", SpiritId = 0xA5C0A705 },
-                new SpiritCardInfo { Name = "Ozrock Boldar", Variant = "Red", SpiritId = 0xB02972DD },
                 new SpiritCardInfo { Name = "Ozrock Boldar", Variant = "Pink", SpiritId = 0x99E1C62F },
-                new SpiritCardInfo { Name = "Paolo Bianchi", Variant = "Red", SpiritId = 0xFA3ADF9E },
+                new SpiritCardInfo { Name = "Ozrock Boldar", Variant = "Red", SpiritId = 0xB02972DD },
                 new SpiritCardInfo { Name = "Paolo Bianchi", Variant = "White-Black", SpiritId = 0xD3F26B6C },
+                new SpiritCardInfo { Name = "Paolo Bianchi", Variant = "Red", SpiritId = 0xFA3ADF9E },
                 new SpiritCardInfo { Name = "Plink Powai", Variant = "Red", SpiritId = 0xD4B76E4B },
                 new SpiritCardInfo { Name = "Plink Powai", Variant = "White-Black", SpiritId = 0xFD7FDAB9 },
                 new SpiritCardInfo { Name = "Quentin Cinquedea", Variant = "Pink", SpiritId = 0xCDE4A0E1 },
                 new SpiritCardInfo { Name = "Quentin Cinquedea", Variant = "Red", SpiritId = 0xE42C1413 },
+                new SpiritCardInfo { Name = "Raika Shinohara", Variant = "Red", SpiritId = 0x30664B2F },
+                new SpiritCardInfo { Name = "Raika Shinohara", Variant = "Pink", SpiritId = 0xB7C66E4C },
                 new SpiritCardInfo { Name = "Riccardo Di Rigo", Variant = "Red", SpiritId = 0x3DC4E59B },
                 new SpiritCardInfo { Name = "Riccardo Di Rigo", Variant = "White-Black", SpiritId = 0x140C5169 },
                 new SpiritCardInfo { Name = "Rondula Flehl", Variant = "Red", SpiritId = 0x9A3492BB },
                 new SpiritCardInfo { Name = "Rondula Flehl", Variant = "Pink", SpiritId = 0xB3FC2649 },
-                new SpiritCardInfo { Name = "Ruger Baran", Variant = "Red", SpiritId = 0xA5C4F515 },
                 new SpiritCardInfo { Name = "Ruger Baran", Variant = "Pink", SpiritId = 0x8C0C41E7 },
+                new SpiritCardInfo { Name = "Ruger Baran", Variant = "Red", SpiritId = 0xA5C4F515 },
                 new SpiritCardInfo { Name = "Samguk Han", Variant = "Pink", SpiritId = 0xDCD5DB61 },
                 new SpiritCardInfo { Name = "Samguk Han", Variant = "White-Black", SpiritId = 0xF51D6F93 },
-                new SpiritCardInfo { Name = "Simeon Ayp", Variant = "Pink", SpiritId = 0x098AA343 },
-                new SpiritCardInfo { Name = "Simeon Ayp", Variant = "Red", SpiritId = 0x204217B1 },
                 new SpiritCardInfo { Name = "Shawn Froste", Variant = "Red", SpiritId = 0x2D3CA337 },
                 new SpiritCardInfo { Name = "Shawn Froste", Variant = "White-Black", SpiritId = 0x04F417C5 },
-                new SpiritCardInfo { Name = "Terry Archibald", Variant = "Pink", SpiritId = 0x2522046A },
+                new SpiritCardInfo { Name = "Simeon Ayp", Variant = "Pink", SpiritId = 0x098AA343 },
+                new SpiritCardInfo { Name = "Simeon Ayp", Variant = "Red", SpiritId = 0x204217B1 },
+                new SpiritCardInfo { Name = "Sonny Wright", Variant = "Red", SpiritId = 0xD05DE84C },
+                new SpiritCardInfo { Name = "Sonny Wright", Variant = "White-Black", SpiritId = 0xF9955CBE },
                 new SpiritCardInfo { Name = "Terry Archibald", Variant = "White-Black", SpiritId = 0x0CEAB098 },
+                new SpiritCardInfo { Name = "Terry Archibald", Variant = "Pink", SpiritId = 0x2522046A },
                 new SpiritCardInfo { Name = "Tezcat", Variant = "Pink", SpiritId = 0xD234534B },
                 new SpiritCardInfo { Name = "Tezcat", Variant = "White-Black", SpiritId = 0xFBFCE7B9 },
-                new SpiritCardInfo { Name = "Torch", Variant = "Red", SpiritId = 0xFAC70307 },
+                new SpiritCardInfo { Name = "Thierry Reyes", Variant = "Pink", SpiritId = 0x85F00CCE },
+                new SpiritCardInfo { Name = "Thierry Reyes", Variant = "Red", SpiritId = 0x025029AD },
                 new SpiritCardInfo { Name = "Torch", Variant = "Pink", SpiritId = 0xD30FB7F5 },
+                new SpiritCardInfo { Name = "Torch", Variant = "Red", SpiritId = 0xFAC70307 },
                 new SpiritCardInfo { Name = "Victor Blade", Variant = "Red", SpiritId = 0xC40C8017 },
                 new SpiritCardInfo { Name = "Victor Blade", Variant = "White-Black", SpiritId = 0xEDC434E5 },
-                new SpiritCardInfo { Name = "Xene", Variant = "Red", SpiritId = 0x527AAC47 },
+                new SpiritCardInfo { Name = "Xavier Schiller", Variant = "Red", SpiritId = 0x0D4C419A },
+                new SpiritCardInfo { Name = "Xavier Schiller", Variant = "White-Black", SpiritId = 0x2484F568 },
                 new SpiritCardInfo { Name = "Xene", Variant = "White-Black", SpiritId = 0x7BB218B5 },
+                new SpiritCardInfo { Name = "Xene", Variant = "Red", SpiritId = 0x527AAC47 },
                 new SpiritCardInfo { Name = "Zanark Avalonic", Variant = "Pink", SpiritId = 0x8EC6A388 },
                 new SpiritCardInfo { Name = "Zanark Avalonic", Variant = "Red", SpiritId = 0xA70E177A }
             };
@@ -967,6 +1075,9 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
         public ICommand OpenItemListCommand { get; }
         public ICommand SelectPassiveValuesEditorCommand { get; }
         public ICommand ApplyPassiveValueCommand { get; }
+        public ICommand ToggleSpecialMoveTypeEditingCommand { get; }
+        public ICommand SelectSpecialMovesEditorCommand { get; }
+        public ICommand ApplySpecialMoveValueCommand { get; }
         public ICommand SelectSpiritCardsEditorCommand { get; }
         public ICommand AddSpiritCardCommand { get; }
         public ICommand ToggleSpiritCardCommand { get; }
@@ -1225,6 +1336,19 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
         }
         public bool IsPassiveValuesEnabled => !_isPassiveValuesUnderMaintenance;
 
+        // Special Moves maintenance
+        public bool IsSpecialMovesUnderMaintenance
+        {
+            get => _isSpecialMovesUnderMaintenance;
+            set
+            {
+                _isSpecialMovesUnderMaintenance = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(IsSpecialMovesEnabled));
+            }
+        }
+        public bool IsSpecialMovesEnabled => !_isSpecialMovesUnderMaintenance;
+
         // Toggle option maintenance properties
         public bool IsFreezeItemsUnderMaintenance
         {
@@ -1404,6 +1528,7 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
         public bool IsUnlimitedHeroesVisible => !_isUnlimitedHeroesHidden;
         public bool IsPlayerLevelVisible => !_isPlayerLevelHidden;
         public bool IsPassiveValuesVisible => !_isPassiveValuesHidden;
+        public bool IsSpecialMovesVisible => !_isSpecialMovesHidden;
         public bool IsCustomPassivesVisible => !_isCustomPassivesHidden;
 
         public bool IsPassiveValueEditingEnabled
@@ -1457,6 +1582,101 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
                 ((RelayCommand)ApplyPassiveValueCommand).RaiseCanExecuteChanged();
             }
         }
+
+        // Special Move Type editing properties
+        public bool IsSpecialMoveTypeEditingEnabled
+        {
+            get => _isSpecialMoveTypeEditingEnabled;
+            set
+            {
+                _isSpecialMoveTypeEditingEnabled = value;
+                OnPropertyChanged();
+                ((RelayCommand)ToggleSpecialMoveTypeEditingCommand).RaiseCanExecuteChanged();
+            }
+        }
+
+        public string[] SpecialMoveSlotNames => _specialMoveSlotNames;
+
+        public string GetSpecialMoveCurrentValue(int slotIndex)
+        {
+            if (slotIndex < 0 || slotIndex >= 9) return "N/A";
+            return _specialMoveCurrentValues[slotIndex];
+        }
+
+        public void SetSpecialMoveCurrentValue(int slotIndex, string value)
+        {
+            if (slotIndex < 0 || slotIndex >= 9) return;
+            _specialMoveCurrentValues[slotIndex] = value;
+            OnPropertyChanged($"SpecialMoveCurrentValue{slotIndex}");
+        }
+
+        public string GetSpecialMoveNewValue(int slotIndex)
+        {
+            if (slotIndex < 0 || slotIndex >= 9) return "";
+            return _specialMoveNewValues[slotIndex];
+        }
+
+        public void SetSpecialMoveNewValue(int slotIndex, string value)
+        {
+            if (slotIndex < 0 || slotIndex >= 9) return;
+            _specialMoveNewValues[slotIndex] = value;
+            OnPropertyChanged($"SpecialMoveNewValue{slotIndex}");
+        }
+
+        public bool GetHasSpecialMoveValue(int slotIndex)
+        {
+            if (slotIndex < 0 || slotIndex >= 9) return false;
+            return _hasSpecialMoveValue[slotIndex];
+        }
+
+        public void SetHasSpecialMoveValue(int slotIndex, bool value)
+        {
+            if (slotIndex < 0 || slotIndex >= 9) return;
+            _hasSpecialMoveValue[slotIndex] = value;
+            OnPropertyChanged($"HasSpecialMoveValue{slotIndex}");
+        }
+
+        // Individual properties for data binding (slots 0-8)
+        public string SpecialMoveCurrentValue0 { get => _specialMoveCurrentValues[0]; set { _specialMoveCurrentValues[0] = value; OnPropertyChanged(); } }
+        public string SpecialMoveCurrentValue1 { get => _specialMoveCurrentValues[1]; set { _specialMoveCurrentValues[1] = value; OnPropertyChanged(); } }
+        public string SpecialMoveCurrentValue2 { get => _specialMoveCurrentValues[2]; set { _specialMoveCurrentValues[2] = value; OnPropertyChanged(); } }
+        public string SpecialMoveCurrentValue3 { get => _specialMoveCurrentValues[3]; set { _specialMoveCurrentValues[3] = value; OnPropertyChanged(); } }
+        public string SpecialMoveCurrentValue4 { get => _specialMoveCurrentValues[4]; set { _specialMoveCurrentValues[4] = value; OnPropertyChanged(); } }
+        public string SpecialMoveCurrentValue5 { get => _specialMoveCurrentValues[5]; set { _specialMoveCurrentValues[5] = value; OnPropertyChanged(); } }
+        public string SpecialMoveCurrentValue6 { get => _specialMoveCurrentValues[6]; set { _specialMoveCurrentValues[6] = value; OnPropertyChanged(); } }
+        public string SpecialMoveCurrentValue7 { get => _specialMoveCurrentValues[7]; set { _specialMoveCurrentValues[7] = value; OnPropertyChanged(); } }
+        public string SpecialMoveCurrentValue8 { get => _specialMoveCurrentValues[8]; set { _specialMoveCurrentValues[8] = value; OnPropertyChanged(); } }
+
+        public string SpecialMoveNewValue0 { get => _specialMoveNewValues[0]; set { _specialMoveNewValues[0] = value; OnPropertyChanged(); } }
+        public string SpecialMoveNewValue1 { get => _specialMoveNewValues[1]; set { _specialMoveNewValues[1] = value; OnPropertyChanged(); } }
+        public string SpecialMoveNewValue2 { get => _specialMoveNewValues[2]; set { _specialMoveNewValues[2] = value; OnPropertyChanged(); } }
+        public string SpecialMoveNewValue3 { get => _specialMoveNewValues[3]; set { _specialMoveNewValues[3] = value; OnPropertyChanged(); } }
+        public string SpecialMoveNewValue4 { get => _specialMoveNewValues[4]; set { _specialMoveNewValues[4] = value; OnPropertyChanged(); } }
+        public string SpecialMoveNewValue5 { get => _specialMoveNewValues[5]; set { _specialMoveNewValues[5] = value; OnPropertyChanged(); } }
+        public string SpecialMoveNewValue6 { get => _specialMoveNewValues[6]; set { _specialMoveNewValues[6] = value; OnPropertyChanged(); } }
+        public string SpecialMoveNewValue7 { get => _specialMoveNewValues[7]; set { _specialMoveNewValues[7] = value; OnPropertyChanged(); } }
+        public string SpecialMoveNewValue8 { get => _specialMoveNewValues[8]; set { _specialMoveNewValues[8] = value; OnPropertyChanged(); } }
+
+        public bool HasSpecialMoveValue0 { get => _hasSpecialMoveValue[0]; set { _hasSpecialMoveValue[0] = value; OnPropertyChanged(); } }
+        public bool HasSpecialMoveValue1 { get => _hasSpecialMoveValue[1]; set { _hasSpecialMoveValue[1] = value; OnPropertyChanged(); } }
+        public bool HasSpecialMoveValue2 { get => _hasSpecialMoveValue[2]; set { _hasSpecialMoveValue[2] = value; OnPropertyChanged(); } }
+        public bool HasSpecialMoveValue3 { get => _hasSpecialMoveValue[3]; set { _hasSpecialMoveValue[3] = value; OnPropertyChanged(); } }
+        public bool HasSpecialMoveValue4 { get => _hasSpecialMoveValue[4]; set { _hasSpecialMoveValue[4] = value; OnPropertyChanged(); } }
+        public bool HasSpecialMoveValue5 { get => _hasSpecialMoveValue[5]; set { _hasSpecialMoveValue[5] = value; OnPropertyChanged(); } }
+        public bool HasSpecialMoveValue6 { get => _hasSpecialMoveValue[6]; set { _hasSpecialMoveValue[6] = value; OnPropertyChanged(); } }
+        public bool HasSpecialMoveValue7 { get => _hasSpecialMoveValue[7]; set { _hasSpecialMoveValue[7] = value; OnPropertyChanged(); } }
+        public bool HasSpecialMoveValue8 { get => _hasSpecialMoveValue[8]; set { _hasSpecialMoveValue[8] = value; OnPropertyChanged(); } }
+
+        // Selected special move from dropdown (when selected, updates the new value)
+        public SpecialMove? SelectedSpecialMove0 { get => _selectedSpecialMoves[0]; set { _selectedSpecialMoves[0] = value; OnPropertyChanged(); if (value != null) SpecialMoveNewValue0 = value.HexId; } }
+        public SpecialMove? SelectedSpecialMove1 { get => _selectedSpecialMoves[1]; set { _selectedSpecialMoves[1] = value; OnPropertyChanged(); if (value != null) SpecialMoveNewValue1 = value.HexId; } }
+        public SpecialMove? SelectedSpecialMove2 { get => _selectedSpecialMoves[2]; set { _selectedSpecialMoves[2] = value; OnPropertyChanged(); if (value != null) SpecialMoveNewValue2 = value.HexId; } }
+        public SpecialMove? SelectedSpecialMove3 { get => _selectedSpecialMoves[3]; set { _selectedSpecialMoves[3] = value; OnPropertyChanged(); if (value != null) SpecialMoveNewValue3 = value.HexId; } }
+        public SpecialMove? SelectedSpecialMove4 { get => _selectedSpecialMoves[4]; set { _selectedSpecialMoves[4] = value; OnPropertyChanged(); if (value != null) SpecialMoveNewValue4 = value.HexId; } }
+        public SpecialMove? SelectedSpecialMove5 { get => _selectedSpecialMoves[5]; set { _selectedSpecialMoves[5] = value; OnPropertyChanged(); if (value != null) SpecialMoveNewValue5 = value.HexId; } }
+        public SpecialMove? SelectedSpecialMove6 { get => _selectedSpecialMoves[6]; set { _selectedSpecialMoves[6] = value; OnPropertyChanged(); if (value != null) SpecialMoveNewValue6 = value.HexId; } }
+        public SpecialMove? SelectedSpecialMove7 { get => _selectedSpecialMoves[7]; set { _selectedSpecialMoves[7] = value; OnPropertyChanged(); if (value != null) SpecialMoveNewValue7 = value.HexId; } }
+        public SpecialMove? SelectedSpecialMove8 { get => _selectedSpecialMoves[8]; set { _selectedSpecialMoves[8] = value; OnPropertyChanged(); if (value != null) SpecialMoveNewValue8 = value.HexId; } }
 
         private bool CanAttachToProcess(object? parameter)
         {
@@ -2856,6 +3076,192 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
                 StatusMessage = $"Error applying passive value: {ex.Message}";
                 MessageBox.Show(
                     $"Error occurred while applying passive value:\n\n{ex.Message}",
+                    "Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
+
+        private bool CanToggleSpecialMoveTypeEditing(object? parameter)
+        {
+            return IsAttached;
+        }
+
+        private void ToggleSpecialMoveTypeEditing(object? parameter)
+        {
+            if (!IsAttached)
+                return;
+
+            try
+            {
+                bool success;
+
+                if (!IsSpecialMoveTypeEditingEnabled)
+                {
+                    success = _memoryService.InjectSpecialMoveTypeEditing();
+
+                    if (success)
+                    {
+                        IsSpecialMoveTypeEditingEnabled = true;
+                        StatusMessage = "Special move editing enabled! Open the Abilearn Board to capture move addresses.";
+
+                        // Start a timer to poll for special move value updates
+                        var specialMoveTimer = new DispatcherTimer
+                        {
+                            Interval = TimeSpan.FromMilliseconds(100)
+                        };
+                        specialMoveTimer.Tick += (s, e) =>
+                        {
+                            if (!IsSpecialMoveTypeEditingEnabled || !IsAttached)
+                            {
+                                specialMoveTimer.Stop();
+                                return;
+                            }
+
+                            // Read all 9 special move slots
+                            for (int i = 0; i < 9; i++)
+                            {
+                                var (hasValue, address, currentValue) = _memoryService.ReadSpecialMoveValue(i);
+                                if (hasValue)
+                                {
+                                    SetHasSpecialMoveValue(i, true);
+                                    // Display as hex (convert signed to unsigned first)
+                                    uint unsignedValue = unchecked((uint)currentValue);
+                                    string hexValue = unsignedValue.ToString("X8");
+                                    // Look up move name from database
+                                    string moveName = SpecialMoveData.GetMoveName(hexValue);
+                                    string displayValue = moveName != "Unknown" ? $"{moveName} ({hexValue})" : hexValue;
+                                    SetSpecialMoveCurrentValue(i, displayValue);
+                                    if (string.IsNullOrEmpty(GetSpecialMoveNewValue(i)))
+                                    {
+                                        SetSpecialMoveNewValue(i, hexValue);
+                                    }
+                                }
+                                else
+                                {
+                                    if (GetHasSpecialMoveValue(i))
+                                    {
+                                        SetHasSpecialMoveValue(i, false);
+                                        SetSpecialMoveCurrentValue(i, "N/A");
+                                    }
+                                }
+                            }
+                        };
+                        specialMoveTimer.Start();
+                    }
+                    else
+                    {
+                        StatusMessage = "Failed to enable special move editing";
+                        MessageBox.Show(
+                            "Failed to enable special move editing.\n\n" +
+                            "Make sure the game is running and you are attached to the process.",
+                            "Enable Failed",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Error);
+                    }
+                }
+                else
+                {
+                    success = _memoryService.RemoveSpecialMoveTypeEditing();
+
+                    if (success)
+                    {
+                        IsSpecialMoveTypeEditingEnabled = false;
+                        // Reset all slots
+                        for (int i = 0; i < 9; i++)
+                        {
+                            SetHasSpecialMoveValue(i, false);
+                            SetSpecialMoveCurrentValue(i, "N/A");
+                            SetSpecialMoveNewValue(i, "");
+                        }
+                        StatusMessage = "Special move editing disabled - normal behavior restored";
+                    }
+                    else
+                    {
+                        StatusMessage = "Failed to disable special move editing";
+                        MessageBox.Show(
+                            "Failed to disable special move editing.",
+                            "Disable Failed",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Error);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Error toggling special move editing: {ex.Message}";
+                MessageBox.Show(
+                    $"Error occurred while toggling special move editing:\n\n{ex.Message}",
+                    "Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
+
+        private bool CanApplySpecialMoveValueWrapper(object? parameter)
+        {
+            if (parameter == null) return false;
+            if (!int.TryParse(parameter.ToString(), out int slotIndex)) return false;
+            return IsAttached && GetHasSpecialMoveValue(slotIndex) && !string.IsNullOrEmpty(GetSpecialMoveNewValue(slotIndex));
+        }
+
+        private void ApplySpecialMoveValueWrapper(object? parameter)
+        {
+            if (parameter == null) return;
+            if (!int.TryParse(parameter.ToString(), out int slotIndex)) return;
+            ApplySpecialMoveValue(slotIndex);
+        }
+
+        private void ApplySpecialMoveValue(int slotIndex)
+        {
+            if (!IsAttached || !GetHasSpecialMoveValue(slotIndex))
+                return;
+
+            try
+            {
+                string newValueStr = GetSpecialMoveNewValue(slotIndex).Trim();
+                int newValue;
+
+                // Try parsing as hex first (with or without 0x prefix)
+                string hexStr = newValueStr.StartsWith("0x", StringComparison.OrdinalIgnoreCase)
+                    ? newValueStr.Substring(2)
+                    : newValueStr;
+
+                if (uint.TryParse(hexStr, System.Globalization.NumberStyles.HexNumber, null, out uint unsignedValue))
+                {
+                    newValue = unchecked((int)unsignedValue);
+                }
+                else if (!int.TryParse(newValueStr, out newValue))
+                {
+                    StatusMessage = "Invalid value - please enter a hex value (e.g., F5638A87)";
+                    return;
+                }
+
+                bool success = _memoryService.WriteSpecialMoveValue(slotIndex, newValue);
+
+                if (success)
+                {
+                    uint displayValue = unchecked((uint)newValue);
+                    string hexDisplay = displayValue.ToString("X8");
+                    StatusMessage = $"Successfully applied special move value for slot {slotIndex}: {hexDisplay}";
+                    SetSpecialMoveCurrentValue(slotIndex, hexDisplay);
+                }
+                else
+                {
+                    StatusMessage = $"Failed to apply special move value for slot {slotIndex}";
+                    MessageBox.Show(
+                        $"Failed to apply special move value for slot {slotIndex}.\n\n" +
+                        "Make sure the game is running and you have a valid address captured.",
+                        "Apply Failed",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Error applying special move value: {ex.Message}";
+                MessageBox.Show(
+                    $"Error occurred while applying special move value:\n\n{ex.Message}",
                     "Error",
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);

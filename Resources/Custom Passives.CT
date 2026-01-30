@@ -3,7 +3,7 @@
   <CheatEntries>
     <CheatEntry>
       <ID>105</ID>
-      <Description>"Passive Type"</Description>
+      <Description>"[Passive Type]"</Description>
       <Options moHideChildren="1" moDeactivateChildrenAsWell="1"/>
       <GroupHeader>1</GroupHeader>
       <CheatEntries>
@@ -364,96 +364,94 @@ https://www.youtube.com/watch?v=BeWccO06N80&amp;list=PL03h91jY8sapT1dknpUtyBPvi0
 
 [ENABLE]
 //active when open Abilearn Board
-aobscanmodule(INJECTpassivetypehero,nie.exe,45 85 FF 75 03 4? 8B 3?)
+aobscanmodule(INJECTpassivetypehero,nie.exe,75 03 45 8B 3E 45 * * 74 * 48 * * * * * * 48 * * 74 * 4C)
 alloc(newmem,$1000,INJECTpassivetypehero)
-label(code codeF mempassivetypeheroBck passiveTypeHeroAdr)
+label(code codeF passiveTypeHeroAdr)
 label(cfPassivetypeheroFabled)
 label(return)
 newmem:
   jne return
-  mov r15,rsi
-  cmp edi,1
+  mov r15,r14
+  cmp ebp,1
   jne @f
   mov [passiveTypeHeroAdr],r15
 @@:
-  cmp edi,3
+  cmp ebp,3
   jne @f
   mov [passiveTypeHeroAdr+8],r15
 @@:
   cmp [cfPassivetypeheroFabled],1
   je codeF
-  cmp edi,7
+  cmp ebp,7
   jne @f
   mov [passiveTypeHeroAdr+10],r15
 @@:
-  cmp edi,B
+  cmp ebp,B
   jne @f
   mov [passiveTypeHeroAdr+18],r15
 @@:
-  cmp edi,E
+  cmp ebp,E
   jne code
   mov [passiveTypeHeroAdr+20],r15
   jmp code
 codeF:
 //Fabled
-  cmp edi,8
+  cmp ebp,8
   jne @f
   mov [passiveTypeHeroAdr+10],r15
 @@:
-  cmp edi,C
+  cmp ebp,C
   jne @f
   mov [passiveTypeHeroAdr+18],r15
 @@:
-  cmp edi,F
+  cmp ebp,F
   jne code
   mov [passiveTypeHeroAdr+20],r15
 code:
-  readMem(INJECTpassivetypehero+5,3)
+  mov r15d,[r14]
   jmp return
-mempassivetypeheroBck:
-  readMem(INJECTpassivetypehero+3,5)
 cfPassivetypeheroFabled:
   dd 0 //Hero-Type (0 = Hero, 1 = Fabled)
 passiveTypeHeroAdr:
   dq 0
-INJECTpassivetypehero+3:
+INJECTpassivetypehero:
   jmp newmem
 return:
 registersymbol(INJECTpassivetypehero)
-registersymbol(mempassivetypeheroBck passiveTypeHeroAdr cfPassivetypeheroFabled)
+registersymbol(passiveTypeHeroAdr cfPassivetypeheroFabled)
 [DISABLE]
-INJECTpassivetypehero+3:
-  readMem(mempassivetypeheroBck,5)
+INJECTpassivetypehero:
+  db 75 03 45 8B 3E
 unregistersymbol(INJECTpassivetypehero)
-unregistersymbol(mempassivetypeheroBck passiveTypeHeroAdr cfPassivetypeheroFabled)
+unregistersymbol(passiveTypeHeroAdr cfPassivetypeheroFabled)
 dealloc(newmem)
 
 {
-// ORIGINAL CODE - INJECTION POINT: nie.exe+EF124A
+// ORIGINAL CODE - INJECTION POINT: nie.exe+1413D7A
 
-nie.exe+EF1226: 48 8B D6              - mov rdx,rsi
-nie.exe+EF1229: 48 8D 4D C0           - lea rcx,[rbp-40]
-nie.exe+EF122D: F3 0F 2C C2           - cvttss2si eax,xmm2
-nie.exe+EF1231: 89 44 24 68           - mov [rsp+68],eax
-nie.exe+EF1235: E8 F6 49 52 00        - call nie.exe+1415C30
-nie.exe+EF123A: 48 8B 75 C0           - mov rsi,[rbp-40]
-nie.exe+EF123E: 48 85 F6              - test rsi,rsi
-nie.exe+EF1241: 74 0C                 - je nie.exe+EF124F
-nie.exe+EF1243: 44 8B 7D C8           - mov r15d,[rbp-38]
-nie.exe+EF1247: 45 85 FF              - test r15d,r15d
+nie.exe+1413D52: 75 03                 - jne nie.exe+1413D57
+nie.exe+1413D54: 41 8B 06              - mov eax,[r14]
+nie.exe+1413D57: 85 C0                 - test eax,eax
+nie.exe+1413D59: 0F 84 1F 01 00 00     - je nie.exe+1413E7E
+nie.exe+1413D5F: 41 80 7E 18 00        - cmp byte ptr [r14+18],00
+nie.exe+1413D64: 0F 85 14 01 00 00     - jne nie.exe+1413E7E
+nie.exe+1413D6A: 41 80 7E 0C 00        - cmp byte ptr [r14+0C],00
+nie.exe+1413D6F: 0F 85 09 01 00 00     - jne nie.exe+1413E7E
+nie.exe+1413D75: 44 8B FE              - mov r15d,esi
+nie.exe+1413D78: 85 F6                 - test esi,esi
 // ---------- INJECTING HERE ----------
-nie.exe+EF124A: 75 03                 - jne nie.exe+EF124F
+nie.exe+1413D7A: 75 03                 - jne nie.exe+1413D7F
 // ---------- DONE INJECTING  ----------
-nie.exe+EF124C: 44 8B 3E              - mov r15d,[rsi]
-nie.exe+EF124F: BB 01 00 00 00        - mov ebx,00000001
-nie.exe+EF1254: C6 44 24 30 00        - mov byte ptr [rsp+30],00
-nie.exe+EF1259: 8B D3                 - mov edx,ebx
-nie.exe+EF125B: 48 8D 0D 86 4C 7F 00  - lea rcx,[nie.exe+16E5EE8]
-nie.exe+EF1262: 41 B8 A5 85 25 10     - mov r8d,102585A5
-nie.exe+EF1268: E8 63 FA 16 FF        - call nie.exe+60CD0
-nie.exe+EF126D: F7 D0                 - not eax
-nie.exe+EF126F: 44 3B F8              - cmp r15d,eax
-nie.exe+EF1272: 75 16                 - jne nie.exe+EF128A
+nie.exe+1413D7C: 45 8B 3E              - mov r15d,[r14]
+nie.exe+1413D7F: 45 85 FF              - test r15d,r15d
+nie.exe+1413D82: 74 7F                 - je nie.exe+1413E03
+nie.exe+1413D84: 48 8B 05 DD 31 AC 00  - mov rax,[nie.exe+1ED6F68]
+nie.exe+1413D8B: 48 85 C0              - test rax,rax
+nie.exe+1413D8E: 74 7A                 - je nie.exe+1413E0A
+nie.exe+1413D90: 4C 8B A8 38 09 00 00  - mov r13,[rax+00000938]
+nie.exe+1413D97: 49 8B CD              - mov rcx,r13
+nie.exe+1413D9A: 49 8B 45 00           - mov rax,[r13+00]
+nie.exe+1413D9E: FF 50 10              - call qword ptr [rax+10]
 }
 
 </AssemblerScript>
