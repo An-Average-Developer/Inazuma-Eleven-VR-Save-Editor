@@ -24,11 +24,11 @@
                     </StackPanel>
                 </Button>
 
-                <TextBlock Text="Add Player Spirits"
+                <TextBlock Text="Custom Players (Cheat Engine)"
                          Style="{StaticResource MaterialDesignHeadline6TextBlock}"
                          Margin="0,0,0,15"/>
 
-                <TextBlock Text="Select a player spirit and rarity to add it to your team. Make sure you are in the Team Dock - Spirits screen in the game before clicking."
+                <TextBlock Text="Add custom player spirits using Cheat Engine. Click the button below to open the Cheat Engine table."
                          Style="{StaticResource MaterialDesignBody2TextBlock}"
                          Opacity="0.7"
                          TextWrapping="Wrap"
@@ -37,205 +37,70 @@
         </materialDesign:Card>
 
         <materialDesign:Card Grid.Row="1" Style="{StaticResource CardStyle}" Margin="10">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                <Image Source="/Resources/Cards/Spirits.png"
+                       Width="80"
+                       Height="80"
+                       Margin="0,0,0,20"
+                       RenderOptions.BitmapScalingMode="HighQuality"/>
 
-                <StackPanel Grid.Row="0">
-                <Border Background="{DynamicResource MaterialDesignDivider}"
-                       CornerRadius="8"
-                       Margin="0,0,0,20">
-                    <Grid Margin="15">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
+                <TextBlock Text="Custom Players Cheat Table"
+                         Style="{StaticResource MaterialDesignHeadline5TextBlock}"
+                         HorizontalAlignment="Center"
+                         Margin="0,0,0,10"/>
 
-                        <Image Grid.Column="0"
-                               Source="/Resources/Cards/Spirits.png"
-                               Width="32"
-                               Height="32"
-                               VerticalAlignment="Center"
-                               Margin="0,0,15,0"
-                               RenderOptions.BitmapScalingMode="HighQuality"/>
+                <TextBlock Text="This feature uses Cheat Engine to add custom player spirits."
+                         Style="{StaticResource MaterialDesignBody1TextBlock}"
+                         Opacity="0.7"
+                         HorizontalAlignment="Center"
+                         TextWrapping="Wrap"
+                         MaxWidth="400"
+                         Margin="0,0,0,10"/>
 
-                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                            <TextBlock Text="Current Status"
-                                     FontSize="12"
-                                     Opacity="0.7"/>
-                            <TextBlock Text="{Binding MemoryEditor.StatusMessage}"
-                                     FontSize="24"
-                                     FontWeight="Bold"
-                                     Margin="0,5,0,0"/>
-                            <TextBlock Text="Click attach to connect to the game"
-                                     FontSize="11"
-                                     Opacity="0.6"
-                                     Margin="0,5,0,0"
-                                     FontStyle="Italic"/>
-                        </StackPanel>
+                <TextBlock Text="Requirements:"
+                         Style="{StaticResource MaterialDesignBody2TextBlock}"
+                         FontWeight="Bold"
+                         HorizontalAlignment="Center"
+                         Margin="0,10,0,5"/>
 
-                        <Button Grid.Column="2"
-                              Command="{Binding MemoryEditor.AttachToProcessCommand}"
-                              Style="{StaticResource MaterialDesignRaisedButton}"
-                              Height="45"
-                              VerticalAlignment="Center"
-                              Background="#4CAF50">
-                            <StackPanel Orientation="Horizontal">
-                                <materialDesign:PackIcon Kind="Link"
-                                                       Width="20"
-                                                       Height="20"
-                                                       VerticalAlignment="Center"
-                                                       Margin="0,0,8,0"/>
-                                <TextBlock Text="Attach to Game"
-                                         VerticalAlignment="Center"
-                                         FontWeight="Medium"/>
-                            </StackPanel>
-                        </Button>
+                <TextBlock Text="1. Cheat Engine must be installed"
+                         Style="{StaticResource MaterialDesignBody2TextBlock}"
+                         Opacity="0.7"
+                         HorizontalAlignment="Center"/>
+                <TextBlock Text="2. The game must be running"
+                         Style="{StaticResource MaterialDesignBody2TextBlock}"
+                         Opacity="0.7"
+                         HorizontalAlignment="Center"/>
+                <TextBlock Text="3. Follow the instructions in the CT file"
+                         Style="{StaticResource MaterialDesignBody2TextBlock}"
+                         Opacity="0.7"
+                         HorizontalAlignment="Center"
+                         Margin="0,0,0,30"/>
 
-                        <Button Grid.Column="2"
-                              Command="{Binding MemoryEditor.DetachFromProcessCommand}"
-                              Style="{StaticResource MaterialDesignRaisedButton}"
-                              Height="45"
-                              VerticalAlignment="Center"
-                              Background="#D32F2F"
-                              Visibility="{Binding MemoryEditor.IsAttached, Converter={StaticResource BooleanToVisibilityConverter}}">
-                            <StackPanel Orientation="Horizontal">
-                                <materialDesign:PackIcon Kind="LinkOff"
-                                                       Width="20"
-                                                       Height="20"
-                                                       VerticalAlignment="Center"
-                                                       Margin="0,0,8,0"/>
-                                <TextBlock Text="Detach"
-                                         VerticalAlignment="Center"
-                                         FontWeight="Medium"/>
-                            </StackPanel>
-                        </Button>
-                    </Grid>
-                </Border>
-                </StackPanel>
-
-                <!-- Player Spirits List -->
-                <Grid Grid.Row="1">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                    </Grid.RowDefinitions>
-
-                    <StackPanel Grid.Row="0">
-                        <TextBlock Text="Player Spirits (Miximax)"
-                                 Style="{StaticResource MaterialDesignHeadline6TextBlock}"
-                                 Margin="0,0,0,15"/>
-
-                        <!-- Add All Button -->
-                        <Button Command="{Binding MemoryEditor.ToggleAllPlayerSpiritsCommand}"
-                               Style="{StaticResource MaterialDesignRaisedButton}"
-                               Height="45"
-                               Background="#4CAF50"
-                               Margin="0,0,0,15">
-                            <StackPanel Orientation="Horizontal">
-                                <materialDesign:PackIcon Kind="SelectAll"
-                                                       Width="20"
-                                                       Height="20"
-                                                       VerticalAlignment="Center"
-                                                       Margin="0,0,8,0"/>
-                                <TextBlock Text="Toggle All Player Spirits"
-                                         VerticalAlignment="Center"
-                                         FontWeight="Medium"
-                                         FontSize="14"/>
-                            </StackPanel>
-                        </Button>
-
-                        <TextBlock Text="Tip: Toggle spirits ON, then open Team Dock - Spirits in the game to receive them"
-                                 Style="{StaticResource MaterialDesignBody2TextBlock}"
-                                 Foreground="#FF9800"
-                                 FontWeight="Medium"
-                                 Margin="0,0,0,15"/>
+                <Button Command="{Binding MemoryEditor.OpenCustomPlayersCTCommand}"
+                      Style="{StaticResource MaterialDesignRaisedButton}"
+                      Height="60"
+                      Width="300"
+                      Background="#2196F3">
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon Kind="FileDocument"
+                                               Width="28"
+                                               Height="28"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,12,0"/>
+                        <TextBlock Text="Open Cheat Table"
+                                 VerticalAlignment="Center"
+                                 FontSize="18"
+                                 FontWeight="Medium"/>
                     </StackPanel>
+                </Button>
 
-                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-                        <ItemsControl ItemsSource="{Binding MemoryEditor.PlayerSpiritsCollection}">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <WrapPanel/>
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Border Margin="0,0,10,10"
-                                           CornerRadius="12"
-                                           Background="{DynamicResource MaterialDesignPaper}"
-                                           BorderBrush="{DynamicResource MaterialDesignDivider}"
-                                           BorderThickness="1"
-                                           Width="280"
-                                           Padding="15">
-                                        <Grid>
-                                            <Grid.RowDefinitions>
-                                                <RowDefinition Height="Auto"/>
-                                                <RowDefinition Height="Auto"/>
-                                                <RowDefinition Height="Auto"/>
-                                            </Grid.RowDefinitions>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="Auto"/>
-                                            </Grid.ColumnDefinitions>
-
-                                            <!-- Name and Mix Info -->
-                                            <StackPanel Grid.Row="0" Grid.Column="0">
-                                                <TextBlock Text="{Binding DisplayName}"
-                                                         FontSize="16"
-                                                         FontWeight="Bold"/>
-                                                <TextBlock Text="{Binding MixDisplay}"
-                                                         FontSize="12"
-                                                         Opacity="0.7"
-                                                         Margin="0,2,0,0"/>
-                                            </StackPanel>
-
-                                            <!-- Toggle Switch -->
-                                            <ToggleButton Grid.Row="0" Grid.Column="1"
-                                                         IsChecked="{Binding IsEnabled, Mode=TwoWay}"
-                                                         Style="{StaticResource MaterialDesignSwitchToggleButton}"
-                                                         ToolTip="Toggle to add this player spirit"
-                                                         VerticalAlignment="Center"
-                                                         Command="{Binding DataContext.MemoryEditor.TogglePlayerSpiritCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                         CommandParameter="{Binding}"/>
-
-                                            <!-- Rarity Selector -->
-                                            <StackPanel Grid.Row="1" Grid.ColumnSpan="2" Margin="0,10,0,0">
-                                                <TextBlock Text="Rarity:"
-                                                         FontSize="12"
-                                                         Opacity="0.7"
-                                                         Margin="0,0,0,5"/>
-                                                <ComboBox SelectedIndex="{Binding SelectedRarity, Mode=TwoWay}"
-                                                         materialDesign:HintAssist.Hint="Select Rarity"
-                                                         Style="{StaticResource MaterialDesignOutlinedComboBox}"
-                                                         Height="35"
-                                                         FontSize="12">
-                                                    <ComboBoxItem Content="Common"/>
-                                                    <ComboBoxItem Content="Growing"/>
-                                                    <ComboBoxItem Content="Advanced"/>
-                                                    <ComboBoxItem Content="Top"/>
-                                                    <ComboBoxItem Content="Legendary"/>
-                                                </ComboBox>
-                                            </StackPanel>
-
-                                            <!-- Current Rarity Display -->
-                                            <TextBlock Grid.Row="2" Grid.ColumnSpan="2"
-                                                     Text="{Binding RarityDisplay, StringFormat='Selected: {0}'}"
-                                                     FontSize="11"
-                                                     Opacity="0.6"
-                                                     Margin="0,8,0,0"
-                                                     FontStyle="Italic"/>
-                                        </Grid>
-                                    </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </ScrollViewer>
-                </Grid>
-            </Grid>
+                <TextBlock Text="Opens: Resources\Custom Players.CT"
+                         Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                         Opacity="0.5"
+                         HorizontalAlignment="Center"
+                         Margin="0,10,0,0"/>
+            </StackPanel>
         </materialDesign:Card>
     </Grid>
 </UserControl>

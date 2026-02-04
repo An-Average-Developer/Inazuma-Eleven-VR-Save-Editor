@@ -1059,7 +1059,7 @@
                 </WrapPanel>
 
                 <!-- SPIRIT MARKET SECTION -->
-                <TextBlock Text="SPIRIT MARKET"
+                <TextBlock Text="FREE SHOPS"
                           FontSize="18"
                           FontWeight="Bold"
                           Margin="0,10,0,10"
@@ -1352,6 +1352,40 @@
                         </Grid>
                     </materialDesign:Card>
 
+                    <!-- Enhance x9999 Card -->
+                    <materialDesign:Card Style="{StaticResource CardStyle}"
+                                       Margin="0,0,10,10"
+                                       Padding="16,12"
+                                       Width="180"
+                                       MinHeight="140">
+                        <Grid>
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <materialDesign:PackIcon Kind="ArrowUpBold"
+                                                   Width="40"
+                                                   Height="40"
+                                                   HorizontalAlignment="Center"
+                                                   Margin="0,0,0,8"/>
+                            <TextBlock Text="Enhance x9999"
+                                     FontSize="14"
+                                     FontWeight="SemiBold"
+                                     HorizontalAlignment="Center"
+                                     TextAlignment="Center"
+                                     Margin="0,0,0,4"/>
+                            <TextBlock Text="Use only 1 spirit"
+                                     FontSize="12"
+                                     Opacity="0.7"
+                                     HorizontalAlignment="Center"
+                                     TextAlignment="Center"
+                                     Margin="0,0,0,8"/>
+                            <ToggleButton IsChecked="{Binding MemoryEditor.IsEnhanceEnabled, Mode=OneWay}"
+                                        Style="{StaticResource MaterialDesignSwitchToggleButton}"
+                                        Command="{Binding MemoryEditor.ToggleEnhanceCommand}"
+                                        HorizontalAlignment="Center"
+                                        Margin="0,0,0,8"/>
+                        </StackPanel>
+                        </Grid>
+                    </materialDesign:Card>
+
                     <!-- Passive Values Editor Card -->
                     <materialDesign:Card Style="{StaticResource CardStyle}"
                                        Margin="0,0,10,10"
@@ -1492,6 +1526,113 @@
                             </StackPanel>
                         </Border>
                         </Grid>
+                    </materialDesign:Card>
+                </WrapPanel>
+
+                <!-- ONLINE SECTION -->
+                <TextBlock Text="ONLINE"
+                          FontSize="18"
+                          FontWeight="Bold"
+                          Margin="0,10,0,10"
+                          Foreground="{DynamicResource PrimaryHueMidBrush}"/>
+
+                <WrapPanel Orientation="Horizontal" Margin="0,0,0,20">
+                    <!-- Online Rank Card -->
+                    <materialDesign:Card Style="{StaticResource CardStyle}"
+                                       Margin="0,0,10,10"
+                                       Padding="16,12,16,12"
+                                       Width="180"
+                                       MinHeight="170"
+                                       Cursor="Hand"
+                                       MouseLeftButtonUp="OnlineRankCard_Click"
+                                       IsEnabled="{Binding MemoryEditor.IsAttached}">
+                        <Grid>
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <Image Source="/Resources/Cards/Rank.png"
+                                   Width="48"
+                                   Height="48"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,0,0,8"
+                                   RenderOptions.BitmapScalingMode="HighQuality"/>
+                            <TextBlock Text="Online Rank"
+                                     FontSize="15"
+                                     FontWeight="SemiBold"
+                                     HorizontalAlignment="Center"
+                                     Margin="0,0,0,4"/>
+                            <TextBlock Text="Set Rank to 2200"
+                                     FontSize="11"
+                                     Opacity="0.6"
+                                     TextWrapping="Wrap"
+                                     TextAlignment="Center"
+                                     Margin="8,0,8,8"/>
+                            <Button Command="{Binding MemoryEditor.SetOnlineRankCommand}"
+                                  Style="{StaticResource MaterialDesignRaisedButton}"
+                                  Height="28"
+                                  Padding="12,0"
+                                  Background="#FF9800"
+                                  Foreground="White">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="TrophyAward" Width="14" Height="14" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                    <TextBlock Text="Apply" FontSize="11" VerticalAlignment="Center" FontWeight="Medium"/>
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                        </Grid>
+                    </materialDesign:Card>
+
+                    <!-- Tension Match Card -->
+                    <materialDesign:Card Style="{StaticResource CardStyle}"
+                                       Margin="0,0,10,10"
+                                       Padding="16,12,16,12"
+                                       Width="380"
+                                       MinHeight="170"
+                                       IsEnabled="{Binding MemoryEditor.IsAttached}"
+                                       Visibility="{Binding MemoryEditor.IsTensionMatchVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <StackPanel>
+                            <Grid Margin="0,0,0,10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <materialDesign:PackIcon Grid.Column="0" Kind="Gauge" Width="32" Height="32" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock Text="Tension Match" FontSize="15" FontWeight="SemiBold"/>
+                                    <TextBlock Text="Control tension gauges in match" FontSize="11" Opacity="0.6"/>
+                                </StackPanel>
+                                <ToggleButton Grid.Column="2"
+                                            IsChecked="{Binding MemoryEditor.IsTensionMatchEnabled, Mode=OneWay}"
+                                            Style="{StaticResource MaterialDesignSwitchToggleButton}"
+                                            Command="{Binding MemoryEditor.ToggleTensionMatchCommand}"
+                                            VerticalAlignment="Center"/>
+                            </Grid>
+
+                            <!-- Options Grid -->
+                            <Grid Visibility="{Binding MemoryEditor.IsTensionMatchEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Player Options -->
+                                <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                                    <TextBlock Text="Player (Full)" FontSize="12" FontWeight="Bold" Foreground="#4CAF50" Margin="0,0,0,5"/>
+                                    <CheckBox Content="Tension" IsChecked="{Binding MemoryEditor.FullPlayerTension}" Margin="0,2"/>
+                                    <CheckBox Content="Hyper Gauge" IsChecked="{Binding MemoryEditor.FullPlayerHyper}" Margin="0,2"/>
+                                    <CheckBox Content="Keeper Power" IsChecked="{Binding MemoryEditor.FullPlayerKeeper}" Margin="0,2"/>
+                                    <CheckBox Content="Bond Power" IsChecked="{Binding MemoryEditor.FullPlayerBond}" Margin="0,2"/>
+                                </StackPanel>
+
+                                <!-- Enemy Options -->
+                                <StackPanel Grid.Column="1" Margin="10,0,0,0">
+                                    <TextBlock Text="Enemy (Zero)" FontSize="12" FontWeight="Bold" Foreground="#F44336" Margin="0,0,0,5"/>
+                                    <CheckBox Content="Tension" IsChecked="{Binding MemoryEditor.ZeroEnemyTension}" Margin="0,2"/>
+                                    <CheckBox Content="Hyper Gauge" IsChecked="{Binding MemoryEditor.ZeroEnemyHyper}" Margin="0,2"/>
+                                    <CheckBox Content="Keeper Power" IsChecked="{Binding MemoryEditor.ZeroEnemyKeeper}" Margin="0,2"/>
+                                    <CheckBox Content="Bond Power" IsChecked="{Binding MemoryEditor.ZeroEnemyBond}" Margin="0,2"/>
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
                     </materialDesign:Card>
                 </WrapPanel>
 

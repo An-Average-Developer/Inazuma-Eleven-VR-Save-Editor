@@ -105,6 +105,14 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.Views
             }
         }
 
+        private void OnlineRankCard_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (ViewModel != null && ViewModel.MemoryEditor.SetOnlineRankCommand.CanExecute(null))
+            {
+                ViewModel.MemoryEditor.SetOnlineRankCommand.Execute(null);
+            }
+        }
+
         private void CustomPassivesEditorCard_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             try

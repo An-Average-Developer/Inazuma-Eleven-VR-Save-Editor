@@ -8,7 +8,7 @@
     <UseWPF>true</UseWPF>
     <AssemblyName>InazumaElevenVRSaveEditor</AssemblyName>
     <RootNamespace>InazumaElevenVRSaveEditor</RootNamespace>
-    <Version>1.6.1</Version>
+    <Version>1.6.2</Version>
     <Authors>An Average Developer</Authors>
     <Product>Inazuma Eleven VR Save Editor</Product>
     <Description>A simple save editor for Inazuma Eleven VR</Description>
@@ -31,6 +31,7 @@
     <EmbeddedResource Include="Resources\EACLauncher.zip" />
     <EmbeddedResource Include="Resources\SkipStory.zip" />
     <EmbeddedResource Include="Resources\Custom Passives.CT" />
+    <EmbeddedResource Include="Resources\Custom Players.CT" />
     <EmbeddedResource Include="Resources\CheatEngineInstaller.zip" />
     <EmbeddedResource Include="Resources\Tutorials\**\*.*" />
   </ItemGroup>
@@ -46,6 +47,7 @@
     <Resource Include="Resources\Cards\VSTAR.png" />
     <Resource Include="Resources\Cards\NPOSS.png" />
     <Resource Include="Resources\Cards\Pasivas.png" />
+    <Resource Include="Resources\Cards\Rank.png" />
     <Resource Include="Resources\Vitems\VSTAR.png" />
     <Resource Include="Resources\Vitems\VSTONE.png" />
     <Resource Include="Resources\Beans\Instantaneous.png" />

@@ -71,6 +71,20 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
         private bool _isFreeBuyShopUnderMaintenance = false;
         private bool _isPlayerLevelUnderMaintenance = false;
 
+        // Tension Match flags
+        private bool _isTensionMatchEnabled = false;
+        private bool _fullPlayerTension = true;
+        private bool _fullPlayerHyper = true;
+        private bool _fullPlayerKeeper = true;
+        private bool _fullPlayerBond = true;
+        private bool _zeroEnemyTension = false;
+        private bool _zeroEnemyHyper = false;
+        private bool _zeroEnemyKeeper = false;
+        private bool _zeroEnemyBond = false;
+
+        // Enhance flag
+        private bool _isEnhanceEnabled = false;
+
         // Hidden flags for cards
         private bool _isFreezeItemsHidden = false;
         private bool _isIncrementItemsHidden = false;
@@ -91,6 +105,7 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
         private bool _isPassiveValuesHidden = false;
         private bool _isSpecialMovesHidden = false;
         private bool _isCustomPassivesHidden = false;
+        private bool _isTensionMatchHidden = true;
 
         // Passive value tracking
         private string _passiveValueType = "Unknown";
@@ -334,13 +349,8 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
             AddSpiritCardCommand = new RelayCommand(AddSpiritCard, CanAddSpiritCard);
             ToggleSpiritCardCommand = new RelayCommand(ToggleSpiritCard, CanToggleSpiritCard);
             ToggleAllSpiritCardsCommand = new RelayCommand(ToggleAllSpiritCards, CanToggleAllSpiritCards);
-            SelectPlayerSpiritsEditorCommand = new RelayCommand(() =>
-            {
-                SelectedTool = "playerspirits";
-                SelectedValue = null;
-            });
-            TogglePlayerSpiritCommand = new RelayCommand(TogglePlayerSpirit, CanTogglePlayerSpirit);
-            ToggleAllPlayerSpiritsCommand = new RelayCommand(ToggleAllPlayerSpirits, CanToggleAllPlayerSpirits);
+            SelectPlayerSpiritsEditorCommand = new RelayCommand(() => SelectedTool = "playerspirits");
+            OpenCustomPlayersCTCommand = new RelayCommand(OpenCustomPlayersCT);
             TogglePlayerLevelCommand = new RelayCommand(TogglePlayerLevel, CanTogglePlayerLevel);
             ApplyPlayerLevelCommand = new RelayCommand(ApplyPlayerLevel, CanApplyPlayerLevel);
             SelectCustomPassivesEditorCommand = new RelayCommand(() =>
@@ -351,6 +361,9 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
             ApplyCustomPassivesCommand = new RelayCommand(ApplyCustomPassives, CanApplyCustomPassives);
             ClearCustomPassivesCommand = new RelayCommand(ClearCustomPassives);
             OpenTutorialsCommand = new RelayCommand(OpenTutorials);
+            SetOnlineRankCommand = new RelayCommand(SetOnlineRank, CanSetOnlineRank);
+            ToggleTensionMatchCommand = new RelayCommand(ToggleTensionMatch, CanToggleTensionMatch);
+            ToggleEnhanceCommand = new RelayCommand(ToggleEnhance, CanToggleEnhance);
 
             MemoryValues = new ObservableCollection<MemoryValue>
             {
@@ -412,8 +425,8 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
                 {
                     Name = "Intelligence",
                     Description = "Intelligence Bean",
-                    BaseAddress = 0x01C726D0,
-                    Offsets = new int[] { 0x900, 0x70, 0x5F0, 0xFE0 },
+                    BaseAddress = 0x01FFD018,
+                    Offsets = new int[] { 0x20, 0x2F8, 0x7D10, 0xBCB0 },
                     CurrentValue = 0,
                     NewValue = 0
                 },
@@ -430,8 +443,8 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
                 {
                     Name = "Mind's Eye",
                     Description = "Mind's Eye Bean",
-                    BaseAddress = 0x01C726D0,
-                    Offsets = new int[] { 0x900, 0x70, 0xC70, 0x5E8 },
+                    BaseAddress = 0x01FC0C60,
+                    Offsets = new int[] { 0x4390, 0x60, 0x7AA0, 0xC1D0 },
                     CurrentValue = 0,
                     NewValue = 0
                 },
@@ -609,43 +622,6 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
                 new SpiritCardInfo { Name = "Xene", Variant = "Red", SpiritId = 0x527AAC47 },
                 new SpiritCardInfo { Name = "Zanark Avalonic", Variant = "Pink", SpiritId = 0x8EC6A388 },
                 new SpiritCardInfo { Name = "Zanark Avalonic", Variant = "Red", SpiritId = 0xA70E177A }
-            };
-
-            // Initialize Player Spirits Collection with all player spirit IDs from the Cheat Engine script
-            PlayerSpiritsCollection = new ObservableCollection<PlayerSpiritInfo>
-            {
-                new PlayerSpiritInfo { Name = "Arion Sherwind", MixDescription = "Arion x King Arthur", PlayerId = 0x489A980B },
-                new PlayerSpiritInfo { Name = "Arion Sherwind", MixDescription = "Arion x Victor", PlayerId = 0xC4DB5F07 },
-                new PlayerSpiritInfo { Name = "Arion Sherwind", MixDescription = "Arion x Mark", PlayerId = 0x8B9AC9C0 },
-                new PlayerSpiritInfo { Name = "Riccardo Di Rigo", MixDescription = "Riccardo x Nobunaga", PlayerId = 0x061964FB },
-                new PlayerSpiritInfo { Name = "Riccardo Di Rigo", MixDescription = "Riccardo x Gabi", PlayerId = 0xEFF60CC4 },
-                new PlayerSpiritInfo { Name = "Victor Blade", MixDescription = "Victor x Soji", PlayerId = 0x7AACFA89 },
-                new PlayerSpiritInfo { Name = "Victor Blade", MixDescription = "Victor x Bailong", PlayerId = 0xB9ACAB42 },
-                new PlayerSpiritInfo { Name = "Vladimir Blade", MixDescription = "Vladimir x Victor", PlayerId = 0x5043C37D },
-                new PlayerSpiritInfo { Name = "Gabriel Garcia", MixDescription = "Gabi x Juana de Arco", PlayerId = 0x1F0255BA },
-                new PlayerSpiritInfo { Name = "Gabriel Garcia", MixDescription = "Gabi x Aitor", PlayerId = 0xF6ED3D85 },
-                new PlayerSpiritInfo { Name = "Goldie Lemmon", MixDescription = "Goldie x Reina de los Dragones", PlayerId = 0x5181A94A },
-                new PlayerSpiritInfo { Name = "Jean-Pierre Lapin", MixDescription = "JP x Liu Bei", PlayerId = 0x2D343738 },
-                new PlayerSpiritInfo { Name = "Ryoma Nishiki", MixDescription = "Roma x Ryoma", PlayerId = 0x63B7CBC8 },
-                new PlayerSpiritInfo { Name = "Fei Rune", MixDescription = "Fei x T-REX", PlayerId = 0x7B6E90BE },
-                new PlayerSpiritInfo { Name = "Fei Rune", MixDescription = "Fei x Big", PlayerId = 0xB3B71AB6 },
-                new PlayerSpiritInfo { Name = "Sor", MixDescription = "Sor x Padre de Sor", PlayerId = 0xAAAC2BF7 },
-                new PlayerSpiritInfo { Name = "Zanark Avalonic", MixDescription = "Zanark x Cao Cao", PlayerId = 0x1EC03F8D },
-                new PlayerSpiritInfo { Name = "Zanark Avalonic", MixDescription = "Zanark x Zeta", PlayerId = 0x35ED6C4E },
-                new PlayerSpiritInfo { Name = "Sol Daystar", MixDescription = "Sol x Zhuge Liang", PlayerId = 0x342F0679 },
-                new PlayerSpiritInfo { Name = "Bailong", MixDescription = "Bailong x Zhuge Liang", PlayerId = 0x07DB0ECC },
-                new PlayerSpiritInfo { Name = "Bailong", MixDescription = "Bailong x Tezcat", PlayerId = 0xA0B79A03 },
-                new PlayerSpiritInfo { Name = "Axel Blaze", MixDescription = "Axel x Shawn", PlayerId = 0x9281F881 },
-                new PlayerSpiritInfo { Name = "Jude Sharp", MixDescription = "Jude x Caleb", PlayerId = 0x1519E44E },
-                new PlayerSpiritInfo { Name = "Mike", MixDescription = "Miximaxed x Zanark", PlayerId = 0x79282EE7 },
-                new PlayerSpiritInfo { Name = "Gamma", MixDescription = "Miximaxed x Zanark", PlayerId = 0x60331FA6 },
-                new PlayerSpiritInfo { Name = "Juliet", MixDescription = "Miximaxed x Zanark", PlayerId = 0xB033CED8 },
-                new PlayerSpiritInfo { Name = "November", MixDescription = "Miximaxed x Zanark", PlayerId = 0x2EB0E356 },
-                new PlayerSpiritInfo { Name = "Quebec", MixDescription = "Miximaxed x Zanark", PlayerId = 0x1C8681D4 },
-                new PlayerSpiritInfo { Name = "Romeo", MixDescription = "Miximaxed x Zanark", PlayerId = 0x78EA44D0 },
-                new PlayerSpiritInfo { Name = "Desmodus Drakul", MixDescription = "Mix 'n' Match", PlayerId = 0x02941849 },
-                new PlayerSpiritInfo { Name = "Wolfram Vulpeen", MixDescription = "Mix 'n' Match", PlayerId = 0x4DD58E8E },
-                new PlayerSpiritInfo { Name = "Simeon Ayp", MixDescription = "Mix 'n' Match", PlayerId = 0x54CEBFCF }
             };
 
             // Initialize AllPassiveIds collection with both normal and hero passives
@@ -881,8 +857,6 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
 
         public ObservableCollection<SpiritCardInfo> SpiritCardsCollection { get; }
 
-        public ObservableCollection<PlayerSpiritInfo> PlayerSpiritsCollection { get; }
-
         public ObservableCollection<ItemInfo> WorkingItems { get; }
 
         public ObservableCollection<PassiveIdInfo> AllPassiveIds { get; }
@@ -1083,14 +1057,16 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
         public ICommand ToggleSpiritCardCommand { get; }
         public ICommand ToggleAllSpiritCardsCommand { get; }
         public ICommand SelectPlayerSpiritsEditorCommand { get; }
-        public ICommand TogglePlayerSpiritCommand { get; }
-        public ICommand ToggleAllPlayerSpiritsCommand { get; }
+        public ICommand OpenCustomPlayersCTCommand { get; }
         public ICommand TogglePlayerLevelCommand { get; }
         public ICommand ApplyPlayerLevelCommand { get; }
         public ICommand SelectCustomPassivesEditorCommand { get; }
         public ICommand ApplyCustomPassivesCommand { get; }
         public ICommand ClearCustomPassivesCommand { get; }
         public ICommand OpenTutorialsCommand { get; }
+        public ICommand SetOnlineRankCommand { get; }
+        public ICommand ToggleTensionMatchCommand { get; }
+        public ICommand ToggleEnhanceCommand { get; }
 
         public bool IsStarsFrozen
         {
@@ -1470,6 +1446,122 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
             }
         }
 
+        public bool IsTensionMatchEnabled
+        {
+            get => _isTensionMatchEnabled;
+            set
+            {
+                _isTensionMatchEnabled = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public bool FullPlayerTension
+        {
+            get => _fullPlayerTension;
+            set
+            {
+                _fullPlayerTension = value;
+                OnPropertyChanged();
+                if (_isTensionMatchEnabled)
+                    _memoryService.SetTensionFlag(0, value);
+            }
+        }
+
+        public bool FullPlayerHyper
+        {
+            get => _fullPlayerHyper;
+            set
+            {
+                _fullPlayerHyper = value;
+                OnPropertyChanged();
+                if (_isTensionMatchEnabled)
+                    _memoryService.SetTensionFlag(1, value);
+            }
+        }
+
+        public bool FullPlayerKeeper
+        {
+            get => _fullPlayerKeeper;
+            set
+            {
+                _fullPlayerKeeper = value;
+                OnPropertyChanged();
+                if (_isTensionMatchEnabled)
+                    _memoryService.SetTensionFlag(2, value);
+            }
+        }
+
+        public bool FullPlayerBond
+        {
+            get => _fullPlayerBond;
+            set
+            {
+                _fullPlayerBond = value;
+                OnPropertyChanged();
+                if (_isTensionMatchEnabled)
+                    _memoryService.SetTensionFlag(3, value);
+            }
+        }
+
+        public bool ZeroEnemyTension
+        {
+            get => _zeroEnemyTension;
+            set
+            {
+                _zeroEnemyTension = value;
+                OnPropertyChanged();
+                if (_isTensionMatchEnabled)
+                    _memoryService.SetTensionFlag(4, value);
+            }
+        }
+
+        public bool ZeroEnemyHyper
+        {
+            get => _zeroEnemyHyper;
+            set
+            {
+                _zeroEnemyHyper = value;
+                OnPropertyChanged();
+                if (_isTensionMatchEnabled)
+                    _memoryService.SetTensionFlag(5, value);
+            }
+        }
+
+        public bool ZeroEnemyKeeper
+        {
+            get => _zeroEnemyKeeper;
+            set
+            {
+                _zeroEnemyKeeper = value;
+                OnPropertyChanged();
+                if (_isTensionMatchEnabled)
+                    _memoryService.SetTensionFlag(6, value);
+            }
+        }
+
+        public bool ZeroEnemyBond
+        {
+            get => _zeroEnemyBond;
+            set
+            {
+                _zeroEnemyBond = value;
+                OnPropertyChanged();
+                if (_isTensionMatchEnabled)
+                    _memoryService.SetTensionFlag(7, value);
+            }
+        }
+
+        public bool IsEnhanceEnabled
+        {
+            get => _isEnhanceEnabled;
+            set
+            {
+                _isEnhanceEnabled = value;
+                OnPropertyChanged();
+            }
+        }
+
         public bool IsPlayerLevelUnderMaintenance
         {
             get => _isPlayerLevelUnderMaintenance;
@@ -1530,6 +1622,7 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
         public bool IsPassiveValuesVisible => !_isPassiveValuesHidden;
         public bool IsSpecialMovesVisible => !_isSpecialMovesHidden;
         public bool IsCustomPassivesVisible => !_isCustomPassivesHidden;
+        public bool IsTensionMatchVisible => !_isTensionMatchHidden;
 
         public bool IsPassiveValueEditingEnabled
         {
@@ -1750,6 +1843,7 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
             try
             {
                 _updateTimer.Stop();
+
                 _memoryService.DetachFromProcess();
                 _unlimitedSpiritsService.DetachFromProcess();
                 _playerLevelService.DetachFromProcess();
@@ -1884,6 +1978,7 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
                 if (!_memoryService.IsProcessRunning())
                 {
                     _updateTimer.Stop();
+
                     _memoryService.DetachFromProcess();
                     _unlimitedSpiritsService.DetachFromProcess();
                     _playerLevelService.DetachFromProcess();
@@ -3460,156 +3555,51 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
             }
         }
 
-        private bool CanTogglePlayerSpirit(object? parameter)
+        private void OpenCustomPlayersCT()
         {
-            return IsAttached;
-        }
-
-        private void TogglePlayerSpirit(object? parameter)
-        {
-            if (!IsAttached || parameter == null)
-                return;
-
-            var playerSpirit = parameter as PlayerSpiritInfo;
-            if (playerSpirit == null)
-                return;
-
             try
             {
-                if (playerSpirit.IsEnabled)
-                {
-                    // Add player spirit when toggled ON
-                    bool success = _memoryService.AddPlayerSpiritToTeam(playerSpirit.PlayerId, playerSpirit.SelectedRarity);
+                // Extract embedded resource to temp file
+                string tempDir = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "InazumaElevenVR");
+                System.IO.Directory.CreateDirectory(tempDir);
+                string ctFilePath = System.IO.Path.Combine(tempDir, "Custom Players.CT");
 
-                    if (success)
-                    {
-                        StatusMessage = $"Enabled: {playerSpirit.DisplayName} ({playerSpirit.MixDisplay}) - {playerSpirit.RarityDisplay}";
-                        MessageBox.Show(
-                            $"{playerSpirit.DisplayName} ({playerSpirit.MixDisplay}) is now enabled!\n" +
-                            $"Rarity: {playerSpirit.RarityDisplay}\n\n" +
-                            "Open Team Dock - Spirits in the game to receive this player spirit.",
-                            "Player Spirit Enabled",
-                            MessageBoxButton.OK,
-                            MessageBoxImage.Information);
-                    }
-                    else
-                    {
-                        StatusMessage = $"Failed to enable {playerSpirit.DisplayName}";
-                        playerSpirit.IsEnabled = false; // Revert toggle
-                        MessageBox.Show(
-                            $"Failed to enable {playerSpirit.DisplayName}.\n\n" +
-                            "Make sure:\n" +
-                            "1. You are attached to the game\n" +
-                            "2. You have opened Team Dock - Spirits at least once",
-                            "Error",
-                            MessageBoxButton.OK,
-                            MessageBoxImage.Error);
-                    }
-                }
-                else
+                var assembly = System.Reflection.Assembly.GetExecutingAssembly();
+                using (var stream = assembly.GetManifestResourceStream("InazumaElevenVRSaveEditor.Resources.Custom Players.CT"))
                 {
-                    // Disable player spirit when toggled OFF
-                    _memoryService.ClearPlayerSpiritToAdd();
-                    StatusMessage = $"Disabled: {playerSpirit.DisplayName} ({playerSpirit.MixDisplay})";
+                    if (stream == null)
+                    {
+                        StatusMessage = "Custom Players.CT not found in resources";
+                        MessageBox.Show(
+                            "Custom Players.CT embedded resource not found.\n\nMake sure the file exists in the Resources folder and is set as EmbeddedResource.",
+                            "Resource Not Found",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Warning);
+                        return;
+                    }
+
+                    using (var fileStream = System.IO.File.Create(ctFilePath))
+                    {
+                        stream.CopyTo(fileStream);
+                    }
                 }
+
+                // Open the .CT file with default program (Cheat Engine if installed)
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = ctFilePath,
+                    UseShellExecute = true
+                });
+                StatusMessage = "Opened Custom Players.CT";
             }
             catch (Exception ex)
             {
-                StatusMessage = $"Error toggling player spirit: {ex.Message}";
-                playerSpirit.IsEnabled = false; // Revert toggle on error
+                StatusMessage = $"Error opening Custom Players.CT: {ex.Message}";
                 MessageBox.Show(
-                    $"Error: {ex.Message}",
-                    "Exception",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error);
-            }
-        }
-
-        private bool CanToggleAllPlayerSpirits(object? parameter)
-        {
-            return IsAttached;
-        }
-
-        private void ToggleAllPlayerSpirits(object? parameter)
-        {
-            if (!IsAttached)
-                return;
-
-            try
-            {
-                bool enableAll = PlayerSpiritsCollection.Any(s => !s.IsEnabled);
-
-                if (enableAll)
-                {
-                    // Get the rarity from the first spirit (they should all use the same rarity when adding all)
-                    int rarity = PlayerSpiritsCollection.FirstOrDefault()?.SelectedRarity ?? 1;
-
-                    // Enable all player spirits
-                    foreach (var playerSpirit in PlayerSpiritsCollection)
-                    {
-                        playerSpirit.IsEnabled = true;
-                    }
-
-                    // Collect all player IDs
-                    List<uint> allPlayerIds = PlayerSpiritsCollection.Select(s => s.PlayerId).ToList();
-
-                    // Enable injection if needed
-                    if (!_memoryService.AddPlayerSpiritToTeam(allPlayerIds[0], rarity))
-                    {
-                        throw new Exception("Failed to enable player spirit injection");
-                    }
-
-                    // Use the Add-All mode to add all player spirits at once
-                    bool success = _memoryService.SetAllPlayerSpiritsToAdd(allPlayerIds, rarity);
-
-                    if (success)
-                    {
-                        StatusMessage = "All player spirits enabled - Open Team Dock - Spirits to receive them!";
-                        MessageBox.Show(
-                            $"All {allPlayerIds.Count} player spirits have been enabled!\n\n" +
-                            "Open Team Dock - Spirits in the game to receive the player spirits.",
-                            "All Player Spirits Enabled",
-                            MessageBoxButton.OK,
-                            MessageBoxImage.Information);
-                    }
-                    else
-                    {
-                        StatusMessage = "Failed to enable all player spirits";
-                        // Revert all toggles
-                        foreach (var playerSpirit in PlayerSpiritsCollection)
-                        {
-                            playerSpirit.IsEnabled = false;
-                        }
-                    }
-                }
-                else
-                {
-                    // Disable all player spirits
-                    foreach (var playerSpirit in PlayerSpiritsCollection)
-                    {
-                        playerSpirit.IsEnabled = false;
-                    }
-
-                    // Set back to Add-One mode with no player
-                    _memoryService.SetPlayerSpiritToAdd(0, 1);
-
-                    StatusMessage = "All player spirits disabled";
-                }
-            }
-            catch (Exception ex)
-            {
-                StatusMessage = $"Error toggling all player spirits: {ex.Message}";
-                MessageBox.Show(
-                    $"Error occurred while toggling all player spirits:\n\n{ex.Message}",
+                    $"Error opening the file:\n\n{ex.Message}",
                     "Error",
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
-
-                // Revert all toggles on error
-                foreach (var playerSpirit in PlayerSpiritsCollection)
-                {
-                    playerSpirit.IsEnabled = false;
-                }
             }
         }
 
@@ -3919,6 +3909,128 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
                     TutorialsViewModel = null;
                 });
                 SelectedTool = "tutorials";
+            }
+        }
+
+        private bool CanSetOnlineRank(object? parameter)
+        {
+            return IsAttached;
+        }
+
+        private void SetOnlineRank(object? parameter)
+        {
+            if (!IsAttached)
+                return;
+
+            try
+            {
+                // Address: "nie.exe"+019BF8B8, 1000, 1F90, 5C
+                // Value: 2200
+                long baseOffset = 0x019BF8B8;
+                int[] offsets = new int[] { 0x1000, 0x1F90, 0x5C };
+                int value = 2200;
+
+                bool success = _memoryService.WriteValue(baseOffset, offsets, value);
+
+                if (success)
+                {
+                    StatusMessage = "Online Rank set to 2200!";
+                        MessageBox.Show(                                                                                                                                                              
+                            "Online Rank has been set to 2200!",                                                                                                                                      
+                            "Success",                                                                                                                                                                
+                            MessageBoxButton.OK,                                                                                                                                                      
+                            MessageBoxImage.Information);
+                }
+                else
+                {
+                    StatusMessage = "Failed to set Online Rank";
+                    MessageBox.Show(
+                        "Failed to set Online Rank.\n\nMake sure the game is running and you are in the correct screen.",
+                        "Error",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Error: {ex.Message}";
+                MessageBox.Show(
+                    $"Error setting Online Rank:\n\n{ex.Message}",
+                    "Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
+
+        private bool CanToggleTensionMatch(object? parameter)
+        {
+            return IsAttached;
+        }
+
+        private void ToggleTensionMatch(object? parameter)
+        {
+            if (!IsAttached)
+                return;
+
+            try
+            {
+                if (!IsTensionMatchEnabled)
+                {
+                    _memoryService.InjectTensionMatch();
+                    IsTensionMatchEnabled = true;
+                    StatusMessage = "Tension Match enabled";
+                }
+                else
+                {
+                    _memoryService.RemoveTensionMatch();
+                    IsTensionMatchEnabled = false;
+                    StatusMessage = "Tension Match disabled";
+                }
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Tension Match error: {ex.Message}";
+                MessageBox.Show(
+                    $"Error toggling Tension Match:\n\n{ex.Message}",
+                    "Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
+
+        private bool CanToggleEnhance(object? parameter)
+        {
+            return IsAttached;
+        }
+
+        private void ToggleEnhance(object? parameter)
+        {
+            if (!IsAttached)
+                return;
+
+            try
+            {
+                if (!IsEnhanceEnabled)
+                {
+                    _memoryService.InjectEnhance();
+                    IsEnhanceEnabled = true;
+                    StatusMessage = "Enhance x9999 enabled";
+                }
+                else
+                {
+                    _memoryService.RemoveEnhance();
+                    IsEnhanceEnabled = false;
+                    StatusMessage = "Enhance x9999 disabled";
+                }
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Enhance error: {ex.Message}";
+                MessageBox.Show(
+                    $"Error toggling Enhance:\n\n{ex.Message}",
+                    "Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
             }
         }
 

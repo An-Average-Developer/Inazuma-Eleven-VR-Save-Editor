@@ -49,6 +49,7 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.Models
             2 => "Advanced",
             3 => "Top",
             4 => "Legendary",
+            5 => "Basara",
             _ => "Growing"
         };
 

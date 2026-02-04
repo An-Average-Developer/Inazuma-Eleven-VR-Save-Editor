@@ -66,14 +66,31 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.Services
         private IntPtr _freeBuyShopCodeCave = IntPtr.Zero; // For Free Buy Shop injection
         private IntPtr _freeBuyShopHookAddress = IntPtr.Zero; // Hook address for Free Buy Shop
         private IntPtr _cfFreeBuyShopTokenQuanAddress = IntPtr.Zero; // Token quantity address
-        private IntPtr _playerSpiritInjectionCodeCave = IntPtr.Zero; // For Player Spirit injection
-        private IntPtr _playerSpiritHookAddress = IntPtr.Zero; // Address of the player spirit hook
-        private IntPtr _cfPlayerspiritAddTypeAddress = IntPtr.Zero; // cfPlayerspiritAddType address
-        private IntPtr _cfPlayerspiritIDAddress = IntPtr.Zero; // cfPlayerspiritID address
-        private IntPtr _cfPlayerspiritRarityAddress = IntPtr.Zero; // cfPlayerspiritRarity address
-        private bool _isPlayerSpiritInjectionEnabled = false;
+
+        // Tension Match injection fields
+        private IntPtr _tensionMatchCodeCave = IntPtr.Zero;
+        private IntPtr _tensionMatchHookAddress = IntPtr.Zero;
+        private IntPtr _tensionMatchAobAddress = IntPtr.Zero;
+        private byte[] _tensionMatchBackupBytes = new byte[8];
+        private IntPtr _cfFullPlayerTensionAddress = IntPtr.Zero;
+        private IntPtr _cfFullPlayerHyperAddress = IntPtr.Zero;
+        private IntPtr _cfFullPlayerKeeperAddress = IntPtr.Zero;
+        private IntPtr _cfFullPlayerBondAddress = IntPtr.Zero;
+        private IntPtr _cfZeroEnemyTensionAddress = IntPtr.Zero;
+        private IntPtr _cfZeroEnemyHyperAddress = IntPtr.Zero;
+        private IntPtr _cfZeroEnemyKeeperAddress = IntPtr.Zero;
+        private IntPtr _cfZeroEnemyBondAddress = IntPtr.Zero;
+        private bool _isTensionMatchEnabled = false;
+
+        // Enhance injection fields
+        private IntPtr _enhanceCodeCave = IntPtr.Zero;
+        private IntPtr _enhanceHookAddress = IntPtr.Zero;
+        private byte[] _enhanceBackupBytes = new byte[7];
+        private bool _isEnhanceEnabled = false;
 
         public bool IsAttached => _isAttached;
+        public bool IsTensionMatchEnabled => _isTensionMatchEnabled;
+        public bool IsEnhanceEnabled => _isEnhanceEnabled;
 
         public bool AttachToProcess()
         {
@@ -2742,466 +2759,619 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.Services
             }
         }
 
-        public bool EnablePlayerSpiritInjection()
+        public bool InjectTensionMatch()
         {
             if (!_isAttached || _processHandle == IntPtr.Zero)
             {
                 throw new InvalidOperationException("Not attached to process");
             }
 
-            if (_isPlayerSpiritInjectionEnabled)
-            {
-                return true; // Already enabled
-            }
-
             try
             {
-                // AOB scan for the pattern from CE script: 4D 8B 64 C? 08 4D 85 E4
-                // This is: mov r12,[r14+rax*8+08] followed by test r12,r12
-                byte[] aobPattern = new byte[] { 0x4D, 0x8B, 0x64, 0x00, 0x08, 0x4D, 0x85, 0xE4 };
-                byte[] aobMask = new byte[] { 1, 1, 1, 0, 1, 1, 1, 1 }; // ? at position 3
+                // AOB: 74 * BA * * * * E8 * * * * F3 0F 10 8F * * * *
+                byte[] aobPattern = new byte[] { 0x74, 0x00, 0xBA, 0x00, 0x00, 0x00, 0x00, 0xE8, 0x00, 0x00, 0x00, 0x00, 0xF3, 0x0F, 0x10, 0x8F, 0x00, 0x00, 0x00, 0x00 };
+                byte[] aobMask = new byte[] { 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0 };
 
-                _playerSpiritHookAddress = AOBScan(aobPattern, aobMask);
+                _tensionMatchAobAddress = AOBScan(aobPattern, aobMask);
 
-                if (_playerSpiritHookAddress == IntPtr.Zero)
+                if (_tensionMatchAobAddress == IntPtr.Zero)
                 {
-                    throw new Exception("Failed to find player spirit injection point (AOB pattern not found).\n\nMake sure:\n1. The game is running\n2. You have opened Team Dock - Spirits at least once\n3. The game version is supported");
+                    throw new Exception("Failed to find Tension Match AOB pattern.\n\nMake sure you are in a match.");
                 }
 
-                // Allocate code cave ($1000 = 4096 bytes)
+                // Injection point is at AOB+0xC
+                _tensionMatchHookAddress = new IntPtr(_tensionMatchAobAddress.ToInt64() + 0xC);
+
+                // Read original 8 bytes for backup
+                ReadProcessMemory(_processHandle, _tensionMatchHookAddress, _tensionMatchBackupBytes, 8, out _);
+
+                // Read the offset from AOB+0x10 (4 bytes) - this is the offset used in lea rax,[rdi+offset]
+                byte[] offsetBytes = new byte[4];
+                ReadProcessMemory(_processHandle, new IntPtr(_tensionMatchAobAddress.ToInt64() + 0x10), offsetBytes, 4, out _);
+                int rdiOffset = BitConverter.ToInt32(offsetBytes, 0);
+
+                // Allocate code cave
                 long[] offsets = { 0x10000000, 0x20000000, 0x30000000, -0x10000000, -0x20000000, 0x05000000, 0x01000000 };
 
                 foreach (long offset in offsets)
                 {
                     IntPtr preferredAddress = new IntPtr(_moduleBase.ToInt64() + offset);
-                    _playerSpiritInjectionCodeCave = VirtualAllocEx(_processHandle, preferredAddress, 4096, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+                    _tensionMatchCodeCave = VirtualAllocEx(_processHandle, preferredAddress, 4096, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
 
-                    if (_playerSpiritInjectionCodeCave != IntPtr.Zero)
+                    if (_tensionMatchCodeCave != IntPtr.Zero)
                     {
-                        long distance = _playerSpiritInjectionCodeCave.ToInt64() - _playerSpiritHookAddress.ToInt64();
+                        long distance = _tensionMatchCodeCave.ToInt64() - _tensionMatchHookAddress.ToInt64();
                         if (Math.Abs(distance) <= 0x7FFFFFFF)
-                        {
                             break;
-                        }
-                        else
-                        {
-                            VirtualFreeEx(_processHandle, _playerSpiritInjectionCodeCave, 0, MEM_RELEASE);
-                            _playerSpiritInjectionCodeCave = IntPtr.Zero;
-                        }
+
+                        VirtualFreeEx(_processHandle, _tensionMatchCodeCave, 0, MEM_RELEASE);
+                        _tensionMatchCodeCave = IntPtr.Zero;
                     }
                 }
 
-                if (_playerSpiritInjectionCodeCave == IntPtr.Zero)
+                if (_tensionMatchCodeCave == IntPtr.Zero)
                 {
-                    throw new Exception("Failed to allocate memory for player spirit injection");
+                    throw new Exception("Failed to allocate memory for Tension Match");
                 }
 
-                // Read the original instruction (5 bytes for mov r12,[r14+rax*8+08])
-                byte[] originalBytes = new byte[5];
-                ReadProcessMemory(_processHandle, _playerSpiritHookAddress, originalBytes, 5, out _);
+                // Build the code cave
+                // Layout: code, then flags (8 dwords at fixed offset), then backup bytes
+                List<byte> code = new List<byte>();
 
-                // Memory layout in code cave (matching CE script exactly):
-                // +0x000: Injection code
-                // +0x200: cfPlayerspiritAddType (4 bytes) - 0 = disabled, 1 = enabled
-                // +0x204: cfPlayerspiritID (4 bytes)
-                // +0x208: cfPlayerspiritRarity (4 bytes)
-                // +0x210: bckRxreg (24 bytes for rax, r14, r13)
-                // +0x228: addplayerspiritdata (16 bytes: PlayerID, Rarity, 0, 0)
-                // +0x238: addplayerspiritTemp (4 bytes)
+                // push rax
+                code.Add(0x50);
 
-                _cfPlayerspiritAddTypeAddress = new IntPtr(_playerSpiritInjectionCodeCave.ToInt64() + 0x200);
-                _cfPlayerspiritIDAddress = new IntPtr(_playerSpiritInjectionCodeCave.ToInt64() + 0x204);
-                _cfPlayerspiritRarityAddress = new IntPtr(_playerSpiritInjectionCodeCave.ToInt64() + 0x208);
-                IntPtr bckRxregAddress = new IntPtr(_playerSpiritInjectionCodeCave.ToInt64() + 0x210);
-                IntPtr addplayerspiritdataAddress = new IntPtr(_playerSpiritInjectionCodeCave.ToInt64() + 0x228);
-                IntPtr addplayerspiritTempAddress = new IntPtr(_playerSpiritInjectionCodeCave.ToInt64() + 0x238);
+                // lea rax,[rdi+offset] = 48 8D 87 XX XX XX XX
+                code.AddRange(new byte[] { 0x48, 0x8D, 0x87 });
+                code.AddRange(BitConverter.GetBytes(rdiOffset));
 
-                // Initialize memory - DISABLED by default
-                byte[] initBytes = BitConverter.GetBytes(0); // Disabled by default
-                WriteProcessMemory(_processHandle, _cfPlayerspiritAddTypeAddress, initBytes, 4, out _);
-                initBytes = BitConverter.GetBytes(0); // Initial player ID
-                WriteProcessMemory(_processHandle, _cfPlayerspiritIDAddress, initBytes, 4, out _);
-                initBytes = BitConverter.GetBytes(1); // Initial rarity (Growing)
-                WriteProcessMemory(_processHandle, _cfPlayerspiritRarityAddress, initBytes, 4, out _);
+                // cmp dword ptr [rax+120],0 = 83 B8 20 01 00 00 00
+                code.AddRange(new byte[] { 0x83, 0xB8, 0x20, 0x01, 0x00, 0x00, 0x00 });
 
-                // Initialize addplayerspiritdata structure (PlayerID, Rarity, 0, 0)
-                byte[] spiritDataInit = new byte[16];
-                BitConverter.GetBytes(0).CopyTo(spiritDataInit, 0); // PlayerID
-                BitConverter.GetBytes(1).CopyTo(spiritDataInit, 4); // Rarity
-                BitConverter.GetBytes(0).CopyTo(spiritDataInit, 8);
-                BitConverter.GetBytes(0).CopyTo(spiritDataInit, 12);
-                WriteProcessMemory(_processHandle, addplayerspiritdataAddress, spiritDataInit, 16, out _);
+                // je codeE (will patch later)
+                int jeCodeEOffset = code.Count;
+                code.AddRange(new byte[] { 0x0F, 0x84, 0x00, 0x00, 0x00, 0x00 }); // je rel32
 
-                // Initialize bckRxreg to zeros
-                byte[] bckRxregInit = new byte[24];
-                WriteProcessMemory(_processHandle, bckRxregAddress, bckRxregInit, 24, out _);
+                // === PLAYER CODE ===
+                // Flags will be at offset 0x200 in code cave
 
-                // Build injection code matching CE script (Add-One only)
-                List<byte> injectionCode = new List<byte>();
+                // cmp [cfFullPlayerTension],0 - using RIP-relative
+                // cmp dword ptr [rip+offset],0 = 83 3D XX XX XX XX 00
+                int cfFullPlayerTensionCheckOffset = code.Count;
+                code.AddRange(new byte[] { 0x83, 0x3D, 0x00, 0x00, 0x00, 0x00, 0x00 }); // placeholder
 
-                // ===== newmem: =====
-                // readMem(INJECTaddplayerspirit,5) - Execute original: mov r12,[r14+rax*8+08]
-                injectionCode.AddRange(originalBytes);
+                // je skip1
+                int jeSkip1Offset = code.Count;
+                code.AddRange(new byte[] { 0x74, 0x00 }); // je rel8
 
-                // test r12,r12
-                injectionCode.AddRange(new byte[] { 0x4D, 0x85, 0xE4 });
+                // movss xmm1,[rax+4] = F3 0F 10 48 04
+                code.AddRange(new byte[] { 0xF3, 0x0F, 0x10, 0x48, 0x04 });
+                // movss [rax],xmm1 = F3 0F 11 08
+                code.AddRange(new byte[] { 0xF3, 0x0F, 0x11, 0x08 });
 
-                // je code (skip if r12 is NULL)
-                int jeNullOffset = injectionCode.Count;
-                injectionCode.AddRange(new byte[] { 0x0F, 0x84, 0x00, 0x00, 0x00, 0x00 }); // je rel32 (patch later)
+                // skip1:
+                int skip1Label = code.Count;
+                code[jeSkip1Offset + 1] = (byte)(skip1Label - (jeSkip1Offset + 2));
 
-                // cmp dword ptr [r12+8],0
-                injectionCode.AddRange(new byte[] { 0x41, 0x83, 0x7C, 0x24, 0x08, 0x00 });
+                // cmp [cfFullPlayerHyper],0
+                int cfFullPlayerHyperCheckOffset = code.Count;
+                code.AddRange(new byte[] { 0x83, 0x3D, 0x00, 0x00, 0x00, 0x00, 0x00 });
 
-                // jne code (skip if [r12+8] != 0)
-                int jneNotEmptyOffset = injectionCode.Count;
-                injectionCode.AddRange(new byte[] { 0x0F, 0x85, 0x00, 0x00, 0x00, 0x00 }); // jne rel32 (patch later)
+                // je skip2
+                int jeSkip2Offset = code.Count;
+                code.AddRange(new byte[] { 0x74, 0x00 });
 
-                // ===== Save registers =====
-                // mov [bckRxreg],rax
-                int bckRaxOff = (int)(bckRxregAddress.ToInt64() - (_playerSpiritInjectionCodeCave.ToInt64() + injectionCode.Count + 7));
-                injectionCode.AddRange(new byte[] { 0x48, 0x89, 0x05 });
-                injectionCode.AddRange(BitConverter.GetBytes(bckRaxOff));
+                // movss xmm1,[rax+C] = F3 0F 10 48 0C
+                code.AddRange(new byte[] { 0xF3, 0x0F, 0x10, 0x48, 0x0C });
+                // movss [rax+8],xmm1 = F3 0F 11 48 08
+                code.AddRange(new byte[] { 0xF3, 0x0F, 0x11, 0x48, 0x08 });
 
-                // mov [bckRxreg+8],r14
-                int bckR14Off = (int)((bckRxregAddress.ToInt64() + 8) - (_playerSpiritInjectionCodeCave.ToInt64() + injectionCode.Count + 7));
-                injectionCode.AddRange(new byte[] { 0x4C, 0x89, 0x35 });
-                injectionCode.AddRange(BitConverter.GetBytes(bckR14Off));
+                // skip2:
+                int skip2Label = code.Count;
+                code[jeSkip2Offset + 1] = (byte)(skip2Label - (jeSkip2Offset + 2));
 
-                // mov [bckRxreg+10],r13
-                int bckR13Off = (int)((bckRxregAddress.ToInt64() + 0x10) - (_playerSpiritInjectionCodeCave.ToInt64() + injectionCode.Count + 7));
-                injectionCode.AddRange(new byte[] { 0x4C, 0x89, 0x2D });
-                injectionCode.AddRange(BitConverter.GetBytes(bckR13Off));
+                // cmp [cfFullPlayerKeeper],0
+                int cfFullPlayerKeeperCheckOffset = code.Count;
+                code.AddRange(new byte[] { 0x83, 0x3D, 0x00, 0x00, 0x00, 0x00, 0x00 });
 
-                // cmp dword ptr [cfPlayerspiritAddType],0
-                int cfTypeOff = (int)(_cfPlayerspiritAddTypeAddress.ToInt64() - (_playerSpiritInjectionCodeCave.ToInt64() + injectionCode.Count + 8));
-                injectionCode.AddRange(new byte[] { 0x83, 0x3D });
-                injectionCode.AddRange(BitConverter.GetBytes(cfTypeOff));
-                injectionCode.Add(0x00);
+                // je skip3
+                int jeSkip3Offset = code.Count;
+                code.AddRange(new byte[] { 0x74, 0x00 });
 
-                // je codeE (skip if type == 0, meaning disabled/not ready)
-                int jeDisabledOffset = injectionCode.Count;
-                injectionCode.AddRange(new byte[] { 0x0F, 0x84, 0x00, 0x00, 0x00, 0x00 }); // je rel32 (patch later)
+                // movss xmm1,[rax+14] = F3 0F 10 48 14
+                code.AddRange(new byte[] { 0xF3, 0x0F, 0x10, 0x48, 0x14 });
+                // movss [rax+10],xmm1 = F3 0F 11 48 10
+                code.AddRange(new byte[] { 0xF3, 0x0F, 0x11, 0x48, 0x10 });
 
-                // ===== Add-One Mode =====
-                // mov r14d,[cfPlayerspiritID]
-                int cfIDOff = (int)(_cfPlayerspiritIDAddress.ToInt64() - (_playerSpiritInjectionCodeCave.ToInt64() + injectionCode.Count + 7));
-                injectionCode.AddRange(new byte[] { 0x44, 0x8B, 0x35 });
-                injectionCode.AddRange(BitConverter.GetBytes(cfIDOff));
+                // skip3:
+                int skip3Label = code.Count;
+                code[jeSkip3Offset + 1] = (byte)(skip3Label - (jeSkip3Offset + 2));
 
-                // mov [addplayerspiritdata],r14d
-                int dataIDOff = (int)(addplayerspiritdataAddress.ToInt64() - (_playerSpiritInjectionCodeCave.ToInt64() + injectionCode.Count + 7));
-                injectionCode.AddRange(new byte[] { 0x44, 0x89, 0x35 });
-                injectionCode.AddRange(BitConverter.GetBytes(dataIDOff));
+                // cmp [cfFullPlayerBond],0
+                int cfFullPlayerBondCheckOffset = code.Count;
+                code.AddRange(new byte[] { 0x83, 0x3D, 0x00, 0x00, 0x00, 0x00, 0x00 });
 
-                // mov r14d,[cfPlayerspiritRarity]
-                int cfRarityOff = (int)(_cfPlayerspiritRarityAddress.ToInt64() - (_playerSpiritInjectionCodeCave.ToInt64() + injectionCode.Count + 7));
-                injectionCode.AddRange(new byte[] { 0x44, 0x8B, 0x35 });
-                injectionCode.AddRange(BitConverter.GetBytes(cfRarityOff));
+                // je code
+                int jeCodeFromBondOffset = code.Count;
+                code.AddRange(new byte[] { 0x74, 0x00 });
 
-                // mov [addplayerspiritdata+4],r14d
-                int dataRarityOff = (int)((addplayerspiritdataAddress.ToInt64() + 4) - (_playerSpiritInjectionCodeCave.ToInt64() + injectionCode.Count + 7));
-                injectionCode.AddRange(new byte[] { 0x44, 0x89, 0x35 });
-                injectionCode.AddRange(BitConverter.GetBytes(dataRarityOff));
+                // mov dword ptr [rax+18],(float)30 = C7 40 18 00 00 F0 41
+                float bond30 = 30.0f;
+                byte[] bond30Bytes = BitConverter.GetBytes(bond30);
+                code.AddRange(new byte[] { 0xC7, 0x40, 0x18 });
+                code.AddRange(bond30Bytes);
 
-                // call fncAddPlayerspirit
-                int callFncOffset = injectionCode.Count;
-                injectionCode.AddRange(new byte[] { 0xE8, 0x00, 0x00, 0x00, 0x00 }); // call rel32 (patch later)
+                // jmp code
+                int jmpCodeOffset = code.Count;
+                code.AddRange(new byte[] { 0xEB, 0x00 }); // jmp rel8
 
-                // ===== codeE: Restore registers =====
-                int codeEStart = injectionCode.Count;
+                // === codeE: ENEMY CODE ===
+                int codeELabel = code.Count;
 
-                // mov rax,[bckRxreg]
-                int restoreRaxOff = (int)(bckRxregAddress.ToInt64() - (_playerSpiritInjectionCodeCave.ToInt64() + injectionCode.Count + 7));
-                injectionCode.AddRange(new byte[] { 0x48, 0x8B, 0x05 });
-                injectionCode.AddRange(BitConverter.GetBytes(restoreRaxOff));
+                // Patch je codeE
+                int jeCodeEDist = codeELabel - (jeCodeEOffset + 6);
+                byte[] jeCodeEDistBytes = BitConverter.GetBytes(jeCodeEDist);
+                code[jeCodeEOffset + 2] = jeCodeEDistBytes[0];
+                code[jeCodeEOffset + 3] = jeCodeEDistBytes[1];
+                code[jeCodeEOffset + 4] = jeCodeEDistBytes[2];
+                code[jeCodeEOffset + 5] = jeCodeEDistBytes[3];
 
-                // mov r14,[bckRxreg+8]
-                int restoreR14Off = (int)((bckRxregAddress.ToInt64() + 8) - (_playerSpiritInjectionCodeCave.ToInt64() + injectionCode.Count + 7));
-                injectionCode.AddRange(new byte[] { 0x4C, 0x8B, 0x35 });
-                injectionCode.AddRange(BitConverter.GetBytes(restoreR14Off));
+                // cmp [cfZeroEnemyTension],0
+                int cfZeroEnemyTensionCheckOffset = code.Count;
+                code.AddRange(new byte[] { 0x83, 0x3D, 0x00, 0x00, 0x00, 0x00, 0x00 });
 
-                // mov r13,[bckRxreg+10]
-                int restoreR13Off = (int)((bckRxregAddress.ToInt64() + 0x10) - (_playerSpiritInjectionCodeCave.ToInt64() + injectionCode.Count + 7));
-                injectionCode.AddRange(new byte[] { 0x4C, 0x8B, 0x2D });
-                injectionCode.AddRange(BitConverter.GetBytes(restoreR13Off));
+                // je eskip1
+                int jeESkip1Offset = code.Count;
+                code.AddRange(new byte[] { 0x74, 0x00 });
 
-                // ===== code: Exit point =====
-                int codeLabel = injectionCode.Count;
+                // mov dword ptr [rax],0 = C7 00 00 00 00 00
+                code.AddRange(new byte[] { 0xC7, 0x00, 0x00, 0x00, 0x00, 0x00 });
 
-                // jmp return (return to hook+8)
-                injectionCode.Add(0xE9);
-                IntPtr returnAddress = new IntPtr(_playerSpiritHookAddress.ToInt64() + 8);
-                long jmpReturnOff = returnAddress.ToInt64() - (_playerSpiritInjectionCodeCave.ToInt64() + injectionCode.Count + 4);
-                injectionCode.AddRange(BitConverter.GetBytes((int)jmpReturnOff));
+                // eskip1:
+                int eskip1Label = code.Count;
+                code[jeESkip1Offset + 1] = (byte)(eskip1Label - (jeESkip1Offset + 2));
 
-                // ===== fncAddPlayerspirit function =====
-                int fncStart = injectionCode.Count;
+                // cmp [cfZeroEnemyHyper],0
+                int cfZeroEnemyHyperCheckOffset = code.Count;
+                code.AddRange(new byte[] { 0x83, 0x3D, 0x00, 0x00, 0x00, 0x00, 0x00 });
 
-                // push rcx
-                injectionCode.Add(0x51);
-                // push rdx
-                injectionCode.Add(0x52);
-                // push r8
-                injectionCode.AddRange(new byte[] { 0x41, 0x50 });
-                // push r9
-                injectionCode.AddRange(new byte[] { 0x41, 0x51 });
+                // je eskip2
+                int jeESkip2Offset = code.Count;
+                code.AddRange(new byte[] { 0x74, 0x00 });
 
-                // lea r8,[addplayerspiritdata]
-                int r8Off = (int)(addplayerspiritdataAddress.ToInt64() - (_playerSpiritInjectionCodeCave.ToInt64() + injectionCode.Count + 7));
-                injectionCode.AddRange(new byte[] { 0x4C, 0x8D, 0x05 });
-                injectionCode.AddRange(BitConverter.GetBytes(r8Off));
+                // mov dword ptr [rax+8],0 = C7 40 08 00 00 00 00
+                code.AddRange(new byte[] { 0xC7, 0x40, 0x08, 0x00, 0x00, 0x00, 0x00 });
 
-                // lea rdx,[addplayerspiritTemp]
-                int rdxOff = (int)(addplayerspiritTempAddress.ToInt64() - (_playerSpiritInjectionCodeCave.ToInt64() + injectionCode.Count + 7));
-                injectionCode.AddRange(new byte[] { 0x48, 0x8D, 0x15 });
-                injectionCode.AddRange(BitConverter.GetBytes(rdxOff));
+                // eskip2:
+                int eskip2Label = code.Count;
+                code[jeESkip2Offset + 1] = (byte)(eskip2Label - (jeESkip2Offset + 2));
 
-                // mov r9d,1
-                injectionCode.AddRange(new byte[] { 0x41, 0xB9, 0x01, 0x00, 0x00, 0x00 });
+                // cmp [cfZeroEnemyKeeper],0
+                int cfZeroEnemyKeeperCheckOffset = code.Count;
+                code.AddRange(new byte[] { 0x83, 0x3D, 0x00, 0x00, 0x00, 0x00, 0x00 });
 
-                // mov rcx,r12
-                injectionCode.AddRange(new byte[] { 0x49, 0x8B, 0xCC });
+                // je eskip3
+                int jeESkip3Offset = code.Count;
+                code.AddRange(new byte[] { 0x74, 0x00 });
 
-                // mov rax,[r12]
-                injectionCode.AddRange(new byte[] { 0x49, 0x8B, 0x04, 0x24 });
+                // mov dword ptr [rax+10],0 = C7 40 10 00 00 00 00
+                code.AddRange(new byte[] { 0xC7, 0x40, 0x10, 0x00, 0x00, 0x00, 0x00 });
 
-                // call qword ptr [rax+20]
-                injectionCode.AddRange(new byte[] { 0xFF, 0x50, 0x20 });
+                // eskip3:
+                int eskip3Label = code.Count;
+                code[jeESkip3Offset + 1] = (byte)(eskip3Label - (jeESkip3Offset + 2));
 
-                // pop r9
-                injectionCode.AddRange(new byte[] { 0x41, 0x59 });
-                // pop r8
-                injectionCode.AddRange(new byte[] { 0x41, 0x58 });
-                // pop rdx
-                injectionCode.Add(0x5A);
-                // pop rcx
-                injectionCode.Add(0x59);
+                // cmp [cfZeroEnemyBond],0
+                int cfZeroEnemyBondCheckOffset = code.Count;
+                code.AddRange(new byte[] { 0x83, 0x3D, 0x00, 0x00, 0x00, 0x00, 0x00 });
 
-                // ret
-                injectionCode.Add(0xC3);
+                // je code
+                int jeCodeFromEBondOffset = code.Count;
+                code.AddRange(new byte[] { 0x74, 0x00 });
 
-                // ===== Patch all jump offsets =====
-                byte[] codeArray = injectionCode.ToArray();
+                // mov dword ptr [rax+18],0 = C7 40 18 00 00 00 00
+                code.AddRange(new byte[] { 0xC7, 0x40, 0x18, 0x00, 0x00, 0x00, 0x00 });
 
-                // Patch je (null check) -> code
-                int jeNullTarget = codeLabel - (jeNullOffset + 6);
-                Array.Copy(BitConverter.GetBytes(jeNullTarget), 0, codeArray, jeNullOffset + 2, 4);
+                // === code: COMMON EXIT ===
+                int codeLabel = code.Count;
 
-                // Patch jne (not empty) -> code
-                int jneNotEmptyTarget = codeLabel - (jneNotEmptyOffset + 6);
-                Array.Copy(BitConverter.GetBytes(jneNotEmptyTarget), 0, codeArray, jneNotEmptyOffset + 2, 4);
+                // Patch jumps to code
+                code[jeCodeFromBondOffset + 1] = (byte)(codeLabel - (jeCodeFromBondOffset + 2));
+                code[jmpCodeOffset + 1] = (byte)(codeLabel - (jmpCodeOffset + 2));
+                code[jeCodeFromEBondOffset + 1] = (byte)(codeLabel - (jeCodeFromEBondOffset + 2));
 
-                // Patch je (disabled) -> codeE
-                int jeDisabledTarget = codeEStart - (jeDisabledOffset + 6);
-                Array.Copy(BitConverter.GetBytes(jeDisabledTarget), 0, codeArray, jeDisabledOffset + 2, 4);
+                // pop rax
+                code.Add(0x58);
 
-                // Patch call fncAddPlayerspirit
-                int callTarget = fncStart - (callFncOffset + 5);
-                Array.Copy(BitConverter.GetBytes(callTarget), 0, codeArray, callFncOffset + 1, 4);
+                // Original instruction: movss xmm1,[rdi+offset] = F3 0F 10 8F XX XX XX XX
+                code.AddRange(_tensionMatchBackupBytes);
 
-                // Write injection code to code cave
-                if (!WriteProcessMemory(_processHandle, _playerSpiritInjectionCodeCave, codeArray, codeArray.Length, out _))
+                // jmp return
+                code.Add(0xE9);
+                IntPtr returnAddress = new IntPtr(_tensionMatchHookAddress.ToInt64() + 8);
+                long jmpReturnDist = returnAddress.ToInt64() - (_tensionMatchCodeCave.ToInt64() + code.Count + 4);
+                code.AddRange(BitConverter.GetBytes((int)jmpReturnDist));
+
+                // Pad to offset 0x200 for flags
+                while (code.Count < 0x200)
+                    code.Add(0x90); // NOP padding
+
+                // Flags at offset 0x200 (8 dwords = 32 bytes)
+                int flagsOffset = code.Count;
+                // cfFullPlayerTension = 1
+                code.AddRange(BitConverter.GetBytes(1));
+                // cfFullPlayerHyper = 1
+                code.AddRange(BitConverter.GetBytes(1));
+                // cfFullPlayerKeeper = 1
+                code.AddRange(BitConverter.GetBytes(1));
+                // cfFullPlayerBond = 1
+                code.AddRange(BitConverter.GetBytes(1));
+                // cfZeroEnemyTension = 0
+                code.AddRange(BitConverter.GetBytes(0));
+                // cfZeroEnemyHyper = 0
+                code.AddRange(BitConverter.GetBytes(0));
+                // cfZeroEnemyKeeper = 0
+                code.AddRange(BitConverter.GetBytes(0));
+                // cfZeroEnemyBond = 0
+                code.AddRange(BitConverter.GetBytes(0));
+
+                // Now patch the RIP-relative offsets for flag checks
+                byte[] codeArray = code.ToArray();
+                IntPtr codeCaveBase = _tensionMatchCodeCave;
+
+                // Helper to calculate RIP-relative offset
+                // RIP at instruction end, target is at flagsOffset + flagIndex*4
+                void PatchFlagCheck(int checkOffset, int flagIndex)
                 {
-                    VirtualFreeEx(_processHandle, _playerSpiritInjectionCodeCave, 0, MEM_RELEASE);
-                    _playerSpiritInjectionCodeCave = IntPtr.Zero;
-                    throw new Exception("Failed to write injection code");
+                    // The instruction is: 83 3D XX XX XX XX 00 (7 bytes)
+                    // RIP points to instruction end (checkOffset + 7)
+                    // Target is codeCaveBase + flagsOffset + flagIndex*4
+                    long ripAtEnd = codeCaveBase.ToInt64() + checkOffset + 7;
+                    long targetAddr = codeCaveBase.ToInt64() + flagsOffset + (flagIndex * 4);
+                    int relOffset = (int)(targetAddr - ripAtEnd);
+                    byte[] relBytes = BitConverter.GetBytes(relOffset);
+                    codeArray[checkOffset + 2] = relBytes[0];
+                    codeArray[checkOffset + 3] = relBytes[1];
+                    codeArray[checkOffset + 4] = relBytes[2];
+                    codeArray[checkOffset + 5] = relBytes[3];
                 }
 
-                // Create hook: replace 8 bytes with jmp(5) + nop(3)
-                // Original: mov r12,[r14+rax*8+08] (5 bytes) + test r12,r12 (3 bytes)
+                PatchFlagCheck(cfFullPlayerTensionCheckOffset, 0);
+                PatchFlagCheck(cfFullPlayerHyperCheckOffset, 1);
+                PatchFlagCheck(cfFullPlayerKeeperCheckOffset, 2);
+                PatchFlagCheck(cfFullPlayerBondCheckOffset, 3);
+                PatchFlagCheck(cfZeroEnemyTensionCheckOffset, 4);
+                PatchFlagCheck(cfZeroEnemyHyperCheckOffset, 5);
+                PatchFlagCheck(cfZeroEnemyKeeperCheckOffset, 6);
+                PatchFlagCheck(cfZeroEnemyBondCheckOffset, 7);
+
+                // Store flag addresses
+                _cfFullPlayerTensionAddress = new IntPtr(codeCaveBase.ToInt64() + flagsOffset);
+                _cfFullPlayerHyperAddress = new IntPtr(codeCaveBase.ToInt64() + flagsOffset + 4);
+                _cfFullPlayerKeeperAddress = new IntPtr(codeCaveBase.ToInt64() + flagsOffset + 8);
+                _cfFullPlayerBondAddress = new IntPtr(codeCaveBase.ToInt64() + flagsOffset + 12);
+                _cfZeroEnemyTensionAddress = new IntPtr(codeCaveBase.ToInt64() + flagsOffset + 16);
+                _cfZeroEnemyHyperAddress = new IntPtr(codeCaveBase.ToInt64() + flagsOffset + 20);
+                _cfZeroEnemyKeeperAddress = new IntPtr(codeCaveBase.ToInt64() + flagsOffset + 24);
+                _cfZeroEnemyBondAddress = new IntPtr(codeCaveBase.ToInt64() + flagsOffset + 28);
+
+                // Write code cave
+                if (!WriteProcessMemory(_processHandle, _tensionMatchCodeCave, codeArray, codeArray.Length, out _))
+                {
+                    VirtualFreeEx(_processHandle, _tensionMatchCodeCave, 0, MEM_RELEASE);
+                    _tensionMatchCodeCave = IntPtr.Zero;
+                    throw new Exception("Failed to write Tension Match code cave");
+                }
+
+                // Create hook (5-byte JMP + 3 NOPs)
                 byte[] hookBytes = new byte[8];
-                hookBytes[0] = 0xE9; // jmp rel32
-                long jmpToCodeCave = _playerSpiritInjectionCodeCave.ToInt64() - (_playerSpiritHookAddress.ToInt64() + 5);
-                byte[] hookOffsetBytes = BitConverter.GetBytes((int)jmpToCodeCave);
-                Array.Copy(hookOffsetBytes, 0, hookBytes, 1, 4);
-                hookBytes[5] = 0x90; // nop
-                hookBytes[6] = 0x90; // nop
-                hookBytes[7] = 0x90; // nop
+                hookBytes[0] = 0xE9; // JMP
+                long jmpDist = _tensionMatchCodeCave.ToInt64() - (_tensionMatchHookAddress.ToInt64() + 5);
+                byte[] jmpDistBytes = BitConverter.GetBytes((int)jmpDist);
+                Array.Copy(jmpDistBytes, 0, hookBytes, 1, 4);
+                hookBytes[5] = 0x90; // NOP
+                hookBytes[6] = 0x90; // NOP
+                hookBytes[7] = 0x90; // NOP
 
                 uint oldProtect;
-                if (!VirtualProtectEx(_processHandle, _playerSpiritHookAddress, 8, PAGE_EXECUTE_READWRITE, out oldProtect))
+                if (!VirtualProtectEx(_processHandle, _tensionMatchHookAddress, 8, PAGE_EXECUTE_READWRITE, out oldProtect))
                 {
-                    VirtualFreeEx(_processHandle, _playerSpiritInjectionCodeCave, 0, MEM_RELEASE);
-                    _playerSpiritInjectionCodeCave = IntPtr.Zero;
+                    VirtualFreeEx(_processHandle, _tensionMatchCodeCave, 0, MEM_RELEASE);
+                    _tensionMatchCodeCave = IntPtr.Zero;
                     throw new Exception("Failed to change memory protection");
                 }
 
-                bool hookSuccess = WriteProcessMemory(_processHandle, _playerSpiritHookAddress, hookBytes, hookBytes.Length, out _);
-                VirtualProtectEx(_processHandle, _playerSpiritHookAddress, 8, oldProtect, out _);
+                bool hookSuccess = WriteProcessMemory(_processHandle, _tensionMatchHookAddress, hookBytes, hookBytes.Length, out _);
+                VirtualProtectEx(_processHandle, _tensionMatchHookAddress, 8, oldProtect, out _);
 
                 if (!hookSuccess)
                 {
-                    VirtualFreeEx(_processHandle, _playerSpiritInjectionCodeCave, 0, MEM_RELEASE);
-                    _playerSpiritInjectionCodeCave = IntPtr.Zero;
+                    VirtualFreeEx(_processHandle, _tensionMatchCodeCave, 0, MEM_RELEASE);
+                    _tensionMatchCodeCave = IntPtr.Zero;
                     throw new Exception("Failed to write hook");
                 }
 
-                _isPlayerSpiritInjectionEnabled = true;
+                _isTensionMatchEnabled = true;
                 return true;
             }
             catch (Exception)
             {
-                if (_playerSpiritInjectionCodeCave != IntPtr.Zero)
+                if (_tensionMatchCodeCave != IntPtr.Zero)
                 {
-                    VirtualFreeEx(_processHandle, _playerSpiritInjectionCodeCave, 0, MEM_RELEASE);
-                    _playerSpiritInjectionCodeCave = IntPtr.Zero;
+                    VirtualFreeEx(_processHandle, _tensionMatchCodeCave, 0, MEM_RELEASE);
+                    _tensionMatchCodeCave = IntPtr.Zero;
                 }
+                _isTensionMatchEnabled = false;
                 throw;
             }
         }
 
-        public bool DisablePlayerSpiritInjection()
+        public bool RemoveTensionMatch()
         {
             if (!_isAttached || _processHandle == IntPtr.Zero)
             {
                 throw new InvalidOperationException("Not attached to process");
-            }
-
-            if (!_isPlayerSpiritInjectionEnabled)
-            {
-                return true; // Already disabled
             }
 
             try
             {
                 bool success = true;
 
-                if (_playerSpiritHookAddress != IntPtr.Zero && _playerSpiritInjectionCodeCave != IntPtr.Zero)
+                if (_tensionMatchHookAddress != IntPtr.Zero)
                 {
-                    // Read the original 8 bytes from the beginning of code cave (we stored them there)
-                    // First 5 bytes: mov r12,[r14+rax*8+08]
-                    // Next 3 bytes: test r12,r12
-                    byte[] originalBytes = new byte[8];
-                    ReadProcessMemory(_processHandle, _playerSpiritInjectionCodeCave, originalBytes, 8, out _);
-
                     uint oldProtect;
-                    VirtualProtectEx(_processHandle, _playerSpiritHookAddress, 8, PAGE_EXECUTE_READWRITE, out oldProtect);
-                    success = WriteProcessMemory(_processHandle, _playerSpiritHookAddress, originalBytes, originalBytes.Length, out _);
-                    VirtualProtectEx(_processHandle, _playerSpiritHookAddress, 8, oldProtect, out _);
+                    VirtualProtectEx(_processHandle, _tensionMatchHookAddress, 8, PAGE_EXECUTE_READWRITE, out oldProtect);
+                    success = WriteProcessMemory(_processHandle, _tensionMatchHookAddress, _tensionMatchBackupBytes, 8, out _);
+                    VirtualProtectEx(_processHandle, _tensionMatchHookAddress, 8, oldProtect, out _);
 
-                    _playerSpiritHookAddress = IntPtr.Zero;
+                    _tensionMatchHookAddress = IntPtr.Zero;
                 }
 
-                if (_playerSpiritInjectionCodeCave != IntPtr.Zero)
+                if (_tensionMatchCodeCave != IntPtr.Zero)
                 {
-                    VirtualFreeEx(_processHandle, _playerSpiritInjectionCodeCave, 0, MEM_RELEASE);
-                    _playerSpiritInjectionCodeCave = IntPtr.Zero;
+                    VirtualFreeEx(_processHandle, _tensionMatchCodeCave, 0, MEM_RELEASE);
+                    _tensionMatchCodeCave = IntPtr.Zero;
                 }
 
-                _cfPlayerspiritAddTypeAddress = IntPtr.Zero;
-                _cfPlayerspiritIDAddress = IntPtr.Zero;
-                _cfPlayerspiritRarityAddress = IntPtr.Zero;
-                _isPlayerSpiritInjectionEnabled = false;
+                _tensionMatchAobAddress = IntPtr.Zero;
+                _cfFullPlayerTensionAddress = IntPtr.Zero;
+                _cfFullPlayerHyperAddress = IntPtr.Zero;
+                _cfFullPlayerKeeperAddress = IntPtr.Zero;
+                _cfFullPlayerBondAddress = IntPtr.Zero;
+                _cfZeroEnemyTensionAddress = IntPtr.Zero;
+                _cfZeroEnemyHyperAddress = IntPtr.Zero;
+                _cfZeroEnemyKeeperAddress = IntPtr.Zero;
+                _cfZeroEnemyBondAddress = IntPtr.Zero;
+                _isTensionMatchEnabled = false;
 
                 return success;
             }
             catch (Exception)
             {
+                _isTensionMatchEnabled = false;
                 return false;
             }
         }
 
-        public bool SetPlayerSpiritToAdd(uint playerId, int rarity)
+        public bool SetTensionFlag(int flagIndex, bool enabled)
         {
-            if (!_isAttached || _processHandle == IntPtr.Zero || !_isPlayerSpiritInjectionEnabled)
-            {
+            if (!_isAttached || !_isTensionMatchEnabled)
                 return false;
-            }
 
-            try
+            IntPtr flagAddress = flagIndex switch
             {
-                // Set to Add-One mode
-                byte[] addTypeBytes = BitConverter.GetBytes(1); // 1 = Add-One mode
-                WriteProcessMemory(_processHandle, _cfPlayerspiritAddTypeAddress, addTypeBytes, 4, out _);
+                0 => _cfFullPlayerTensionAddress,
+                1 => _cfFullPlayerHyperAddress,
+                2 => _cfFullPlayerKeeperAddress,
+                3 => _cfFullPlayerBondAddress,
+                4 => _cfZeroEnemyTensionAddress,
+                5 => _cfZeroEnemyHyperAddress,
+                6 => _cfZeroEnemyKeeperAddress,
+                7 => _cfZeroEnemyBondAddress,
+                _ => IntPtr.Zero
+            };
 
-                // Write the player ID
-                byte[] playerIdBytes = BitConverter.GetBytes(playerId);
-                WriteProcessMemory(_processHandle, _cfPlayerspiritIDAddress, playerIdBytes, 4, out _);
-
-                // Write the rarity
-                byte[] rarityBytes = BitConverter.GetBytes(rarity);
-                bool success = WriteProcessMemory(_processHandle, _cfPlayerspiritRarityAddress, rarityBytes, 4, out _);
-
-                return success;
-            }
-            catch (Exception)
-            {
+            if (flagAddress == IntPtr.Zero)
                 return false;
-            }
+
+            byte[] value = BitConverter.GetBytes(enabled ? 1 : 0);
+            return WriteProcessMemory(_processHandle, flagAddress, value, 4, out _);
         }
 
-        public bool SetAllPlayerSpiritsToAdd(List<uint> playerIds, int rarity)
+        public bool GetTensionFlag(int flagIndex)
         {
-            if (!_isAttached || _processHandle == IntPtr.Zero || !_isPlayerSpiritInjectionEnabled)
-            {
+            if (!_isAttached || !_isTensionMatchEnabled)
                 return false;
-            }
 
-            try
+            IntPtr flagAddress = flagIndex switch
             {
-                // Set to Add-All mode
-                byte[] addTypeBytes = BitConverter.GetBytes(0); // 0 = Add-All mode
-                WriteProcessMemory(_processHandle, _cfPlayerspiritAddTypeAddress, addTypeBytes, 4, out _);
+                0 => _cfFullPlayerTensionAddress,
+                1 => _cfFullPlayerHyperAddress,
+                2 => _cfFullPlayerKeeperAddress,
+                3 => _cfFullPlayerBondAddress,
+                4 => _cfZeroEnemyTensionAddress,
+                5 => _cfZeroEnemyHyperAddress,
+                6 => _cfZeroEnemyKeeperAddress,
+                7 => _cfZeroEnemyBondAddress,
+                _ => IntPtr.Zero
+            };
 
-                // Write the rarity
-                byte[] rarityBytes = BitConverter.GetBytes(rarity);
-                WriteProcessMemory(_processHandle, _cfPlayerspiritRarityAddress, rarityBytes, 4, out _);
-
-                // Write all player IDs to playerSpiritIDList array (at code cave + 0x300)
-                IntPtr playerSpiritIDListAddress = new IntPtr(_playerSpiritInjectionCodeCave.ToInt64() + 0x300);
-
-                List<byte> allPlayerIds = new List<byte>();
-                foreach (uint playerId in playerIds)
-                {
-                    allPlayerIds.AddRange(BitConverter.GetBytes(playerId));
-                }
-                // Add terminating 0
-                allPlayerIds.AddRange(BitConverter.GetBytes(0));
-
-                bool success = WriteProcessMemory(_processHandle, playerSpiritIDListAddress, allPlayerIds.ToArray(), allPlayerIds.Count, out _);
-
-                return success;
-            }
-            catch (Exception)
-            {
+            if (flagAddress == IntPtr.Zero)
                 return false;
+
+            byte[] buffer = new byte[4];
+            if (ReadProcessMemory(_processHandle, flagAddress, buffer, 4, out _))
+            {
+                return BitConverter.ToInt32(buffer, 0) != 0;
             }
+            return false;
         }
 
-        public bool AddPlayerSpiritToTeam(uint playerId, int rarity)
+        public bool InjectEnhance()
         {
             if (!_isAttached || _processHandle == IntPtr.Zero)
             {
                 throw new InvalidOperationException("Not attached to process");
             }
 
-            // Enable injection if not already enabled
-            if (!_isPlayerSpiritInjectionEnabled)
+            try
             {
-                EnablePlayerSpiritInjection(); // Let exceptions propagate
-            }
+                // AOB: 44 8B 81 * * * * 48 * * 45 * * 0F * * * * * 66
+                byte[] aobPattern = new byte[] { 0x44, 0x8B, 0x81, 0x00, 0x00, 0x00, 0x00, 0x48, 0x00, 0x00, 0x45, 0x00, 0x00, 0x0F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x66 };
+                byte[] aobMask = new byte[] { 1, 1, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1 };
 
-            // Set the player spirit to add
-            return SetPlayerSpiritToAdd(playerId, rarity);
+                _enhanceHookAddress = AOBScan(aobPattern, aobMask);
+
+                if (_enhanceHookAddress == IntPtr.Zero)
+                {
+                    throw new Exception("Failed to find Enhance AOB pattern.");
+                }
+
+                // Read original 7 bytes for backup
+                ReadProcessMemory(_processHandle, _enhanceHookAddress, _enhanceBackupBytes, 7, out _);
+
+                // Allocate code cave
+                long[] offsets = { 0x10000000, 0x20000000, 0x30000000, -0x10000000, -0x20000000, 0x05000000, 0x01000000 };
+
+                foreach (long offset in offsets)
+                {
+                    IntPtr preferredAddress = new IntPtr(_moduleBase.ToInt64() + offset);
+                    _enhanceCodeCave = VirtualAllocEx(_processHandle, preferredAddress, 4096, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+
+                    if (_enhanceCodeCave != IntPtr.Zero)
+                    {
+                        long distance = _enhanceCodeCave.ToInt64() - _enhanceHookAddress.ToInt64();
+                        if (Math.Abs(distance) <= 0x7FFFFFFF)
+                            break;
+
+                        VirtualFreeEx(_processHandle, _enhanceCodeCave, 0, MEM_RELEASE);
+                        _enhanceCodeCave = IntPtr.Zero;
+                    }
+                }
+
+                if (_enhanceCodeCave == IntPtr.Zero)
+                {
+                    throw new Exception("Failed to allocate memory for Enhance");
+                }
+
+                // Build code cave:
+                // mov r8d,[cfEnhanceNum] (using RIP-relative)
+                // jmp return
+                // cfEnhanceNum: dd 9999
+                // memenhanceBck: (7 bytes backup)
+                List<byte> code = new List<byte>();
+
+                // mov r8d,[rip+offset] = 44 8B 05 XX XX XX XX
+                code.AddRange(new byte[] { 0x44, 0x8B, 0x05, 0x00, 0x00, 0x00, 0x00 }); // placeholder for offset
+
+                // jmp return
+                code.Add(0xE9);
+                IntPtr returnAddress = new IntPtr(_enhanceHookAddress.ToInt64() + 7);
+                long jmpDist = returnAddress.ToInt64() - (_enhanceCodeCave.ToInt64() + code.Count + 4);
+                code.AddRange(BitConverter.GetBytes((int)jmpDist));
+
+                // cfEnhanceNum at current offset
+                int cfEnhanceNumOffset = code.Count;
+                code.AddRange(BitConverter.GetBytes(9999)); // dd 9999
+
+                // memenhanceBck
+                code.AddRange(_enhanceBackupBytes);
+
+                // Patch the RIP-relative offset for mov r8d,[cfEnhanceNum]
+                // RIP at end of instruction (offset 7), target is cfEnhanceNumOffset
+                byte[] codeArray = code.ToArray();
+                long ripAtEnd = _enhanceCodeCave.ToInt64() + 7;
+                long targetAddr = _enhanceCodeCave.ToInt64() + cfEnhanceNumOffset;
+                int relOffset = (int)(targetAddr - ripAtEnd);
+                byte[] relBytes = BitConverter.GetBytes(relOffset);
+                codeArray[3] = relBytes[0];
+                codeArray[4] = relBytes[1];
+                codeArray[5] = relBytes[2];
+                codeArray[6] = relBytes[3];
+
+                // Write code cave
+                if (!WriteProcessMemory(_processHandle, _enhanceCodeCave, codeArray, codeArray.Length, out _))
+                {
+                    VirtualFreeEx(_processHandle, _enhanceCodeCave, 0, MEM_RELEASE);
+                    _enhanceCodeCave = IntPtr.Zero;
+                    throw new Exception("Failed to write Enhance code cave");
+                }
+
+                // Create hook (5-byte JMP + 2 NOPs)
+                byte[] hookBytes = new byte[7];
+                hookBytes[0] = 0xE9; // JMP
+                long jmpToCodeCave = _enhanceCodeCave.ToInt64() - (_enhanceHookAddress.ToInt64() + 5);
+                byte[] jmpBytes = BitConverter.GetBytes((int)jmpToCodeCave);
+                Array.Copy(jmpBytes, 0, hookBytes, 1, 4);
+                hookBytes[5] = 0x90; // NOP
+                hookBytes[6] = 0x90; // NOP
+
+                uint oldProtect;
+                if (!VirtualProtectEx(_processHandle, _enhanceHookAddress, 7, PAGE_EXECUTE_READWRITE, out oldProtect))
+                {
+                    VirtualFreeEx(_processHandle, _enhanceCodeCave, 0, MEM_RELEASE);
+                    _enhanceCodeCave = IntPtr.Zero;
+                    throw new Exception("Failed to change memory protection");
+                }
+
+                bool hookSuccess = WriteProcessMemory(_processHandle, _enhanceHookAddress, hookBytes, hookBytes.Length, out _);
+                VirtualProtectEx(_processHandle, _enhanceHookAddress, 7, oldProtect, out _);
+
+                if (!hookSuccess)
+                {
+                    VirtualFreeEx(_processHandle, _enhanceCodeCave, 0, MEM_RELEASE);
+                    _enhanceCodeCave = IntPtr.Zero;
+                    throw new Exception("Failed to write hook");
+                }
+
+                _isEnhanceEnabled = true;
+                return true;
+            }
+            catch (Exception)
+            {
+                if (_enhanceCodeCave != IntPtr.Zero)
+                {
+                    VirtualFreeEx(_processHandle, _enhanceCodeCave, 0, MEM_RELEASE);
+                    _enhanceCodeCave = IntPtr.Zero;
+                }
+                _isEnhanceEnabled = false;
+                throw;
+            }
         }
 
-        public bool ClearPlayerSpiritToAdd()
+        public bool RemoveEnhance()
         {
-            if (!_isAttached || _processHandle == IntPtr.Zero || !_isPlayerSpiritInjectionEnabled)
+            if (!_isAttached || _processHandle == IntPtr.Zero)
             {
-                return false;
+                throw new InvalidOperationException("Not attached to process");
             }
 
             try
             {
-                // Set cfPlayerspiritAddType to 0 to disable injection
-                byte[] disableBytes = BitConverter.GetBytes(0);
-                bool success = WriteProcessMemory(_processHandle, _cfPlayerspiritAddTypeAddress, disableBytes, 4, out _);
+                bool success = true;
+
+                if (_enhanceHookAddress != IntPtr.Zero)
+                {
+                    uint oldProtect;
+                    VirtualProtectEx(_processHandle, _enhanceHookAddress, 7, PAGE_EXECUTE_READWRITE, out oldProtect);
+                    success = WriteProcessMemory(_processHandle, _enhanceHookAddress, _enhanceBackupBytes, 7, out _);
+                    VirtualProtectEx(_processHandle, _enhanceHookAddress, 7, oldProtect, out _);
+
+                    _enhanceHookAddress = IntPtr.Zero;
+                }
+
+                if (_enhanceCodeCave != IntPtr.Zero)
+                {
+                    VirtualFreeEx(_processHandle, _enhanceCodeCave, 0, MEM_RELEASE);
+                    _enhanceCodeCave = IntPtr.Zero;
+                }
+
+                _isEnhanceEnabled = false;
                 return success;
             }
             catch (Exception)
             {
+                _isEnhanceEnabled = false;
                 return false;
             }
         }

@@ -119,6 +119,7 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.Data
             new SpecialMove("84B348B1", "Firebird Flight", "Shot"),
             new SpecialMove("05124F07", "Fission and Fusion", "Shot"),
             new SpecialMove("CDCBC50F", "Flamberge", "Shot"),
+            new SpecialMove("AC1ACF1C", "Flower Power", "Shot"),
             new SpecialMove("F5915315", "Flying Colours", "Shot"),
             new SpecialMove("3B732E27", "Flying Marlin", "Shot"),
             new SpecialMove("A2FB4736", "Flying Fish", "Shot"),

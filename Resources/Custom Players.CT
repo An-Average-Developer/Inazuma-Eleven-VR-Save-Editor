@@ -1,0 +1,635 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CheatTable CheatEngineTableVersion="46">
+  <CheatEntries>
+    <CheatEntry>
+      <ID>175</ID>
+      <Description>"Add Spirit Player"</Description>
+      <Options moHideChildren="1" moDeactivateChildrenAsWell="1"/>
+      <VariableType>Auto Assembler Script</VariableType>
+      <AssemblerScript>[ENABLE]
+{$lua}
+if syntaxcheck then return end
+if getAddress("nie.exe")==0 or getProcessIDFromProcessName("nie.exe")==nil then
+  errorNotFoundGameProcess()
+end
+{$asm}
+alloc(newmem,0x8000)
+label(playerSpiritIDList getListPlayerSPFinish)
+newmem:
+getListPlayerSPFinish:
+  dd 0
+playerSpiritIDList:
+  dd 0
+registersymbol(playerSpiritIDList getListPlayerSPFinish)
+[DISABLE]
+unregistersymbol(playerSpiritIDList getListPlayerSPFinish)
+dealloc(newmem)
+
+</AssemblerScript>
+      <CheatEntries>
+        <CheatEntry>
+          <ID>176</ID>
+          <Description>"Add Spirit"</Description>
+          <Options moHideChildren="1"/>
+          <VariableType>Auto Assembler Script</VariableType>
+          <AssemblerScript>[ENABLE]
+//active when open Team Dock - Spirits
+aobscanmodule(INJECTaddplayerspirit,nie.exe,4D 8B 64 C? 08 4D)
+alloc(newmem,$1000,INJECTaddplayerspirit)
+label(code codeE codeA codeR bckRxreg fncAddPlayerspirit addplayerspiritTemp addplayerspiritdata)
+label(memaddplayerspiritBck)
+label(cfPlayerspiritAddType cfPlayerspiritID cfPlayerspiritRarity)
+label(return)
+newmem:
+  readMem(INJECTaddplayerspirit,5)
+  test r12,r12
+  je code
+  cmp [r12+8],0
+  jne code
+  mov [bckRxreg],rax
+  mov [bckRxreg+8],r14
+  mov [bckRxreg+10],r13
+  cmp [cfPlayerspiritAddType],0
+  je codeA
+//Add-One
+  mov r14d,[cfPlayerspiritID]
+  mov [addplayerspiritdata],r14d
+  mov r14d,[cfPlayerspiritRarity]
+  mov [addplayerspiritdata+4],r14d
+  call fncAddPlayerspirit
+  jmp codeE
+codeA:
+//Add-All
+  mov r14,getListPlayerSPFinish
+  cmp [r14],0
+  je codeE
+  mov r14d,[cfPlayerspiritRarity]
+  mov [addplayerspiritdata+4],r14d
+  mov r13,playerSpiritIDList
+codeR:
+  cmp [r13],0
+  je codeE
+  mov r14d,[r13]
+  mov [addplayerspiritdata],r14d
+  call fncAddPlayerspirit
+  add r13,4
+  jmp codeR
+codeE:
+  mov rax,[bckRxreg]
+  mov r14,[bckRxreg+8]
+  mov r13,[bckRxreg+10]
+code:
+  jmp return
+memaddplayerspiritBck:
+  readMem(INJECTaddplayerspirit,5)
+fncAddPlayerspirit:
+  push rcx
+  push rdx
+  push r8
+  push r9
+  lea r8,[addplayerspiritdata]
+  lea rdx,[addplayerspiritTemp]
+  mov r9d,1
+  mov rcx,r12
+  mov rax,[r12]
+  call qword ptr[rax+20]
+  pop r9
+  pop r8
+  pop rdx
+  pop rcx
+  ret
+cfPlayerspiritAddType:
+  dd 1 //Add-Type (0 = Add-All, 1 = Add-One)
+cfPlayerspiritID:
+  dd BCE81249 //PlayerID
+cfPlayerspiritRarity:
+  dd 1 //Rarity (0 = Common, 1 = Growing, 2 = Advanced, 3 = Top, 4 = Legendary)
+bckRxreg:
+  dq 0
+  dq 0
+  dq 0
+addplayerspiritdata:
+  dd 0 //PlayerID
+  dd 0 //Rarity
+  dd 0
+  dd 0
+addplayerspiritTemp:
+  dd 0
+INJECTaddplayerspirit:
+  jmp newmem
+return:
+registersymbol(INJECTaddplayerspirit)
+registersymbol(memaddplayerspiritBck)
+registersymbol(cfPlayerspiritAddType cfPlayerspiritID cfPlayerspiritRarity)
+[DISABLE]
+INJECTaddplayerspirit:
+  readMem(memaddplayerspiritBck,5)
+unregistersymbol(INJECTaddplayerspirit)
+unregistersymbol(memaddplayerspiritBck)
+unregistersymbol(cfPlayerspiritAddType cfPlayerspiritID cfPlayerspiritRarity)
+dealloc(newmem)
+
+{
+// ORIGINAL CODE - INJECTION POINT: nie.exe+CF0F7B
+
+nie.exe+CF0F3F: 48 89 B9 08 43 04 00     - mov [rcx+00044308],rdi
+nie.exe+CF0F46: 48 89 B9 30 43 04 00     - mov [rcx+00044330],rdi
+nie.exe+CF0F4D: 48 89 B9 10 43 04 00     - mov [rcx+00044310],rdi
+nie.exe+CF0F54: 48 89 B9 38 43 04 00     - mov [rcx+00044338],rdi
+nie.exe+CF0F5B: 48 89 84 24 88 00 00 00  - mov [rsp+00000088],rax
+nie.exe+CF0F63: 48 89 5C 24 20           - mov [rsp+20],rbx
+nie.exe+CF0F68: 0F 1F 84 00 00 00 00 00  - nop dword ptr [rax+rax+00000000]
+nie.exe+CF0F70: 0F B6 00                 - movzx eax,byte ptr [rax]
+nie.exe+CF0F73: 3C 05                    - cmp al,05
+nie.exe+CF0F75: 0F 83 EA 02 00 00        - jae nie.exe+CF1265
+// ---------- INJECTING HERE ----------
+nie.exe+CF0F7B: 4D 8B 64 C6 08           - mov r12,[r14+rax*8+08]
+// ---------- DONE INJECTING  ----------
+nie.exe+CF0F80: 4D 85 E4                 - test r12,r12
+nie.exe+CF0F83: 0F 84 DC 02 00 00        - je nie.exe+CF1265
+nie.exe+CF0F89: 49 8B 04 24              - mov rax,[r12]
+nie.exe+CF0F8D: 49 8B CC                 - mov rcx,r12
+nie.exe+CF0F90: FF 50 30                 - call qword ptr [rax+30]
+nie.exe+CF0F93: 44 8B E8                 - mov r13d,eax
+nie.exe+CF0F96: 44 8B FF                 - mov r15d,edi
+nie.exe+CF0F99: 85 C0                    - test eax,eax
+nie.exe+CF0F9B: 0F 84 C4 02 00 00        - je nie.exe+CF1265
+nie.exe+CF0FA1: 49 8B 0C 24              - mov rcx,[r12]
+}
+
+</AssemblerScript>
+          <CheatEntries>
+            <CheatEntry>
+              <ID>188</ID>
+              <Description>"Note : active when open Team Dock - Spirits"</Description>
+              <GroupHeader>1</GroupHeader>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>178</ID>
+              <Description>"Note : use Add All option must enable [Get Spirit Player ID List]"</Description>
+              <GroupHeader>1</GroupHeader>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>179</ID>
+              <Description>"Warning : Add All can add unwanted/hide spirit, so Backup your Save game if want undo"</Description>
+              <GroupHeader>1</GroupHeader>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>180</ID>
+              <Description>"Add Type"</Description>
+              <DropDownList ReadOnly="1" DisplayValueAsItem="1">0:Add All
+1:Add One
+</DropDownList>
+              <ShowAsSigned>0</ShowAsSigned>
+              <VariableType>4 Bytes</VariableType>
+              <Address>cfPlayerspiritAddType</Address>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>181</ID>
+              <Description>"Spirit Player ID (use for Add One)"</Description>
+              <ShowAsHex>1</ShowAsHex>
+              <ShowAsSigned>0</ShowAsSigned>
+              <VariableType>4 Bytes</VariableType>
+              <Address>cfPlayerspiritID</Address>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>189</ID>
+              <Description>"Double Click on &lt;script&gt; to see the MixinMatch IDS"</Description>
+              <VariableType>Auto Assembler Script</VariableType>
+              <AssemblerScript>[ENABLE]
+489A980B: Arion Sherwind (Arion x King Arthur)
+C4DB5F07: Arion Sherwind (Arion x Victor)
+8B9AC9C0: Arion Sherwind (Arion x Mark)
+061964FB: Riccardo Di Rigo (Riccardo x Nobunaga)
+EFF60CC4: Riccardo Di Rigo (Riccardo x Gabi)
+7AACFA89: Victor Blade (Victor x Soji)
+B9ACAB42: Victor Blade (Victor x Bailong)
+5043C37D: Vladimir Blade (Vladimir X Victor)
+1F0255BA: Gabriel Garcia (Gabi x Juana de Arco)
+F6ED3D85: Gabriel Garcia (Gabi x Aitor)
+5181A94A: Goldie Lemmon (Goldie x Reina de los Dragones)
+2D343738: Jean-Pierre Lapin (JP x Liu Bei)
+63B7CBC8: Ryoma Nishiki (Roma x Ryoma)
+7B6E90BE: Fei Rune (Fei x T-REX)
+B3B71AB6: Fei Rune (Fei x Big)
+AAAC2BF7: Sor (Sor x Padre de Sor)
+1EC03F8D: Zanark Avalonic (Zanark x Cao Cao)
+35ED6C4E: Zanark Avalonic (Zanark x Zeta)
+342F0679: Sol Daystar (Sol x Zhuge Liang)
+07DB0ECC: Bailong (Bailong x Zhuge Liang)
+A0B79A03: Bailong (Bailong x Tezcat)
+9281F881: Axel Blaze (Axel x Shawn)
+1519E44E: Jude (Jude x Caleb)
+79282EE7: Mike (Miximaxed x Zanark)
+60331FA6: Gamma (Miximaxed x Zanark)
+B033CED8: Juliet (Miximaxed x Zanark)
+2EB0E356: November (Miximaxed x Zanark)
+1C8681D4: Quebec (Miximaxed x Zanark)
+78EA44D0: Romeo (Miximaxed x Zanark)
+02941849: Desmodus Drakul (Mix 'n' Match)
+4DD58E8E: Wolfram Vulpeen (Mix 'n' Match)
+54CEBFCF: Simeon Ayp (Mix 'n' Match)
+[DISABLE]
+</AssemblerScript>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>182</ID>
+              <Description>"Rarity"</Description>
+              <DropDownList ReadOnly="1" DisplayValueAsItem="1">0:Common
+1:Growing
+2:Advanced
+3:Top
+4:Legendary
+8:Fabled
+</DropDownList>
+              <ShowAsSigned>0</ShowAsSigned>
+              <VariableType>4 Bytes</VariableType>
+              <Address>cfPlayerspiritRarity</Address>
+            </CheatEntry>
+          </CheatEntries>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>183</ID>
+          <Description>"Get Spirit Player ID List"</Description>
+          <Options moHideChildren="1"/>
+          <VariableType>Auto Assembler Script</VariableType>
+          <AssemblerScript>[ENABLE]
+//active when open Team Dock - Spirits
+aobscanmodule(INJECTgetallplayerspirit,nie.exe,41 8B 00 49 3B C2 74 * FF C1 49 81 C0 28 01)
+alloc(newmem,$1000,INJECTgetallplayerspirit)
+label(code listCount)
+label(return)
+newmem:
+  mov rax,getListPlayerSPFinish
+  cmp [rax],1
+  je code
+  cmp [listCount],0
+  jne @f
+  mov [listCount],edx
+  dec [listCount]
+@@:
+  mov eax,[r8]
+  push rbx
+  push r9
+  imul r9d,ecx,4
+  mov rbx,playerSpiritIDList
+  add rbx,r9d
+  mov [rbx],eax
+  pop r9
+  pop rbx
+  cmp ecx,[listCount]
+  jne code
+  mov rax,getListPlayerSPFinish
+  mov [rax],1
+code:
+  mov eax,[r8]
+  cmp rax,r10
+  jmp return
+listCount:
+  dd 0
+INJECTgetallplayerspirit:
+  jmp newmem
+  nop
+return:
+registersymbol(INJECTgetallplayerspirit)
+[DISABLE]
+INJECTgetallplayerspirit:
+  db 41 8B 00 49 3B C2
+unregistersymbol(INJECTgetallplayerspirit)
+dealloc(newmem)
+
+{
+// ORIGINAL CODE - INJECTION POINT: nie.exe+291C70
+
+nie.exe+291C55: 0F 43 D0              - cmovae edx,eax
+nie.exe+291C58: 41 3B D1              - cmp edx,r9d
+nie.exe+291C5B: 7E C3                 - jle nie.exe+291C20
+nie.exe+291C5D: 33 C0                 - xor eax,eax
+nie.exe+291C5F: C3                    - ret
+nie.exe+291C60: 8B 50 08              - mov edx,[rax+08]
+nie.exe+291C63: 33 C9                 - xor ecx,ecx
+nie.exe+291C65: 85 D2                 - test edx,edx
+nie.exe+291C67: 74 F4                 - je nie.exe+291C5D
+nie.exe+291C69: 0F 1F 80 00 00 00 00  - nop dword ptr [rax+00000000]
+// ---------- INJECTING HERE ----------
+nie.exe+291C70: 41 8B 00              - mov eax,[r8]
+// ---------- DONE INJECTING  ----------
+nie.exe+291C73: 49 3B C2              - cmp rax,r10
+nie.exe+291C76: 74 10                 - je nie.exe+291C88
+nie.exe+291C78: FF C1                 - inc ecx
+nie.exe+291C7A: 49 81 C0 28 01 00 00  - add r8,00000128
+nie.exe+291C81: 3B CA                 - cmp ecx,edx
+nie.exe+291C83: 72 EB                 - jb nie.exe+291C70
+nie.exe+291C85: 33 C0                 - xor eax,eax
+nie.exe+291C87: C3                    - ret
+nie.exe+291C88: 49 8B C0              - mov rax,r8
+nie.exe+291C8B: C3                    - ret
+}
+
+</AssemblerScript>
+          <CheatEntries>
+            <CheatEntry>
+              <ID>184</ID>
+              <Description>"Note : active Get when open Team Dock - Spirits"</Description>
+              <GroupHeader>1</GroupHeader>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>185</ID>
+              <Description>"Note : when Get Complete, then ready for Add All"</Description>
+              <GroupHeader>1</GroupHeader>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>186</ID>
+              <Description>"Get Status"</Description>
+              <DropDownList ReadOnly="1" DescriptionOnly="1" DisplayValueAsItem="1">0:Waiting for get
+1:Get Complete
+</DropDownList>
+              <ShowAsSigned>0</ShowAsSigned>
+              <VariableType>4 Bytes</VariableType>
+              <Address>getListPlayerSPFinish</Address>
+            </CheatEntry>
+          </CheatEntries>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>187</ID>
+          <Description>"Print Spirit Player ID List"</Description>
+          <VariableType>Auto Assembler Script</VariableType>
+          <AssemblerScript>[ENABLE]
+{$lua}
+if syntaxcheck then return end
+local getFinishAdr = GetAddress("getListPlayerSPFinish")
+if getFinishAdr==nil then return end
+if readInteger(getFinishAdr)==0 then
+  showMessage("Get ID List Not Complete")
+  return
+end
+local idAdr = GetAddress("playerSpiritIDList")
+local idNum = readInteger(idAdr)
+local count = 0
+local idListTxt = ""
+print("Count : ID")
+while idNum~=0 do
+  idListTxt = idListTxt .. string.format("%04d : ",count+1) .. string.format("%08X",idNum) .. "\n"
+  idAdr = idAdr + 4
+  count = count + 1
+  idNum = readInteger(idAdr)
+end
+print(idListTxt)
+print(string.format("======== Total : %d",count))
+{$asm}
+[DISABLE]
+
+</AssemblerScript>
+        </CheatEntry>
+      </CheatEntries>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>101</ID>
+      <Description>"Get Spirit ID"</Description>
+      <Options moHideChildren="1"/>
+      <VariableType>Auto Assembler Script</VariableType>
+      <AssemblerScript>[ENABLE]
+//active when Mouse Hover to Spirit in [Team Dock - Spirits]
+aobscanmodule(INJECTgetspiritid,nie.exe,49 8B 0? 48 8B 51 18 49 8B C? FF D2 39 30)
+alloc(newmem,$1000,INJECTgetspiritid)
+label(code memgetspiritidBck getSpiritIDAdr getSpiritHeroAdr getSpiritNormalAdr)
+label(return)
+newmem:
+  lea rcx,[rax+0C]
+  mov [getSpiritIDAdr],rcx
+  xor rcx,rcx
+  mov [getSpiritHeroAdr],rcx
+  mov [getSpiritNormalAdr],rcx
+  cmp [rax+10],0
+  je @f
+  mov [getSpiritHeroAdr],rax
+  jmp code
+@@:
+  mov [getSpiritNormalAdr],rax
+code:
+  readMem(INJECTgetspiritid,7)
+  jmp return
+memgetspiritidBck:
+  readMem(INJECTgetspiritid,7)
+getSpiritIDAdr:
+  dq 0
+getSpiritHeroAdr:
+  dq 0
+getSpiritNormalAdr:
+  dq 0
+INJECTgetspiritid:
+  jmp newmem
+  nop 2
+return:
+registersymbol(INJECTgetspiritid)
+registersymbol(memgetspiritidBck getSpiritIDAdr getSpiritHeroAdr getSpiritNormalAdr)
+[DISABLE]
+INJECTgetspiritid:
+  readMem(memgetspiritidBck,7)
+unregistersymbol(INJECTgetspiritid)
+unregistersymbol(memgetspiritidBck getSpiritIDAdr getSpiritHeroAdr getSpiritNormalAdr)
+dealloc(newmem)
+
+{
+// ORIGINAL CODE - INJECTION POINT: nie.exe+BC6D6F
+
+nie.exe+BC6D4B: FF 50 48           - call qword ptr [rax+48]
+nie.exe+BC6D4E: 4C 8B F0           - mov r14,rax
+nie.exe+BC6D51: 48 85 C0           - test rax,rax
+nie.exe+BC6D54: 0F 84 D0 00 00 00  - je nie.exe+BC6E2A
+nie.exe+BC6D5A: 48 8B 08           - mov rcx,[rax]
+nie.exe+BC6D5D: 48 8B 51 18        - mov rdx,[rcx+18]
+nie.exe+BC6D61: 48 8B C8           - mov rcx,rax
+nie.exe+BC6D64: FF D2              - call rdx
+nie.exe+BC6D66: 83 38 00           - cmp dword ptr [rax],00
+nie.exe+BC6D69: 0F 84 BB 00 00 00  - je nie.exe+BC6E2A
+// ---------- INJECTING HERE ----------
+nie.exe+BC6D6F: 49 8B 0E           - mov rcx,[r14]
+// ---------- DONE INJECTING  ----------
+nie.exe+BC6D72: 48 8B 51 18        - mov rdx,[rcx+18]
+nie.exe+BC6D76: 49 8B CE           - mov rcx,r14
+nie.exe+BC6D79: FF D2              - call rdx
+nie.exe+BC6D7B: 39 30              - cmp [rax],esi
+nie.exe+BC6D7D: 0F 85 A7 00 00 00  - jne nie.exe+BC6E2A
+nie.exe+BC6D83: 49 8B 06           - mov rax,[r14]
+nie.exe+BC6D86: 49 8B CE           - mov rcx,r14
+nie.exe+BC6D89: FF 50 18           - call qword ptr [rax+18]
+nie.exe+BC6D8C: 48 85 C0           - test rax,rax
+nie.exe+BC6D8F: 0F 84 95 00 00 00  - je nie.exe+BC6E2A
+}
+
+</AssemblerScript>
+      <CheatEntries>
+        <CheatEntry>
+          <ID>102</ID>
+          <Description>"Note : active when Mouse Hover to Spirit in [Team Dock - Spirits]"</Description>
+          <GroupHeader>1</GroupHeader>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>103</ID>
+          <Description>"Spirit ID"</Description>
+          <ShowAsHex>1</ShowAsHex>
+          <ShowAsSigned>0</ShowAsSigned>
+          <VariableType>4 Bytes</VariableType>
+          <Address>getSpiritIDAdr</Address>
+          <Offsets>
+            <Offset>0</Offset>
+          </Offsets>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>138</ID>
+          <Description>"Hero Quantity"</Description>
+          <ShowAsSigned>0</ShowAsSigned>
+          <VariableType>2 Bytes</VariableType>
+          <Address>getSpiritHeroAdr</Address>
+          <Offsets>
+            <Offset>10</Offset>
+          </Offsets>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>139</ID>
+          <Description>"Hero Retire (Set Value to 0 for Clear/Hide)"</Description>
+          <ShowAsSigned>0</ShowAsSigned>
+          <VariableType>2 Bytes</VariableType>
+          <Address>getSpiritHeroAdr</Address>
+          <Offsets>
+            <Offset>12</Offset>
+          </Offsets>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>140</ID>
+          <Description>"Common Quantity"</Description>
+          <ShowAsSigned>0</ShowAsSigned>
+          <Color>00A800</Color>
+          <VariableType>2 Bytes</VariableType>
+          <Address>getSpiritNormalAdr</Address>
+          <Offsets>
+            <Offset>14</Offset>
+          </Offsets>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>146</ID>
+          <Description>"Common Retire"</Description>
+          <ShowAsSigned>0</ShowAsSigned>
+          <Color>00A800</Color>
+          <VariableType>2 Bytes</VariableType>
+          <Address>getSpiritNormalAdr</Address>
+          <Offsets>
+            <Offset>20</Offset>
+          </Offsets>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>141</ID>
+          <Description>"Growing Quantity"</Description>
+          <ShowAsSigned>0</ShowAsSigned>
+          <Color>FF0000</Color>
+          <VariableType>2 Bytes</VariableType>
+          <Address>getSpiritNormalAdr</Address>
+          <Offsets>
+            <Offset>16</Offset>
+          </Offsets>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>147</ID>
+          <Description>"Growing Retire"</Description>
+          <ShowAsSigned>0</ShowAsSigned>
+          <Color>FF0000</Color>
+          <VariableType>2 Bytes</VariableType>
+          <Address>getSpiritNormalAdr</Address>
+          <Offsets>
+            <Offset>22</Offset>
+          </Offsets>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>142</ID>
+          <Description>"Advanced Quantity"</Description>
+          <ShowAsSigned>0</ShowAsSigned>
+          <Color>FF00FF</Color>
+          <VariableType>2 Bytes</VariableType>
+          <Address>getSpiritNormalAdr</Address>
+          <Offsets>
+            <Offset>18</Offset>
+          </Offsets>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>148</ID>
+          <Description>"Advanced Retire"</Description>
+          <ShowAsSigned>0</ShowAsSigned>
+          <Color>FF00FF</Color>
+          <VariableType>2 Bytes</VariableType>
+          <Address>getSpiritNormalAdr</Address>
+          <Offsets>
+            <Offset>24</Offset>
+          </Offsets>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>143</ID>
+          <Description>"Top Quantity"</Description>
+          <ShowAsSigned>0</ShowAsSigned>
+          <Color>00AEAE</Color>
+          <VariableType>2 Bytes</VariableType>
+          <Address>getSpiritNormalAdr</Address>
+          <Offsets>
+            <Offset>1A</Offset>
+          </Offsets>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>149</ID>
+          <Description>"Top Retire"</Description>
+          <ShowAsSigned>0</ShowAsSigned>
+          <Color>00AEAE</Color>
+          <VariableType>2 Bytes</VariableType>
+          <Address>getSpiritNormalAdr</Address>
+          <Offsets>
+            <Offset>26</Offset>
+          </Offsets>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>144</ID>
+          <Description>"Legendary Quantity"</Description>
+          <ShowAsSigned>0</ShowAsSigned>
+          <Color>2B70FF</Color>
+          <VariableType>2 Bytes</VariableType>
+          <Address>getSpiritNormalAdr</Address>
+          <Offsets>
+            <Offset>1C</Offset>
+          </Offsets>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>150</ID>
+          <Description>"Legendary Retire"</Description>
+          <ShowAsSigned>0</ShowAsSigned>
+          <Color>2B70FF</Color>
+          <VariableType>2 Bytes</VariableType>
+          <Address>getSpiritNormalAdr</Address>
+          <Offsets>
+            <Offset>28</Offset>
+          </Offsets>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>152</ID>
+          <Description>"Fabled Quantity"</Description>
+          <ShowAsSigned>0</ShowAsSigned>
+          <Color>585858</Color>
+          <VariableType>2 Bytes</VariableType>
+          <Address>getSpiritNormalAdr</Address>
+          <Offsets>
+            <Offset>1E</Offset>
+          </Offsets>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>153</ID>
+          <Description>"Fabled Retire"</Description>
+          <ShowAsSigned>0</ShowAsSigned>
+          <Color>585858</Color>
+          <VariableType>2 Bytes</VariableType>
+          <Address>getSpiritNormalAdr</Address>
+          <Offsets>
+            <Offset>2A</Offset>
+          </Offsets>
+        </CheatEntry>
+      </CheatEntries>
+    </CheatEntry>
+  </CheatEntries>
+  <UserdefinedSymbols/>
+</CheatTable>

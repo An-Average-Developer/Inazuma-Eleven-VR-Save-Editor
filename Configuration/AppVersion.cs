@@ -2,7 +2,7 @@ namespace InazumaElevenVRSaveEditor.Configuration
 {
     public static class AppVersion
     {
-        public const string CURRENT_VERSION = "1.6.1";
+        public const string CURRENT_VERSION = "1.6.2";
 
         public const string GITHUB_OWNER = "An-Average-Developer";
         public const string GITHUB_REPO = "Inazuma-Eleven-VR-Save-Editor";
