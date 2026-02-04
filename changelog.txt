@@ -1,5 +1,5 @@
-1.6.1
-- Fixed more options to work with the update 3.0.1
-- Added custom special moves
-- Fixed custom passives
-- Fixed Free Stores
+1.6.2
+- Fixed Player Spirits Option
+- Added Flower Power to special moves
+- Added a method to enhance players from base to legendary
+- Added max online rank
