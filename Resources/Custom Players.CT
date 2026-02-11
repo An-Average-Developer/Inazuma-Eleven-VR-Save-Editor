@@ -2,7 +2,7 @@
 <CheatTable CheatEngineTableVersion="46">
   <CheatEntries>
     <CheatEntry>
-      <ID>175</ID>
+      <ID>90</ID>
       <Description>"Add Spirit Player"</Description>
       <Options moHideChildren="1" moDeactivateChildrenAsWell="1"/>
       <VariableType>Auto Assembler Script</VariableType>
@@ -28,11 +28,16 @@ dealloc(newmem)
 </AssemblerScript>
       <CheatEntries>
         <CheatEntry>
-          <ID>176</ID>
+          <ID>94</ID>
           <Description>"Add Spirit"</Description>
           <Options moHideChildren="1"/>
           <VariableType>Auto Assembler Script</VariableType>
-          <AssemblerScript>[ENABLE]
+          <AssemblerScript>/*
+How to use this script :
+https://www.youtube.com/watch?v=YnFMYTIHf7c&amp;list=PL03h91jY8sapT1dknpUtyBPvi0hum_vZt
+*/
+
+[ENABLE]
 //active when open Team Dock - Spirits
 aobscanmodule(INJECTaddplayerspirit,nie.exe,4D 8B 64 C? 08 4D)
 alloc(newmem,$1000,INJECTaddplayerspirit)
@@ -160,22 +165,22 @@ nie.exe+CF0FA1: 49 8B 0C 24              - mov rcx,[r12]
 </AssemblerScript>
           <CheatEntries>
             <CheatEntry>
-              <ID>188</ID>
+              <ID>98</ID>
               <Description>"Note : active when open Team Dock - Spirits"</Description>
               <GroupHeader>1</GroupHeader>
             </CheatEntry>
             <CheatEntry>
-              <ID>178</ID>
+              <ID>100</ID>
               <Description>"Note : use Add All option must enable [Get Spirit Player ID List]"</Description>
               <GroupHeader>1</GroupHeader>
             </CheatEntry>
             <CheatEntry>
-              <ID>179</ID>
+              <ID>99</ID>
               <Description>"Warning : Add All can add unwanted/hide spirit, so Backup your Save game if want undo"</Description>
               <GroupHeader>1</GroupHeader>
             </CheatEntry>
             <CheatEntry>
-              <ID>180</ID>
+              <ID>95</ID>
               <Description>"Add Type"</Description>
               <DropDownList ReadOnly="1" DisplayValueAsItem="1">0:Add All
 1:Add One
@@ -185,7 +190,7 @@ nie.exe+CF0FA1: 49 8B 0C 24              - mov rcx,[r12]
               <Address>cfPlayerspiritAddType</Address>
             </CheatEntry>
             <CheatEntry>
-              <ID>181</ID>
+              <ID>96</ID>
               <Description>"Spirit Player ID (use for Add One)"</Description>
               <ShowAsHex>1</ShowAsHex>
               <ShowAsSigned>0</ShowAsSigned>
@@ -233,7 +238,7 @@ B033CED8: Juliet (Miximaxed x Zanark)
 </AssemblerScript>
             </CheatEntry>
             <CheatEntry>
-              <ID>182</ID>
+              <ID>97</ID>
               <Description>"Rarity"</Description>
               <DropDownList ReadOnly="1" DisplayValueAsItem="1">0:Common
 1:Growing
@@ -249,11 +254,16 @@ B033CED8: Juliet (Miximaxed x Zanark)
           </CheatEntries>
         </CheatEntry>
         <CheatEntry>
-          <ID>183</ID>
+          <ID>91</ID>
           <Description>"Get Spirit Player ID List"</Description>
           <Options moHideChildren="1"/>
           <VariableType>Auto Assembler Script</VariableType>
-          <AssemblerScript>[ENABLE]
+          <AssemblerScript>/*
+How to use this script :
+https://www.youtube.com/watch?v=YnFMYTIHf7c&amp;list=PL03h91jY8sapT1dknpUtyBPvi0hum_vZt
+*/
+
+[ENABLE]
 //active when open Team Dock - Spirits
 aobscanmodule(INJECTgetallplayerspirit,nie.exe,41 8B 00 49 3B C2 74 * FF C1 49 81 C0 28 01)
 alloc(newmem,$1000,INJECTgetallplayerspirit)
@@ -329,17 +339,17 @@ nie.exe+291C8B: C3                    - ret
 </AssemblerScript>
           <CheatEntries>
             <CheatEntry>
-              <ID>184</ID>
+              <ID>93</ID>
               <Description>"Note : active Get when open Team Dock - Spirits"</Description>
               <GroupHeader>1</GroupHeader>
             </CheatEntry>
             <CheatEntry>
-              <ID>185</ID>
+              <ID>104</ID>
               <Description>"Note : when Get Complete, then ready for Add All"</Description>
               <GroupHeader>1</GroupHeader>
             </CheatEntry>
             <CheatEntry>
-              <ID>186</ID>
+              <ID>92</ID>
               <Description>"Get Status"</Description>
               <DropDownList ReadOnly="1" DescriptionOnly="1" DisplayValueAsItem="1">0:Waiting for get
 1:Get Complete
@@ -351,7 +361,7 @@ nie.exe+291C8B: C3                    - ret
           </CheatEntries>
         </CheatEntry>
         <CheatEntry>
-          <ID>187</ID>
+          <ID>157</ID>
           <Description>"Print Spirit Player ID List"</Description>
           <VariableType>Auto Assembler Script</VariableType>
           <AssemblerScript>[ENABLE]
@@ -388,7 +398,12 @@ print(string.format("======== Total : %d",count))
       <Description>"Get Spirit ID"</Description>
       <Options moHideChildren="1"/>
       <VariableType>Auto Assembler Script</VariableType>
-      <AssemblerScript>[ENABLE]
+      <AssemblerScript>/*
+How to use this script :
+https://www.youtube.com/watch?v=YnFMYTIHf7c&amp;list=PL03h91jY8sapT1dknpUtyBPvi0hum_vZt
+*/
+
+[ENABLE]
 //active when Mouse Hover to Spirit in [Team Dock - Spirits]
 aobscanmodule(INJECTgetspiritid,nie.exe,49 8B 0? 48 8B 51 18 49 8B C? FF D2 39 30)
 alloc(newmem,$1000,INJECTgetspiritid)

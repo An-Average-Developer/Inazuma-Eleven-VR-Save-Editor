@@ -187,12 +187,12 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
         private TutorialsViewModel? _tutorialsViewModel;
         private string _currentTutorialFeature = "";
 
-        private const long STAR_FREEZE_ADDRESS = 0xCA1F76;
+        private const long STAR_FREEZE_ADDRESS = 0xCA31B6;
 
-        private const long FLOWER_INCREMENT_ADDRESS = 0xCA1F69;
+        private const long FLOWER_INCREMENT_ADDRESS = 0xCA31A9;
 
-        private const long SPIRIT_FREEZE_ADDRESS = 0xCD19DB;
-        private const long ELITE_SPIRIT_FREEZE_ADDRESS = 0xCD1917;
+        private const long SPIRIT_FREEZE_ADDRESS = 0xCD2C9B;
+        private const long ELITE_SPIRIT_FREEZE_ADDRESS = 0xCD2BD7;
 
         private static readonly byte[] FREEZE_BYTES = new byte[] { 0x90, 0x90, 0x90, 0x90 };
         private static readonly byte[] ORIGINAL_BYTES = new byte[] { 0x44, 0x89, 0x40, 0x10, };
@@ -582,6 +582,8 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
                 new SpiritCardInfo { Name = "Mark Evans", Variant = "Pink", SpiritId = 0xA7254034 },
                 new SpiritCardInfo { Name = "Nathan Swift", Variant = "Red", SpiritId = 0x8C0813F7 },
                 new SpiritCardInfo { Name = "Nathan Swift", Variant = "White-Black", SpiritId = 0xA5C0A705 },
+                new SpiritCardInfo { Name = "Nikas Himmelstein", Variant = "Pink", SpiritId = 0x2C2F3A7A },
+                new SpiritCardInfo { Name = "Nikas Himmelstein", Variant = "White-Black", SpiritId = 0x8247ABEB },
                 new SpiritCardInfo { Name = "Ozrock Boldar", Variant = "Pink", SpiritId = 0x99E1C62F },
                 new SpiritCardInfo { Name = "Ozrock Boldar", Variant = "Red", SpiritId = 0xB02972DD },
                 new SpiritCardInfo { Name = "Paolo Bianchi", Variant = "White-Black", SpiritId = 0xD3F26B6C },
@@ -3924,9 +3926,9 @@ namespace InazumaElevenVRSaveEditor.Features.MemoryEditor.ViewModels
 
             try
             {
-                // Address: "nie.exe"+019BF8B8, 1000, 1F90, 5C
+                // Address: "nie.exe"+019C48F8, 1000, 1F90, 5C
                 // Value: 2200
-                long baseOffset = 0x019BF8B8;
+                long baseOffset = 0x019C48F8;
                 int[] offsets = new int[] { 0x1000, 0x1F90, 0x5C };
                 int value = 2200;
 
