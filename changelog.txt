@@ -1,0 +1,3 @@
+2.1.4 [7.0.2 UPDATE!]
+- Updated multiple features for compatibility with Update 7.0.2
+- Updated EACLauncher
