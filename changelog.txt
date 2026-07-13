@@ -1,3 +1,6 @@
-2.1.4 [7.0.2 UPDATE!]
-- Updated multiple features for compatibility with Update 7.0.2
+2.1.5
+- Fixed custom abilities option
+- Fixed add hero option
+- Fixed add spirits option
+- Added a system to skip 30 matches
 - Updated EACLauncher
