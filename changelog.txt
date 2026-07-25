@@ -1,3 +1,4 @@
-2.1.7
+2.1.8
 - Updated multiple features for compatibility with Update 7.1.1
-- Added an option to edit the quantity of spirits
+- Fixed the Goal option (outdated offset after the latest game update)
+- Added a Fallback option for End Match 99-0 (forces Goal to 99 and Match Time to the end of the current half)
