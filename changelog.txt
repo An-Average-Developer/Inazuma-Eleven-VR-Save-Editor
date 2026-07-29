@@ -1,4 +1,3 @@
-2.1.8
-- Updated multiple features for compatibility with Update 7.1.1
-- Fixed the Goal option (outdated offset after the latest game update)
-- Added a Fallback option for End Match 99-0 (forces Goal to 99 and Match Time to the end of the current half)
+2.1.9
+- Updated multiple features for compatibility with Update 7.1.2
+- Added an option to convert Small XP Orbs to Crates
