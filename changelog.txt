@@ -1,3 +1,4 @@
-2.1.9
+2.2.0
 - Updated multiple features for compatibility with Update 7.1.2
-- Added an option to convert Small XP Orbs to Crates
+- Added an option to add the save editor to Steam as an independent game
+- Reorganized some options
